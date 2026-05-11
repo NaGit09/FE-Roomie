@@ -2,7 +2,7 @@ import axios from "axios";
 import { getCookie, removeCookie } from "@/utils/CookieUtils";
 
 const baseURL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1/furniro";
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 const axiosInstance = axios.create({
   baseURL,

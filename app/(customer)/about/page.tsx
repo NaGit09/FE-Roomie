@@ -290,12 +290,12 @@ export default function AboutPage() {
           </div>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Button asChild size="lg" className="rounded-full px-8 font-semibold">
-              <Link href="/customer/rooms">
+              <Link href="/rooms">
                 Browse rooms <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
             <Button asChild size="lg" variant="outline" className="rounded-full px-8 font-semibold border-white/20 text-white hover:bg-white/10 hover:text-white">
-              <Link href="/customer/contact">Contact us</Link>
+              <Link href="/contact">Contact us</Link>
             </Button>
           </div>
         </div>

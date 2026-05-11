@@ -6,17 +6,24 @@ import type {
   VerifyOtpRequest,
   ChangePasswordRequest,
   AuthResponse,
+  ApiResponse,
 } from "@/features/auth/types";
-
+const BASE_URL = "/users/auth";
 export const authApi = {
   login: async (data: LoginRequest): Promise<AuthResponse> => {
-    const res = await axiosInstance.post<AuthResponse>("/auth/login", data);
-    return res.data;
+    const res = await axiosInstance.post<ApiResponse<AuthResponse>>(
+      `${BASE_URL}/login`,
+      data
+    );
+    return res.data.result;
   },
 
-  register: async (data: RegisterRequest): Promise<AuthResponse> => {
-    const res = await axiosInstance.post<AuthResponse>("/auth/register", data);
-    return res.data;
+  register: async (data: RegisterRequest) => {
+    const res = await axiosInstance.post<ApiResponse<AuthResponse>>(
+      `${BASE_URL}/register`,
+      data
+    );
+    return res.data.result;
   },
 
   logout: async (): Promise<void> => {
@@ -39,8 +46,8 @@ export const authApi = {
     await axiosInstance.post("/auth/change-password", data);
   },
 
-  me: async (): Promise<AuthResponse["user"]> => {
-    const res = await axiosInstance.get<AuthResponse["user"]>("/auth/me");
-    return res.data;
+  me: async (): Promise<AuthResponse> => {
+    const res = await axiosInstance.get<ApiResponse<AuthResponse>>("/auth/me");
+    return res.data.result;
   },
 };

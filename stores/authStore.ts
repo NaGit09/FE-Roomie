@@ -8,7 +8,7 @@ interface AuthState {
   accessToken: string | null;
   isAuthenticated: boolean;
 
-  setAuth: (user: User, accessToken: string) => void;
+  setAuth: (accessToken: string) => void;
   clearAuth: () => void;
 }
 
@@ -19,9 +19,9 @@ export const useAuthStore = create<AuthState>()(
       accessToken: null,
       isAuthenticated: false,
 
-      setAuth: (user, accessToken) => {
+      setAuth: (accessToken) => {
         setCookie("jwt", accessToken, 7);
-        set({ user, accessToken, isAuthenticated: true });
+        set({ accessToken, isAuthenticated: true });
       },
 
       clearAuth: () => {

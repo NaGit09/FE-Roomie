@@ -44,8 +44,16 @@ export interface ChangePasswordRequest {
 
 // API responses
 export interface AuthResponse {
-  user: User;
-  accessToken: string;
+  access_token: string;
+  token_type: string;
+  expires_in: number;
+  refresh_token: string;
+}
+
+export interface ApiResponse<T> {
+  code: number;
+  message: string;
+  result: T;
 }
 
 export interface ApiError {

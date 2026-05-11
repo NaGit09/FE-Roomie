@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { forgotPasswordSchema, type ForgotPasswordSchema } from "@/features/auth/schemas";
-import { useForgotPassword } from "@/features/auth/hooks";
+import { useForgotPassword } from "@/hooks/auth/useForgotPassword";
 
 export function ForgotPasswordForm() {
   const { forgotPassword, loading, error, sent, reset } = useForgotPassword();

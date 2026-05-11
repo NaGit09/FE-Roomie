@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { loginSchema, type LoginSchema } from "@/features/auth/schemas";
-import { useLogin } from "@/features/auth/hooks";
+import { useLogin } from "@/hooks/auth/useLogin";
 
 export function LoginForm() {
   const { login, loading, error } = useLogin();

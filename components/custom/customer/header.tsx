@@ -19,11 +19,11 @@ import {
 import { useAuthStore } from "@/stores/authStore";
 
 const NAV_LINKS = [
-  { href: "/customer/home",     label: "Home"     },
-  { href: "/customer/matching", label: "Matching" },
-  { href: "/customer/rooms",    label: "Rooms"    },
-  { href: "/customer/contact",  label: "Contact"  },
-  { href: "/customer/about",    label: "About"    },
+  { href: "/",          label: "Home"     },
+  { href: "/matching",  label: "Matching" },
+  { href: "/rooms",     label: "Rooms"    },
+  { href: "/contact",   label: "Contact"  },
+  { href: "/about",     label: "About"    },
 ];
 
 export default function CustomerHeader() {
@@ -43,7 +43,7 @@ export default function CustomerHeader() {
 
           {/* ── Logo ── */}
           <Link
-            href="/customer/home"
+            href="/"
             className="flex items-center gap-3 group shrink-0"
           >
             <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-primary shadow-md shadow-primary/25 transition-transform duration-300 group-hover:rotate-6">
@@ -116,12 +116,12 @@ export default function CustomerHeader() {
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link href="/customer/profile" className="cursor-pointer gap-2.5">
+                    <Link href="/profile" className="cursor-pointer gap-2.5">
                       <User className="h-4 w-4" /> My Profile
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/customer/settings" className="cursor-pointer gap-2.5">
+                    <Link href="/settings" className="cursor-pointer gap-2.5">
                       <Settings className="h-4 w-4" /> Settings
                     </Link>
                   </DropdownMenuItem>

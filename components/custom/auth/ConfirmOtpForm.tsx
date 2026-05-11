@@ -26,7 +26,10 @@ export function ConfirmOtpForm() {
     }
   };
 
-  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (
+    index: number,
+    e: React.KeyboardEvent<HTMLInputElement>,
+  ) => {
     if (e.key === "Backspace" && !otp[index] && index > 0) {
       inputs.current[index - 1]?.focus();
     }
@@ -34,10 +37,15 @@ export function ConfirmOtpForm() {
 
   const handlePaste = (e: React.ClipboardEvent) => {
     e.preventDefault();
-    const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, OTP_LENGTH);
+    const pasted = e.clipboardData
+      .getData("text")
+      .replace(/\D/g, "")
+      .slice(0, OTP_LENGTH);
     if (!pasted) return;
     const next = [...otp];
-    pasted.split("").forEach((char, i) => { next[i] = char; });
+    pasted.split("").forEach((char, i) => {
+      next[i] = char;
+    });
     setOtp(next);
     inputs.current[Math.min(pasted.length, OTP_LENGTH - 1)]?.focus();
   };
@@ -67,9 +75,12 @@ export function ConfirmOtpForm() {
         <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 mb-4">
           <KeyRound className="h-5 w-5 text-primary" />
         </div>
-        <h1 className="text-2xl font-semibold tracking-tight">Enter your code</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          Enter your code
+        </h1>
         <p className="text-sm text-muted-foreground leading-relaxed">
-          We sent a 6-digit verification code to your email. Check your inbox and enter the code below.
+          We sent a 6-digit verification code to your email. Check your inbox
+          and enter the code below.
         </p>
       </div>
 
@@ -79,7 +90,9 @@ export function ConfirmOtpForm() {
           {otp.map((digit, index) => (
             <input
               key={index}
-              ref={(el) => { inputs.current[index] = el; }}
+              ref={(el) => {
+                inputs.current[index] = el;
+              }}
               type="text"
               inputMode="numeric"
               maxLength={1}
@@ -96,13 +109,17 @@ export function ConfirmOtpForm() {
           ))}
         </div>
 
-        {error && (
-          <p className="text-sm text-destructive">{error}</p>
-        )}
+        {error && <p className="text-sm text-destructive">{error}</p>}
 
-        <Button type="submit" className="w-full h-10 font-medium" disabled={loading}>
+        <Button
+          type="submit"
+          className="w-full h-10 font-medium"
+          disabled={loading}
+        >
           {loading ? (
-            <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Verifying…</>
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Verifying…
+            </>
           ) : (
             "Verify code"
           )}

@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { changePasswordSchema, type ChangePasswordSchema } from "@/features/auth/schemas";
-import { useChangePassword } from "@/features/auth/hooks";
+import { useChangePassword } from "@/hooks/auth/useChangePassword";
+
 
 export function ChangePasswordForm() {
   const { changePassword, loading, error, done } = useChangePassword();
