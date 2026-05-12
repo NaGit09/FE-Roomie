@@ -27,7 +27,7 @@ export default function MapView() {
       center={HCM_COORDS}
       zoom={13}
       scrollWheelZoom={true}
-      className="w-full h-[400px] rounded-xl"
+      className="w-full h-[600px] rounded-xl"
     >
       <TileLayer
         attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"

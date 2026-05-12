@@ -1,66 +1,34 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import HomeSearch from "@/components/custom/customer/HomeSearch";
-import NewRoom from "@/components/custom/customer/NewRoom";
-import Location from "@/components/custom/customer/Location";
-import QNA from "@/components/custom/customer/QNA";
+import HomeSearch from "@/components/custom/customer/home/HomeSearch";
+import Location from "@/components/custom/customer/home/Location";
+import QNA from "@/components/custom/customer/home/QNA";
 import { ArrowRight, Map as MapIcon, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
+import NewRoom from "@/components/custom/customer/home/NewRoom";
+import { SectionHeader } from "@/components/custom/customer/layout/SectionHeader";
 
 // ─────────────────────────────────────────────
 // Dynamic Imports
 // ─────────────────────────────────────────────
-const MapView = dynamic(() => import("@/components/custom/customer/MapView"), {
-  ssr: false,
-  loading: () => (
-    <div className="group relative flex h-[600px] w-full items-center justify-center overflow-hidden rounded-[3rem] bg-slate-50 border-2 border-dashed border-slate-200">
-      <div className="flex flex-col items-center gap-4">
-        <div className="h-12 w-12 animate-bounce rounded-full bg-primary/10 flex items-center justify-center">
-          <MapIcon className="text-primary h-6 w-6" />
+const MapView = dynamic(
+  () => import("@/components/custom/customer/home/MapView"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="group relative flex h-[600px] w-full items-center justify-center overflow-hidden rounded-[3rem] bg-slate-50 border-2 border-dashed border-slate-200">
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-12 w-12 animate-bounce rounded-full bg-primary/10 flex items-center justify-center">
+            <MapIcon className="text-primary h-6 w-6" />
+          </div>
+          <p className="font-bold uppercase tracking-widest text-slate-400 text-[10px]">
+            Đang khởi tạo bản đồ...
+          </p>
         </div>
-        <p className="font-bold uppercase tracking-widest text-slate-400 text-[10px]">
-          Đang khởi tạo bản đồ...
-        </p>
       </div>
-    </div>
-  ),
-});
-
-// ─────────────────────────────────────────────
-// Reusable Section Header
-// ─────────────────────────────────────────────
-interface SectionHeaderProps {
-  subtitle: string;
-  title: string;
-  description?: string;
-  dark?: boolean;
-  centered?: boolean;
-}
-
-const SectionHeader = ({
-  subtitle,
-  title,
-  description,
-  dark = false,
-  centered = false,
-}: SectionHeaderProps) => (
-  <div className={cn("mb-16", centered ? "text-center flex flex-col items-center" : "text-left")}>
-    <div className={cn("mb-6 flex items-center gap-3", centered && "justify-center")}>
-      <Sparkles className={cn("h-4 w-4", dark ? "text-white/40" : "text-primary")} />
-      <span className={cn("text-[10px] font-black uppercase tracking-[0.4em]", dark ? "text-white/60" : "text-primary")}>
-        {subtitle}
-      </span>
-    </div>
-    <h2 className={cn("max-w-3xl text-4xl font-black tracking-tighter md:text-6xl leading-[1.1] font-heading", dark ? "text-white" : "text-slate-900")}>
-      {title}
-    </h2>
-    {description && (
-      <p className={cn("mt-6 max-w-2xl text-lg leading-relaxed font-medium", dark ? "text-white/60" : "text-slate-500/80")}>
-        {description}
-      </p>
-    )}
-  </div>
+    ),
+  },
 );
 
 // ─────────────────────────────────────────────
@@ -75,7 +43,7 @@ export default function CustomerHomePage() {
       </section>
 
       {/* 2. EXPLORE BY LOCATION (Sidebar + Grid Layout) */}
-      <section className="container mx-auto px-6 py-24 lg:py-40">
+      <section className="container mx-auto px-3 py-12 lg:py-20">
         <div className="grid grid-cols-1 gap-20 lg:grid-cols-12">
           <div className="lg:col-span-4 lg:sticky lg:top-32 h-fit">
             <SectionHeader

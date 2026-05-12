@@ -1,5 +1,5 @@
-import CustomerHeader from "@/components/custom/customer/header";
-import CustomerFooter from "@/components/custom/customer/footer";
+import CustomerHeader from "@/components/custom/customer/layout/header";
+import CustomerFooter from "@/components/custom/customer/layout/footer";
 
 export default function CustomerLayout({ children }: { children: React.ReactNode }) {
   return (

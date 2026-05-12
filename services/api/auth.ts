@@ -8,34 +8,35 @@ import type {
   AuthResponse,
   ApiResponse,
 } from "@/features/auth/types";
+
 const BASE_URL = "/users/auth";
+
 export const authApi = {
   login: async (data: LoginRequest): Promise<AuthResponse> => {
-    const res = await axiosInstance.post<ApiResponse<AuthResponse>>(
+    const res = await axiosInstance.post<AuthResponse>(
       `${BASE_URL}/login`,
       data
     );
-    return res.data.result;
+    return res.data;
   },
 
   register: async (data: RegisterRequest) => {
-    const res = await axiosInstance.post<ApiResponse<AuthResponse>>(
+    await axiosInstance.post<AuthResponse>(
       `${BASE_URL}/register`,
       data
     );
-    return res.data.result;
   },
 
   logout: async (): Promise<void> => {
-    await axiosInstance.post("/auth/logout");
+    await axiosInstance.post(`${BASE_URL}/logout`);
   },
 
   forgotPassword: async (data: ForgotPasswordRequest): Promise<void> => {
-    await axiosInstance.post("/auth/forgot-password", data);
+    await axiosInstance.post(`${BASE_URL}/forgot-password`, data);
   },
 
   verifyOtp: async (data: VerifyOtpRequest): Promise<void> => {
-    await axiosInstance.post("/auth/verify-otp", data);
+    await axiosInstance.post(`${BASE_URL}/verify-otp`, data);
   },
 
   resendOtp: async (email: string): Promise<void> => {

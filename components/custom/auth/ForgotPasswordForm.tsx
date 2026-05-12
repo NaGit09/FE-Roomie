@@ -11,44 +11,12 @@ import { forgotPasswordSchema, type ForgotPasswordSchema } from "@/features/auth
 import { useForgotPassword } from "@/hooks/auth/useForgotPassword";
 
 export function ForgotPasswordForm() {
-  const { forgotPassword, loading, error, sent, reset } = useForgotPassword();
+  const { forgotPassword, loading, error , } = useForgotPassword();
   const {
     register,
     handleSubmit,
-    getValues,
     formState: { errors },
   } = useForm<ForgotPasswordSchema>({ resolver: zodResolver(forgotPasswordSchema) });
-
-  if (sent) {
-    return (
-      <div className="w-full space-y-6 text-center">
-        <div className="flex justify-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
-            <CheckCircle2 className="h-7 w-7 text-primary" />
-          </div>
-        </div>
-        <div className="space-y-1.5">
-          <h1 className="text-2xl font-semibold tracking-tight">Check your email</h1>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            We sent a 6-digit code to{" "}
-            <span className="font-medium text-foreground">{getValues("email")}</span>.
-            <br />
-            Enter it on the next screen to reset your password.
-          </p>
-        </div>
-        <Button asChild className="w-full h-10 font-medium">
-          <Link href="/auth/confirm-otp">Enter code</Link>
-        </Button>
-        <button
-          type="button"
-          onClick={reset}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          Use a different email
-        </button>
-      </div>
-    );
-  }
 
   return (
     <div className="w-full space-y-6">

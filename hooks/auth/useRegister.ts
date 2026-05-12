@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { authApi } from "@/services/api/auth";
-import { useAuthStore } from "@/stores/authStore";
 import { useRouter } from "next/navigation";
 import type { RegisterSchema } from "@/features/auth/schemas";
 
@@ -8,25 +7,33 @@ import type { RegisterSchema } from "@/features/auth/schemas";
 export function useRegister() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const { setAuth } = useAuthStore();
     const router = useRouter();
 
     const register = async (data: RegisterSchema) => {
+
         setLoading(true);
+
         setError(null);
+
+        const fullname = data.firstName + data.lastName;
+
         try {
-            const res = await authApi.register({
-                firstName: data.firstName,
-                lastName: data.lastName,
+            await authApi.register({
+                fullname: fullname,
                 email: data.email,
                 password: data.password,
+                role: "RENTER"
             });
-            setAuth(res.access_token);
-            router.push("/");
+
+            router.push("/auth/login");
+
         } catch (err: unknown) {
+
             const message =
                 err instanceof Error ? err.message : "Registration failed. Please try again.";
+            
             setError(message);
+
         } finally {
             setLoading(false);
         }

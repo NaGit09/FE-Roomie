@@ -43,6 +43,7 @@ const RoomCard = memo(({ room }: { room: Room }) => {
           src={room.image}
           alt={room.name}
           fill
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
           className="object-cover transition-transform duration-700 group-hover:scale-105"
         />
 

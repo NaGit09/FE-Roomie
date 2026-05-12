@@ -22,10 +22,10 @@ export interface LoginRequest {
 }
 
 export interface RegisterRequest {
-  firstName: string;
-  lastName: string;
+  fullname : String
   email: string;
   password: string;
+  role : String
 }
 
 export interface ForgotPasswordRequest {
