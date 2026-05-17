@@ -7,7 +7,7 @@ import { ArrowLeft, Mail, CheckCircle2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { forgotPasswordSchema, type ForgotPasswordSchema } from "@/features/auth/schemas";
+import { forgotPasswordSchema, type ForgotPasswordSchema } from "@/schema/auth/forgot-password";
 import { useForgotPassword } from "@/hooks/auth/useForgotPassword";
 
 export function ForgotPasswordForm() {

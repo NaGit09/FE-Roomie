@@ -8,14 +8,14 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { changePasswordSchema, type ChangePasswordSchema } from "@/features/auth/schemas";
+import { changePasswordSchema, type ChangePasswordSchema } from "@/schema/auth/change-password";
 import { useChangePassword } from "@/hooks/auth/useChangePassword";
 
 
 export function ChangePasswordForm() {
   const { changePassword, loading, error, done } = useChangePassword();
+  const [showOld, setShowOld] = useState(false);
   const [showNew, setShowNew] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
 
   const {
     register,
@@ -24,7 +24,7 @@ export function ChangePasswordForm() {
     formState: { errors },
   } = useForm<ChangePasswordSchema>({ resolver: zodResolver(changePasswordSchema) });
 
-  const password = watch("newPassword") ?? "";
+  const password = watch("new_password") ?? "";
 
   if (done) {
     return (
@@ -53,55 +53,55 @@ export function ChangePasswordForm() {
         <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 mb-4">
           <Lock className="h-5 w-5 text-primary" />
         </div>
-        <h1 className="text-2xl font-semibold tracking-tight">Set new password</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Change password</h1>
         <p className="text-sm text-muted-foreground leading-relaxed">
-          Your identity has been verified. Choose a new password for your account.
+          Please enter your current password and your new password to update.
         </p>
       </div>
 
-      <form className="space-y-4" onSubmit={handleSubmit((d) => changePassword(d.newPassword, d.confirmPassword))}>
+      <form className="space-y-4" onSubmit={handleSubmit(changePassword)}>
         <div className="space-y-1.5">
-          <Label htmlFor="newPassword" className="text-sm font-medium">New password</Label>
+          <Label htmlFor="old_password" className="text-sm font-medium">Current password</Label>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
             <Input
-              id="newPassword"
-              type={showNew ? "text" : "password"}
-              placeholder="Min. 8 characters"
+              id="old_password"
+              type={showOld ? "text" : "password"}
+              placeholder="Enter your current password"
               className="pl-9 pr-10 h-10"
-              {...register("newPassword")}
+              {...register("old_password")}
+            />
+            <button
+              type="button"
+              onClick={() => setShowOld((v) => !v)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/60 hover:text-muted-foreground transition-colors cursor-pointer"
+            >
+              {showOld ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
+          {errors.old_password && <p className="text-xs text-destructive">{errors.old_password.message}</p>}
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="new_password" className="text-sm font-medium">New password</Label>
+          <div className="relative">
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
+            <Input
+              id="new_password"
+              type={showNew ? "text" : "password"}
+              placeholder="Enter your new password"
+              className="pl-9 pr-10 h-10"
+              {...register("new_password")}
             />
             <button
               type="button"
               onClick={() => setShowNew((v) => !v)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/60 hover:text-muted-foreground transition-colors cursor-pointer"
             >
               {showNew ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
-          {errors.newPassword && <p className="text-xs text-destructive">{errors.newPassword.message}</p>}
-        </div>
-
-        <div className="space-y-1.5">
-          <Label htmlFor="confirmPassword" className="text-sm font-medium">Confirm password</Label>
-          <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
-            <Input
-              id="confirmPassword"
-              type={showConfirm ? "text" : "password"}
-              placeholder="Repeat your password"
-              className="pl-9 pr-10 h-10"
-              {...register("confirmPassword")}
-            />
-            <button
-              type="button"
-              onClick={() => setShowConfirm((v) => !v)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/60 hover:text-muted-foreground transition-colors"
-            >
-              {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            </button>
-          </div>
-          {errors.confirmPassword && <p className="text-xs text-destructive">{errors.confirmPassword.message}</p>}
+          {errors.new_password && <p className="text-xs text-destructive">{errors.new_password.message}</p>}
         </div>
 
         {/* Strength hints */}
@@ -121,7 +121,7 @@ export function ChangePasswordForm() {
 
         {error && <p className="text-sm text-destructive">{error}</p>}
 
-        <Button type="submit" className="w-full h-10 font-medium" disabled={loading}>
+        <Button type="submit" className="w-full h-10 font-medium cursor-pointer" disabled={loading}>
           {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Updating…</> : "Change password"}
         </Button>
       </form>

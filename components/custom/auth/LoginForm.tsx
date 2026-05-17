@@ -9,18 +9,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
-import { loginSchema, type LoginSchema } from "@/features/auth/schemas";
 import { useLogin } from "@/hooks/auth/useLogin";
+import { loginReqSchema , type LoginReqSchema } from "@/schema/auth/login";
 
 export function LoginForm() {
   const { login, loading, error } = useLogin();
   const {
     register,
     handleSubmit,
-    setValue,
-    watch,
     formState: { errors },
-  } = useForm<LoginSchema>({ resolver: zodResolver(loginSchema) });
+  } = useForm<LoginReqSchema>({ resolver: zodResolver(loginReqSchema) });
 
   return (
     <div className="w-full space-y-6">
@@ -77,18 +75,6 @@ export function LoginForm() {
             />
           </div>
           {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Checkbox
-            id="remember"
-            checked={watch("remember") ?? false}
-            onCheckedChange={(v) => setValue("remember", v === true)}
-            className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-          />
-          <label htmlFor="remember" className="text-sm text-muted-foreground cursor-pointer select-none">
-            Remember me
-          </label>
         </div>
 
         {error && <p className="text-sm text-destructive">{error}</p>}

@@ -1,16 +1,17 @@
 import { useState } from "react";
 import { authApi } from "@/services/api/auth";
+import type { ChangePasswordSchema } from "@/schema/auth/change-password";
 
 export function useChangePassword() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [done, setDone] = useState(false);
 
-    const changePassword = async (newPassword: string, confirmPassword: string) => {
+    const changePassword = async (data: ChangePasswordSchema) => {
         setLoading(true);
         setError(null);
         try {
-            await authApi.changePassword({ newPassword, confirmPassword });
+            await authApi.changePassword(data);
             setDone(true);
         } catch (err: unknown) {
             const message =

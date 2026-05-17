@@ -32,14 +32,9 @@ export interface ForgotPasswordRequest {
   email: string;
 }
 
-export interface VerifyOtpRequest {
-  email: string;
-  otp: string;
-}
-
 export interface ChangePasswordRequest {
-  newPassword: string;
-  confirmPassword: string;
+  old_password: string;
+  new_password: string;
 }
 
 // API responses

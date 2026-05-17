@@ -21,6 +21,8 @@ export function useForgotPassword() {
             await authApi.forgotPassword({ email });
 
             setSent(true);
+            
+            toast.success("Password reset email sent! Check your inbox.");
 
             router.push("/auth/login");
         } catch (err: unknown) {

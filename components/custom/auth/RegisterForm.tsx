@@ -9,18 +9,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
-import { registerSchema, type RegisterSchema } from "@/features/auth/schemas";
 import { useRegister } from "@/hooks/auth/useRegister";
+import { type RegisterReqSchema, registerReqSchema } from "@/schema/auth/register";
 
 export function RegisterForm() {
+
   const { register: registerUser, loading, error } = useRegister();
+  
   const {
     register,
     handleSubmit,
     setValue,
     watch,
     formState: { errors },
-  } = useForm<RegisterSchema>({ resolver: zodResolver(registerSchema) });
+  } = useForm<RegisterReqSchema>({ resolver: zodResolver(registerReqSchema) });
 
   return (
     <div className="w-full space-y-6">
@@ -62,42 +64,23 @@ export function RegisterForm() {
       </div>
 
       <form className="space-y-4" onSubmit={handleSubmit(registerUser)}>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3">
           <div className="space-y-1.5">
-            <Label htmlFor="firstName" className="text-sm font-medium">
-              First name
+            <Label htmlFor="full_name" className="text-sm font-medium">
+              Full name
             </Label>
             <div className="relative">
               <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
               <Input
-                id="firstName"
+                id="full_name"
                 placeholder="John"
                 className="pl-9 h-10"
-                {...register("firstName")}
+                {...register("full_name")}
               />
             </div>
-            {errors.firstName && (
+            {errors.full_name && (
               <p className="text-xs text-destructive">
-                {errors.firstName.message}
-              </p>
-            )}
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="lastName" className="text-sm font-medium">
-              Last name
-            </Label>
-            <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
-              <Input
-                id="lastName"
-                placeholder="Doe"
-                className="pl-9 h-10"
-                {...register("lastName")}
-              />
-            </div>
-            {errors.lastName && (
-              <p className="text-xs text-destructive">
-                {errors.lastName.message}
+                {errors.full_name.message}
               </p>
             )}
           </div>
@@ -142,39 +125,6 @@ export function RegisterForm() {
             </p>
           )}
         </div>
-
-        <div className="flex items-start gap-2">
-          <Checkbox
-            id="terms"
-            checked={watch("terms") === true}
-            onCheckedChange={(v) =>
-              setValue("terms", v === true ? true : (false as never))
-            }
-            className="mt-0.5 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-          />
-          <label
-            htmlFor="terms"
-            className="text-sm text-muted-foreground cursor-pointer select-none leading-snug"
-          >
-            I agree to the{" "}
-            <Link
-              href="/terms"
-              className="text-primary hover:underline underline-offset-4"
-            >
-              Terms
-            </Link>{" "}
-            and{" "}
-            <Link
-              href="/privacy"
-              className="text-primary hover:underline underline-offset-4"
-            >
-              Privacy Policy
-            </Link>
-          </label>
-        </div>
-        {errors.terms && (
-          <p className="text-xs text-destructive">{errors.terms.message}</p>
-        )}
 
         {error && <p className="text-sm text-destructive">{error}</p>}
 

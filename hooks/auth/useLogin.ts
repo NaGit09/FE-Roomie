@@ -2,8 +2,9 @@ import { useState } from "react";
 import { useAuthStore } from "@/stores/authStore";
 import { useRouter } from "next/navigation";
 import { authApi } from "@/services/api/auth";
-import type { LoginSchema } from "@/features/auth/schemas";
 import { toast } from "sonner";
+import type { LoginReqSchema } from "@/schema/auth/login";
+import { setCookie } from "@/utils/CookieUtils";
 
 // ---------- useLogin ----------
 export function useLogin() {
@@ -12,7 +13,7 @@ export function useLogin() {
     const { setAuth } = useAuthStore();
     const router = useRouter();
 
-    const login = async (data: LoginSchema) => {
+    const login = async (data: LoginReqSchema) => {
 
         setLoading(true);
 
@@ -20,15 +21,10 @@ export function useLogin() {
 
         try {
 
-            const res = await authApi.login({
-                email: data.email,
-                password: data.password,
-                remember: data.remember,
-            });
+            const res = await authApi.login(data);
 
-            setAuth(res.access_token);
+            setAuth(res);
 
-            // navigate to home
             router.push("/");
 
         } catch (err: unknown) {
