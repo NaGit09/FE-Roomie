@@ -5,13 +5,13 @@ import type {
   ForgotPasswordRequest,
   ChangePasswordRequest,
 } from "@/features/auth/types";
-
+import { ApiResponse } from "@/schema/Api/api.type";
 
 const BASE_URL = "/users/auth";
 
 export const authApi = {
-  login: async (data: LoginReqSchema): Promise<LoginResSchema> => {
-    const res = await axiosInstance.post<LoginResSchema>(
+  login: async (data: LoginReqSchema): Promise<ApiResponse<LoginResSchema>> => {
+    const res = await axiosInstance.post<ApiResponse<LoginResSchema>>(
       `${BASE_URL}/login`,
       data
     );
@@ -19,10 +19,7 @@ export const authApi = {
   },
 
   register: async (data: RegisterReqSchema): Promise<void> => {
-    await axiosInstance.post<RegisterResSchema>(
-      `${BASE_URL}/register`,
-      data
-    );
+    await axiosInstance.post<RegisterResSchema>(`${BASE_URL}/register`, data);
   },
 
   forgotPassword: async (data: ForgotPasswordRequest): Promise<void> => {
@@ -32,5 +29,11 @@ export const authApi = {
   changePassword: async (data: ChangePasswordRequest): Promise<void> => {
     await axiosInstance.post(`${BASE_URL}/change-password`, data);
   },
-};
 
+  refreshToken: async (): Promise<ApiResponse<LoginResSchema>> => {
+    const res = await axiosInstance.post<ApiResponse<LoginResSchema>>(
+      `${BASE_URL}/refresh-token`,
+    );
+    return res.data;
+  },
+};

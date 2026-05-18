@@ -23,7 +23,7 @@ export function useLogin() {
 
             const res = await authApi.login(data);
 
-            setAuth(res);
+            setAuth(res.data);
 
             router.push("/");
 

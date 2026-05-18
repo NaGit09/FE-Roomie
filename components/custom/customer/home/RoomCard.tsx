@@ -73,34 +73,35 @@ const RoomCard = memo(({ room }: { room: Room }) => {
       </div>
 
       {/* ── Content Area (Information) ── */}
-      <div className="flex flex-col p-6">
+      <div className="flex flex-col p-7">
         <div className="mb-4">
-          <div className="mb-1 flex items-center justify-between">
-            <span className="text-[10px] font-black uppercase tracking-widest text-primary">
+          <div className="mb-2 flex items-center justify-between">
+            <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider text-primary">
               {room.roomType}
             </span>
             <div className="flex items-center gap-1 text-[10px] font-bold text-slate-400 uppercase">
-              <Clock className="h-3 w-3" />
+              <Clock className="h-3.5 w-3.5" />
               {room.postedAt}
             </div>
           </div>
-          <h3 className="line-clamp-1 text-xl font-bold text-slate-900 group-hover:text-primary transition-colors">
+          <h3 className="line-clamp-1 text-2xl font-bold tracking-tight text-slate-900 group-hover:text-primary transition-colors duration-300">
             {room.name}
           </h3>
-          <div className="mt-2 flex items-center gap-1 text-sm text-slate-500">
-            <MapPin className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+          <div className="mt-2 flex items-center gap-1.5 text-sm text-slate-500">
+            <MapPin className="h-4 w-4 shrink-0 text-slate-400" />
             <span className="truncate">{room.address}</span>
           </div>
         </div>
 
         {/* Facilities Row */}
-        <div className="mb-6 flex gap-4 border-y border-slate-50 py-4">
-          {room.facilities.slice(0, 3).map((fac, i) => (
-            <div key={i} className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg">
-                <fac.icon className="h-3.5 w-3.5 text-primary" />
-              </div>
-              <span className="text-[8px] font-bold text-primary uppercase">
+        <div className="mb-6 flex flex-wrap gap-2 border-t border-slate-100 pt-4">
+          {room.facilities.map((fac, i) => (
+            <div
+              key={i}
+              className="group/facility flex items-center gap-1.5 rounded-xl bg-slate-50/50 hover:bg-primary/5 border border-slate-100 hover:border-primary/20 px-2.5 py-1.5 transition-all duration-300"
+            >
+              <fac.icon className="h-4 w-4 text-slate-500 group-hover/facility:text-primary transition-colors duration-300" />
+              <span className="text-xs font-semibold text-slate-600 group-hover/facility:text-primary transition-colors duration-300">
                 {fac.label}
               </span>
             </div>
@@ -109,13 +110,16 @@ const RoomCard = memo(({ room }: { room: Room }) => {
 
         {/* Pricing Area */}
         <div className="flex items-center justify-between">
-          <div>
-            <span className="text-xl font-black text-slate-900">
+          <div className="flex items-baseline">
+            <span className="text-2xl font-black tracking-tight text-slate-900">
               {room.price}
             </span>
-            <span className="ml-2 text-md font-medium text-slate-900">
-              VND/tháng
+            <span className="ml-1.5 text-xs font-bold text-slate-400 uppercase tracking-wider">
+              VND / tháng
             </span>
+          </div>
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-50 group-hover:bg-primary group-hover:text-white transition-all duration-300">
+            <ArrowUpRight className="h-5 w-5 text-slate-400 group-hover:text-white transition-colors duration-300" />
           </div>
         </div>
       </div>

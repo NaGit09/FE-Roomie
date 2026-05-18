@@ -14,24 +14,27 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = getCookie("jwt");
-    if (token) config.headers.Authorization = `Bearer ${token}`;
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    else {
+      // call api refresh token
+    }
     return config;
   },
   (error) => Promise.reject(error),
 );
 
 axiosInstance.interceptors.response.use(
-  (response) => response,
+  (response) => response.data,
   (error) => {
     if (error.response) {
       if (error.response.status === 401) {
-        // Token expired — clear session and redirect to login
         removeCookie("jwt");
         if (typeof window !== "undefined") {
           window.location.href = "/auth/login";
         }
       }
-      // Surface the backend message if available
       const message = error.response.data?.message ?? "An error occurred";
       return Promise.reject(new Error(message));
     }
