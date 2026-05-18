@@ -2,6 +2,7 @@
 
 import React, { useState, memo, useCallback } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import {
   Heart,
   ShieldCheck,
@@ -18,7 +19,6 @@ export interface Room {
   image: string;
   price: string;
   postedAt: string;
-  roomType: string;
   address: string;
   facilities: { icon: LucideIcon; label: string }[];
   verified: boolean;
@@ -30,13 +30,17 @@ const RoomCard = memo(({ room }: { room: Room }) => {
   const handleToggleSave = useCallback(
     (e: React.MouseEvent) => {
       e.preventDefault();
+      e.stopPropagation();
       setIsSaved(!isSaved);
     },
     [isSaved],
   );
 
   return (
-    <article className="group relative flex flex-col overflow-hidden rounded-[2rem] bg-white border border-slate-100 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/5">
+    <Link
+      href={`/rooms/${room.id}`}
+      className="group relative flex flex-col overflow-hidden rounded-[2rem] bg-white border border-slate-100 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/5 cursor-pointer"
+    >
       {/* ── Visual Layer (Badges & Image) ── */}
       <div className="relative aspect-[1.2/1] w-full overflow-hidden">
         <Image
@@ -76,9 +80,6 @@ const RoomCard = memo(({ room }: { room: Room }) => {
       <div className="flex flex-col p-7">
         <div className="mb-4">
           <div className="mb-2 flex items-center justify-between">
-            <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider text-primary">
-              {room.roomType}
-            </span>
             <div className="flex items-center gap-1 text-[10px] font-bold text-slate-400 uppercase">
               <Clock className="h-3.5 w-3.5" />
               {room.postedAt}
@@ -123,7 +124,7 @@ const RoomCard = memo(({ room }: { room: Room }) => {
           </div>
         </div>
       </div>
-    </article>
+    </Link>
   );
 });
 

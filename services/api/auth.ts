@@ -5,7 +5,7 @@ import type {
   ForgotPasswordRequest,
   ChangePasswordRequest,
 } from "@/features/auth/types";
-import { ApiResponse } from "@/schema/Api/api.type";
+import { ApiResponse } from "@/schema/common/api.type";
 
 const BASE_URL = "/users/auth";
 

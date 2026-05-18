@@ -28,3 +28,27 @@ export const PostDetailSchema = z.object({
 });
 
 export type PostDetailType = z.infer<typeof PostDetailSchema>;
+
+export const GetPostsQuerySchema = z.object({
+    skip: z.number().optional().default(0),
+    limit: z.number().optional().default(10),
+    province_code: z.number().optional(),
+    district_code: z.number().optional(),
+    ward_code: z.number().optional(),
+    price_from: z.number().optional(),
+    price_to: z.number().optional(),
+    sort_by: z.string().optional().default("created_at"),
+    order: z.string().optional().default("desc"),
+})
+
+export type GetPostsQueryType = z.infer<typeof GetPostsQuerySchema>;
+
+export const RoomPaginationSchema = z.object({
+    items: z.array(PostCardSchema),
+    total: z.number(),
+    page: z.number(),
+    size: z.number(),
+    total_pages: z.number(),
+});
+
+export type RoomPaginationType = z.infer<typeof RoomPaginationSchema>;
