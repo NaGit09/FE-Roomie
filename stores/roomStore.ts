@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { get5Rooms, getPostDetail, getPostPagination } from "@/services/api/room";
+import { roomApi } from "@/services/api/room";
 import { GetPostsQueryType, PostCardType, PostDetailType } from "@/schema/room/post";
 
 interface RoomState {
@@ -17,6 +17,7 @@ interface RoomState {
   fetchRoomDetail: (postId: number) => Promise<void>;
   fetchRoomPagination: (query: GetPostsQueryType) => Promise<void>;
   clearCurrentRoomDetail: () => void;
+  addLocalFeedback: (feedback: any) => void;
 }
 
 export const useRoomStore = create<RoomState>((set) => ({
@@ -33,7 +34,7 @@ export const useRoomStore = create<RoomState>((set) => ({
   fetchLatestRooms: async () => {
     set({ isLoading: true, error: null });
     try {
-      const response = await get5Rooms();
+      const response = await roomApi.getRooms();
       if (response && response.data) {
         set({ latestRooms: response.data, isLoading: false });
       } else {
@@ -50,7 +51,7 @@ export const useRoomStore = create<RoomState>((set) => ({
   fetchRoomDetail: async (postId: number) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await getPostDetail(postId);
+      const response = await roomApi.getPostDetail(postId);
       if (response && response.data) {
         set({ currentRoomDetail: response.data, isLoading: false });
       } else {
@@ -67,7 +68,7 @@ export const useRoomStore = create<RoomState>((set) => ({
   fetchRoomPagination: async (query: GetPostsQueryType) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await getPostPagination(query);
+      const response = await roomApi.getPostPagination(query);
       if (response && response.data) {
         set({
           paginatedRooms: response.data.items,
@@ -90,5 +91,17 @@ export const useRoomStore = create<RoomState>((set) => ({
 
   clearCurrentRoomDetail: () => {
     set({ currentRoomDetail: null });
+  },
+
+  addLocalFeedback: (feedback: any) => {
+    set((state) => {
+      if (!state.currentRoomDetail) return {};
+      return {
+        currentRoomDetail: {
+          ...state.currentRoomDetail,
+          feedbacks: [feedback, ...(state.currentRoomDetail.feedbacks || [])],
+        },
+      };
+    });
   },
 }));

@@ -1,5 +1,5 @@
 import React from "react";
-import { LocationItem } from "@/hooks/useRoomFilter";
+import { LocationItem } from "@/stores/roomFilterStore";
 import {
   Select,
   SelectContent,

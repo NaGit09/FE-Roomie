@@ -12,6 +12,7 @@ export const loginResSchema = z.object({
   refresh_token: z.string(),
   token_type: z.string(),
   expires_in: z.number(),
+  user_id: z.string(),
 });
 
 export type LoginResSchema = z.infer<typeof loginResSchema>;

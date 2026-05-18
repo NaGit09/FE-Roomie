@@ -1,5 +1,4 @@
 import React from "react";
-import { LocationItem } from "@/hooks/useRoomFilter";
 import {
   Select,
   SelectContent,
@@ -7,6 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { LocationItem } from "@/stores/roomFilterStore";
 
 interface ProvinceSelectProps {
   selectedProvinceCode: number | "" | undefined | null;

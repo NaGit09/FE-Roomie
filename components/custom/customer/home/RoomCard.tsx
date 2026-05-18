@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, memo, useCallback } from "react";
+import React, { useState, memo, useCallback, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -12,6 +12,9 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/stores/authStore";
+import { saveApi } from "@/services/api/save";
+import { toast } from "sonner";
 
 export interface Room {
   id: string;
@@ -24,16 +27,104 @@ export interface Room {
   verified: boolean;
 }
 
+// ── Smart Shared De-duplicated Request Cache ──
+let savedIdsCache: string[] | null = null;
+let savedIdsPromise: Promise<string[]> | null = null;
+
+const fetchSavedIds = async (isAuthenticated: boolean): Promise<string[]> => {
+  if (!isAuthenticated) return [];
+  if (savedIdsCache) return savedIdsCache;
+  if (savedIdsPromise) return savedIdsPromise;
+
+  savedIdsPromise = (async () => {
+    try {
+      const response = await saveApi.getListSavePost();
+      // Handle both raw list array and nested envelopes
+      const list = Array.isArray(response)
+        ? response
+        : Array.isArray(response?.data)
+        ? response.data
+        : [];
+
+      savedIdsCache = list
+        .map((item: any) => {
+          const id = item?.post_id || item?.post?.post_id || item?.id || item;
+          return id ? id.toString() : "";
+        })
+        .filter(Boolean);
+
+      return savedIdsCache || [];
+    } catch (err) {
+      console.warn("Failed to fetch saved posts list:", err);
+      return [];
+    } finally {
+      savedIdsPromise = null;
+    }
+  })();
+
+  return savedIdsPromise;
+};
+
 const RoomCard = memo(({ room }: { room: Room }) => {
+  const { isAuthenticated } = useAuthStore();
   const [isSaved, setIsSaved] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  // Sync initial save state cleanly
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setIsSaved(false);
+      savedIdsCache = null;
+      return;
+    }
+
+    const initSavedState = async () => {
+      const savedIds = await fetchSavedIds(true);
+      if (savedIds.includes(room.id)) {
+        setIsSaved(true);
+      }
+    };
+    initSavedState();
+  }, [room.id, isAuthenticated]);
 
   const handleToggleSave = useCallback(
-    (e: React.MouseEvent) => {
+    async (e: React.MouseEvent) => {
       e.preventDefault();
       e.stopPropagation();
-      setIsSaved(!isSaved);
+
+      if (!isAuthenticated) {
+        toast.error("Vui lòng đăng nhập để lưu tin đăng!");
+        return;
+      }
+
+      if (loading) return;
+      setLoading(true);
+
+      try {
+        if (isSaved) {
+          await saveApi.unSavePost(room.id);
+          setIsSaved(false);
+          // Update cache locally
+          if (savedIdsCache) {
+            savedIdsCache = savedIdsCache.filter((id) => id !== room.id);
+          }
+          toast.success("Đã bỏ lưu tin đăng!");
+        } else {
+          await saveApi.savePost(room.id);
+          setIsSaved(true);
+          // Update cache locally
+          if (savedIdsCache && !savedIdsCache.includes(room.id)) {
+            savedIdsCache.push(room.id);
+          }
+          toast.success("Đã lưu tin đăng thành công!");
+        }
+      } catch (err: any) {
+        toast.error(err?.response?.data?.message || err?.message || "Thao tác thất bại. Vui lòng thử lại.");
+      } finally {
+        setLoading(false);
+      }
     },
-    [isSaved],
+    [isSaved, isAuthenticated, loading, room.id]
   );
 
   return (
@@ -65,14 +156,20 @@ const RoomCard = memo(({ room }: { room: Room }) => {
         {/* Floating Layer: Top Right (Save Button) */}
         <button
           onClick={handleToggleSave}
+          disabled={loading}
           className={cn(
-            "absolute top-4 right-4 z-10 flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300 backdrop-blur-md",
+            "absolute top-4 right-4 z-10 flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300 backdrop-blur-md cursor-pointer",
             isSaved
               ? "bg-primary text-white shadow-lg shadow-primary/30"
               : "bg-black/10 text-white hover:bg-white hover:text-primary",
+            loading && "opacity-50 pointer-events-none"
           )}
         >
-          <Heart className={cn("h-5 w-5", isSaved && "fill-current")} />
+          {loading ? (
+            <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+          ) : (
+            <Heart className={cn("h-5 w-5", isSaved && "fill-current")} />
+          )}
         </button>
       </div>
 

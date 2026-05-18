@@ -34,6 +34,8 @@ import DetailLoading from "@/components/custom/customer/room/RoomDetail/DetailLo
 import DetailImage from "@/components/custom/customer/room/RoomDetail/DetailImage";
 import DetailContent from "@/components/custom/customer/room/RoomDetail/DetailContent";
 import DetailFeedback from "@/components/custom/customer/room/RoomDetail/DetailFeedback";
+import DetailRelated from "@/components/custom/customer/room/RoomDetail/DetailRelated";
+import DetailMap from "@/components/custom/customer/room/RoomDetail/DetailMap";
 
 export default function RoomDetailPage() {
   const params = useParams();
@@ -71,7 +73,7 @@ export default function RoomDetailPage() {
 
   return (
     <main className="min-h-screen bg-slate-50/50 py-12">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
         {/* Navigation Row */}
         <div className="flex items-center justify-between mb-8">
           <button
@@ -95,7 +97,7 @@ export default function RoomDetailPage() {
         </div>
 
         {/* Dynamic Detail Card */}
-        <div className="overflow-hidden rounded-[2.5rem] bg-white border border-slate-100 shadow-xl shadow-slate-100/30 md:p-10 space-y-10">
+        <div className="overflow-hidden rounded-[2.5rem] bg-white border border-slate-100 shadow-xl shadow-slate-100/30 md:p-10 p-6 space-y-10">
           <DetailHeader />
 
           {/* 1. IMAGE GALLERY LAYOUT */}
@@ -108,6 +110,16 @@ export default function RoomDetailPage() {
           {/* 4. REVIEWS & FEEDBACKS SECTION */}
 
           <DetailFeedback />
+        </div>
+
+        {/* 3. DYNAMIC MAP CONTAINER (Expansive full width below the main card sheet) */}
+        <div className="mt-12">
+          <DetailMap />
+        </div>
+
+        {/* ── 2. Suggested Relative Listings Section (Full-width across bottom) ── */}
+        <div className="mt-12">
+          <DetailRelated />
         </div>
       </div>
     </main>

@@ -4,18 +4,15 @@ import axiosInstance from "@/services/axiosInstance";
 import type {
   ForgotPasswordRequest,
   ChangePasswordRequest,
+  ApiResponse,
 } from "@/features/auth/types";
-import { ApiResponse } from "@/schema/common/api.type";
 
 const BASE_URL = "/users/auth";
 
 export const authApi = {
-  login: async (data: LoginReqSchema): Promise<ApiResponse<LoginResSchema>> => {
-    const res = await axiosInstance.post<ApiResponse<LoginResSchema>>(
-      `${BASE_URL}/login`,
-      data
-    );
-    return res.data;
+  login: async (data: LoginReqSchema): Promise<LoginResSchema> => {
+    const response = await axiosInstance.post(`${BASE_URL}/login`, data);
+    return response.data as unknown as LoginResSchema;
   },
 
   register: async (data: RegisterReqSchema): Promise<void> => {
@@ -36,4 +33,5 @@ export const authApi = {
     );
     return res.data;
   },
+
 };

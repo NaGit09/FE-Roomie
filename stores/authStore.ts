@@ -10,11 +10,11 @@ interface AuthState {
   isAuthenticated: boolean;
 
   setAuth: (data: LoginResSchema) => void;
+  setUser: (user: User) => void;
   clearAuth: () => void;
 }
 
 export const useAuthStore = create<AuthState>()(
-  
   persist(
     (set) => ({
       user: null,
@@ -22,19 +22,28 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
 
       setAuth: (data) => {
+        if (!data || !data.access_token) {
+          console.warn("setAuth invoked with empty or undefined data:", data);
+          return;
+        }
         setCookie("jwt", data.access_token, data.expires_in);
+        setCookie("user_id", data.user_id);
         set({ accessToken: data.access_token, isAuthenticated: true });
+      },
+
+      setUser: (user) => {
+        set({ user });
       },
 
       clearAuth: () => {
         removeCookie("jwt");
-        set({ accessToken: null, isAuthenticated: false });
+        removeCookie("user_id");
+        set({ user: null, accessToken: null, isAuthenticated: false });
       },
     }),
     {
       name: "roomie-auth",
-      storage: createJSONStorage(() => sessionStorage),
-      partialize: (state) => ({ accessToken: state.accessToken, isAuthenticated: state.isAuthenticated }),
+      storage: createJSONStorage(() => localStorage),
       skipHydration: true,
     },
   ),

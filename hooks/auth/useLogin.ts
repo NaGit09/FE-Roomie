@@ -2,44 +2,56 @@ import { useState } from "react";
 import { useAuthStore } from "@/stores/authStore";
 import { useRouter } from "next/navigation";
 import { authApi } from "@/services/api/auth";
+import { userApi } from "@/services/api/user";
 import { toast } from "sonner";
 import type { LoginReqSchema } from "@/schema/auth/login";
-import { setCookie } from "@/utils/CookieUtils";
 
-// ---------- useLogin ----------
 export function useLogin() {
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const { setAuth } = useAuthStore();
-    const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { setAuth, setUser } = useAuthStore();
+  const router = useRouter();
 
-    const login = async (data: LoginReqSchema) => {
+  const login = async (data: LoginReqSchema) => {
+    setLoading(true);
+    setError(null);
 
-        setLoading(true);
+    try {
+      const res = await authApi.login(data);
 
-        setError(null);
+      if (res && res.access_token) {
+        setAuth(res);
 
         try {
-
-            const res = await authApi.login(data);
-
-            setAuth(res.data);
-
-            router.push("/");
-
-        } catch (err: unknown) {
-
-            const message =
-                err instanceof Error ? err.message : "Invalid credentials. Please try again.";
+          const userProfile = await userApi.getMe();
+          setUser(userProfile);
+          
+          const displayName = userProfile.firstName 
+            ? `${userProfile.firstName} ${userProfile.lastName}`.trim() 
+            : userProfile.email;
             
-            setError(message);
-
-            toast.error(message);
-            
-        } finally {
-            setLoading(false);
+          toast.success(`Đăng nhập thành công! Chào mừng trở lại, ${displayName}.`);
+        } catch (profileErr) {
+          console.warn("Failed to fetch user profile immediately after login:", profileErr);
+          toast.success("Đăng nhập thành công!");
         }
-    };
 
-    return { login, loading, error };
+        // 4. Forward user to home explorer page
+        router.push("/");
+      } else {
+        const errorMsg = "Đăng nhập thất bại. Vui lòng kiểm tra lại tài khoản và mật khẩu.";
+        setError(errorMsg);
+        toast.error(errorMsg);
+      }
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Đăng nhập thất bại. Vui lòng thử lại.";
+      setError(message);
+      toast.error(message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { login, loading, error };
 }

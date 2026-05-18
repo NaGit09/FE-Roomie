@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { getProvinces, getDistricts } from "@/services/api/adress";
+import { addressApi } from "@/services/api/adress";
 
 export interface LocationItem {
   code: number;
@@ -85,7 +85,7 @@ export const useRoomFilterStore = create<RoomFilterState>((set, get) => ({
 
     set({ loadingDistricts: true });
     try {
-      const data = await getDistricts(Number(selectedProvinceCode));
+      const data = await addressApi.getDistricts(Number(selectedProvinceCode));
       const mapped = data.map((item: any) => ({
         code: item.code,
         name: item.name,
@@ -147,7 +147,7 @@ export const useRoomFilterStore = create<RoomFilterState>((set, get) => ({
 
     set({ loadingProvinces: true });
     try {
-      const data = await getProvinces();
+      const data = await addressApi.getProvinces();
       const mapped = data.map((item: any) => ({
         code: item.code,
         name: item.name,

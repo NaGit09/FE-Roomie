@@ -4,8 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
-  Home, Search, BedDouble, Phone, Info,
-  User, LogOut, Settings, ChevronDown, Menu, X,
+  Home, User, LogOut, Settings, ChevronDown, Menu, X,
+  Building2, Heart, ShieldCheck
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,11 +19,11 @@ import {
 import { useAuthStore } from "@/stores/authStore";
 
 const NAV_LINKS = [
-  { href: "/",          label: "Home"     },
-  { href: "/matching",  label: "Matching" },
-  { href: "/rooms",     label: "Rooms"    },
-  { href: "/contact",   label: "Contact"  },
-  { href: "/about",     label: "About"    },
+  { href: "/",          label: "Trang chủ"  },
+  { href: "/matching",  label: "Tìm bạn" },
+  { href: "/rooms",     label: "Phòng trọ"  },
+  { href: "/contact",   label: "Liên hệ"  },
+  { href: "/about",     label: "Giới thiệu" },
 ];
 
 export default function CustomerHeader() {
@@ -31,8 +31,15 @@ export default function CustomerHeader() {
   const { user, isAuthenticated, clearAuth } = useAuthStore();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const initials = user
-    ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase()
+  // Generate initials cleanly from user's full_name
+  const initials = user && user.full_name
+    ? user.full_name
+        .trim()
+        .split(/\s+/)
+        .map((n) => n.charAt(0))
+        .join("")
+        .toUpperCase()
+        .slice(0, 2)
     : "";
 
   return (
@@ -93,51 +100,80 @@ export default function CustomerHeader() {
                     className="flex items-center gap-2.5 rounded-full border border-other-4 bg-white/60 pl-1.5 pr-3 py-1.5 hover:bg-white hover:border-primary/30 transition-all duration-200 cursor-pointer outline-none"
                     aria-label="User menu"
                   >
-                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold select-none">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground text-[10px] font-black select-none">
                       {initials}
                     </div>
-                    <span className="hidden sm:block text-sm font-semibold text-foreground max-w-[100px] truncate">
-                      {user.firstName}
+                    <span className="hidden sm:block text-sm font-semibold text-slate-700 max-w-[110px] truncate">
+                      {user.full_name}
                     </span>
                     <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 mt-1">
-                  <DropdownMenuLabel className="font-normal py-2">
+                <DropdownMenuContent align="end" className="w-60 mt-1.5 rounded-[1.5rem] border-slate-100 p-2 shadow-xl">
+                  
+                  {/* Custom Header Info */}
+                  <DropdownMenuLabel className="font-normal py-2 px-3">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-bold">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-black">
                         {initials}
                       </div>
                       <div className="flex flex-col space-y-0.5 overflow-hidden">
-                        <span className="text-sm font-semibold truncate">{user.firstName} {user.lastName}</span>
-                        <span className="text-xs text-muted-foreground truncate">{user.email}</span>
+                        <span className="text-sm font-extrabold text-slate-800 truncate">
+                          {user.full_name}
+                        </span>
+                        <span className="text-[11px] font-semibold text-slate-400 truncate">
+                          {user.email}
+                        </span>
+                        
+                        {/* Beautiful Adaptive Role Badge */}
+                        <span className={`
+                          mt-1 inline-flex w-fit items-center rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider
+                          ${user.role === "LANDLORD" 
+                            ? "bg-amber-100 text-amber-700" 
+                            : user.role === "ADMIN" 
+                            ? "bg-purple-100 text-purple-700" 
+                            : "bg-blue-100 text-blue-700"
+                          }
+                        `}>
+                          {user.role === "LANDLORD" 
+                            ? "Chủ nhà" 
+                            : user.role === "ADMIN" 
+                            ? "Quản trị" 
+                            : "Người thuê"
+                          }
+                        </span>
                       </div>
                     </div>
                   </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/profile" className="cursor-pointer gap-2.5">
-                      <User className="h-4 w-4" /> My Profile
+                  <DropdownMenuSeparator className="bg-slate-50" />
+                  
+                  <DropdownMenuItem asChild className="rounded-xl px-3 py-2 cursor-pointer text-slate-600 hover:text-slate-900 transition-colors">
+                    <Link href="/user/profile" className="gap-2.5">
+                      <User className="h-4 w-4 text-slate-400" />
+                      Quản lý tài khoản
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/settings" className="cursor-pointer gap-2.5">
-                      <Settings className="h-4 w-4" /> Settings
+                  
+                  <DropdownMenuItem asChild className="rounded-xl px-3 py-2 cursor-pointer text-slate-600 hover:text-slate-900 transition-colors">
+                    <Link href="/user/setting" className="gap-2.5">
+                      <Settings className="h-4 w-4 text-slate-400" />
+                      Cài đặt tài khoản
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator />
+                  
                   <DropdownMenuItem
-                    className="text-destructive focus:text-destructive cursor-pointer gap-2.5"
+                    className="text-red-600 focus:text-red-700 rounded-xl px-3 py-2 cursor-pointer gap-2.5 focus:bg-red-50/50"
                     onClick={clearAuth}
                   >
-                    <LogOut className="h-4 w-4" /> Sign out
+                    <LogOut className="h-4 w-4 text-red-400" />
+                    Đăng xuất tài khoản
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
               <>
-                <Button asChild size="sm" className="h-9 px-4 text-sm font-semibold rounded-full">
-                  <Link href="/auth/login">Get started</Link>
+                <Button asChild size="sm" className="h-9 px-4.5 text-xs font-black tracking-widest uppercase rounded-full bg-primary hover:bg-primary/95 text-white cursor-pointer shadow-md shadow-primary/10 hover:scale-[1.02] transition-all">
+                  <Link href="/auth/login">Đăng nhập</Link>
                 </Button>
               </>
             )}
@@ -181,8 +217,8 @@ export default function CustomerHeader() {
           })}
           {!isAuthenticated && (
             <div className="pt-2 border-t border-other-4 flex gap-2">
-              <Button asChild size="sm" className="flex-1 h-9 rounded-full text-sm font-semibold">
-                <Link href="/auth/login" onClick={() => setMobileOpen(false)}>Get started</Link>
+              <Button asChild size="sm" className="flex-1 h-9 rounded-full text-xs font-black tracking-wider uppercase bg-primary text-white">
+                <Link href="/auth/login" onClick={() => setMobileOpen(false)}>Đăng nhập</Link>
               </Button>
             </div>
           )}
