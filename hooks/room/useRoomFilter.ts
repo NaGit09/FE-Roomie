@@ -4,7 +4,7 @@ import { useRoomFilterStore } from "@/stores/roomFilterStore";
 import { mapPostToRoom } from "@/utils/mapper";
 
 export function useRoomFilter() {
-  // Destructure pagination states and fetcher from the global RoomStore
+
   const {
     paginatedRooms,
     total,
@@ -13,7 +13,6 @@ export function useRoomFilter() {
     fetchRoomPagination,
   } = useRoomStore();
 
-  // Destructure filter parameters and navigation setters from the FilterStore
   const {
     keyword,
     selectedProvince,
@@ -77,7 +76,8 @@ export function useRoomFilter() {
     limit,
     selectedProvinceCode,
     selectedDistrictCode,
-    priceRange,
+    priceRange[0],
+    priceRange[1],
     sortBy,
     fetchRoomPagination,
   ]);

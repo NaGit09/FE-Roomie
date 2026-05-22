@@ -1,33 +1,9 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useRoomStore } from "@/stores/roomStore";
-import {
-  Wifi,
-  AirVent,
-  ParkingSquare,
-  BedDouble,
-  Waves,
-  Sparkles,
-  ChevronLeft,
-  ShieldCheck,
-  MapPin,
-  Eye,
-  User,
-  ArrowLeft,
-  AlertCircle,
-  Star,
-  Phone,
-  MessageSquare,
-  Calendar,
-  Ruler,
-  DollarSign,
-  Heart,
-  ExternalLink,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import formatVND from "@/utils/priceUtils";
+import { ChevronLeft, Heart } from "lucide-react";
 import DetailHeader from "@/components/custom/customer/room/RoomDetail/DetailHeader";
 import DetailNotFound from "@/components/custom/customer/room/RoomDetail/DetailNotFound";
 import DetailLoading from "@/components/custom/customer/room/RoomDetail/DetailLoading";
@@ -50,6 +26,7 @@ export default function RoomDetailPage() {
     fetchRoomDetail,
     clearCurrentRoomDetail,
   } = useRoomStore();
+  
   const [isSaved, setIsSaved] = useState<boolean>(false);
 
   useEffect(() => {
@@ -62,11 +39,11 @@ export default function RoomDetailPage() {
   }, [postId, fetchRoomDetail, clearCurrentRoomDetail]);
 
   if (isLoading) {
-    return <DetailLoading />
+    return <DetailLoading />;
   }
 
   if (error || isNaN(postId)) {
-    return <DetailNotFound />
+    return <DetailNotFound />;
   }
 
   if (!currentRoomDetail) return null;

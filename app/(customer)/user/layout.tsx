@@ -21,7 +21,11 @@ export default function UserDashboardLayout({
 
   // 1. Guard against SSR Hydration Mismatches
   useEffect(() => {
-    setMounted(true);
+    const timer = window.setTimeout(() => {
+      setMounted(true);
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, []);
 
   // 2. Protect routes: redirect to login if unauthenticated
@@ -60,6 +64,11 @@ export default function UserDashboardLayout({
       href: "/user/profile",
       label: "Thông tin cá nhân",
       icon: User,
+    },
+    {
+      href: "/user/change-password",
+      label: "Bảo mật tài khoản",
+      icon: ShieldCheck,
     },
     {
       href: "/user/save-post",

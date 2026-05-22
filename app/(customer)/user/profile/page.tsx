@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -7,6 +8,7 @@ import { toast } from "sonner";
 import {
   User as UserIcon, Mail, Shield, Coins, Edit3, Save, X, Calendar, CheckCircle2, Lock
 } from "lucide-react";
+import { ChangePasswordForm } from "@/components/custom/auth/ChangePasswordForm";
 
 export default function ProfilePage() {
   const { user, setUser } = useAuthStore();
@@ -22,8 +24,8 @@ export default function ProfilePage() {
     const fetchLatestProfile = async () => {
       try {
         const updated = await userApi.getMe();
-        setUser(updated);
-        setFullName(updated.full_name || "");
+        setUser(updated.data as any);
+        setFullName(updated.data.full_name || "");
       } catch (err) {
         console.warn("Failed to sync profile from server:", err);
         if (user) {
@@ -67,10 +69,8 @@ export default function ProfilePage() {
 
     setLoading(true);
     try {
-      const updatedUser = await userApi.updateMe({
-        full_name: fullName.trim()
-      });
-      setUser(updatedUser);
+      const updatedUser = await userApi.updateMe(fullName.trim());
+      setUser(updatedUser.data as any);
       toast.success("Cập nhật thông tin cá nhân thành công!");
       setIsEditing(false);
     } catch (err: any) {
@@ -162,115 +162,129 @@ export default function ProfilePage() {
       {/* ── Main content grid ── */}
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         
-        {/* Left Side: Form Details Card (Spans 2 columns) */}
-        <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm lg:col-span-2">
-          <h2 className="font-heading text-lg font-black text-slate-800 border-b border-slate-50 pb-4 mb-6">
-            Chi tiết tài khoản
-          </h2>
+        {/* Left Side: Form Details & Security (Spans 2 columns) */}
+        <div className="lg:col-span-2 space-y-8">
+          {/* Form Details Card */}
+          <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+            <h2 className="font-heading text-lg font-black text-slate-800 border-b border-slate-50 pb-4 mb-6">
+              Chi tiết tài khoản
+            </h2>
 
-          <form onSubmit={handleUpdate} className="space-y-6">
-            
-            {/* Input: Họ và tên */}
-            <div className="space-y-2">
-              <label htmlFor="fullName" className="text-xs font-black uppercase tracking-wider text-slate-400">
-                Họ và tên
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
-                  <UserIcon className={`h-4.5 w-4.5 ${isEditing ? "text-primary" : "text-slate-300"}`} />
-                </div>
-                <input
-                  type="text"
-                  id="fullName"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  disabled={!isEditing || loading}
-                  className={`
-                    w-full pl-11 pr-4 py-3 rounded-2xl border text-sm font-semibold transition-all duration-200 outline-none
-                    ${isEditing
-                      ? "border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/10 text-slate-800 bg-white"
-                      : "border-slate-100 bg-slate-50/50 text-slate-500 cursor-not-allowed"
-                    }
-                  `}
-                  placeholder="Nhập họ và tên của bạn"
-                />
-              </div>
-            </div>
-
-            {/* Input: Email (Disabled) */}
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <label className="text-xs font-black uppercase tracking-wider text-slate-400">
-                  Địa chỉ Email
+            <form onSubmit={handleUpdate} className="space-y-6">
+              
+              {/* Input: Họ và tên */}
+              <div className="space-y-2">
+                <label htmlFor="fullName" className="text-xs font-black uppercase tracking-wider text-slate-400">
+                  Họ và tên
                 </label>
-                <span className="flex items-center gap-1 text-[10px] font-bold text-slate-400 uppercase">
-                  <Lock className="h-3 w-3" /> Không thể thay đổi
-                </span>
-              </div>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
-                  <Mail className="h-4.5 w-4.5 text-slate-300" />
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                    <UserIcon className={`h-4.5 w-4.5 ${isEditing ? "text-primary" : "text-slate-300"}`} />
+                  </div>
+                  <input
+                    type="text"
+                    id="fullName"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    disabled={!isEditing || loading}
+                    className={`
+                      w-full pl-11 pr-4 py-3 rounded-2xl border text-sm font-semibold transition-all duration-200 outline-none
+                      ${isEditing
+                        ? "border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/10 text-slate-800 bg-white"
+                        : "border-slate-100 bg-slate-50/50 text-slate-500 cursor-not-allowed"
+                      }
+                    `}
+                    placeholder="Nhập họ và tên của bạn"
+                  />
                 </div>
-                <input
-                  type="email"
-                  value={currentUser.email}
-                  disabled
-                  className="w-full pl-11 pr-4 py-3 rounded-2xl border border-slate-100 bg-slate-50/50 text-slate-400 text-sm font-semibold cursor-not-allowed"
-                />
               </div>
-            </div>
 
-            {/* Input: Vai trò tài khoản (Disabled) */}
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <label className="text-xs font-black uppercase tracking-wider text-slate-400">
-                  Vai trò hệ thống
-                </label>
-                <span className="flex items-center gap-1 text-[10px] font-bold text-slate-400 uppercase">
-                  <Shield className="h-3 w-3" /> Phân quyền hệ thống
-                </span>
-              </div>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
-                  <Shield className="h-4.5 w-4.5 text-slate-300" />
+              {/* Input: Email (Disabled) */}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <label className="text-xs font-black uppercase tracking-wider text-slate-400">
+                    Địa chỉ Email
+                  </label>
+                  <span className="flex items-center gap-1 text-[10px] font-bold text-slate-400 uppercase">
+                    <Lock className="h-3 w-3" /> Không thể thay đổi
+                  </span>
                 </div>
-                <input
-                  type="text"
-                  value={currentUser.role === "LANDLORD" ? "Chủ nhà (Landlord)" : currentUser.role === "ADMIN" ? "Quản trị viên (Admin)" : "Người thuê phòng (Renter)"}
-                  disabled
-                  className="w-full pl-11 pr-4 py-3 rounded-2xl border border-slate-100 bg-slate-50/50 text-slate-400 text-sm font-semibold cursor-not-allowed"
-                />
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                    <Mail className="h-4.5 w-4.5 text-slate-300" />
+                  </div>
+                  <input
+                    type="email"
+                    value={currentUser.email}
+                    disabled
+                    className="w-full pl-11 pr-4 py-3 rounded-2xl border border-slate-100 bg-slate-50/50 text-slate-400 text-sm font-semibold cursor-not-allowed"
+                  />
+                </div>
               </div>
-            </div>
 
-            {/* Form actions (Visible only in edit mode) */}
-            {isEditing && (
-              <div className="flex items-center justify-end gap-3 border-t border-slate-50 pt-5 mt-8">
-                <button
-                  type="button"
-                  onClick={handleCancel}
-                  disabled={loading}
-                  className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-black text-slate-600 hover:bg-slate-50 transition-all cursor-pointer shadow-sm active:scale-95 disabled:opacity-50"
-                >
-                  <X className="h-4 w-4" />
-                  Hủy bỏ
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="flex items-center gap-2 rounded-2xl bg-primary hover:bg-primary/95 px-5 py-2.5 text-sm font-black text-white hover:shadow-lg hover:shadow-primary/10 transition-all cursor-pointer active:scale-95 disabled:opacity-50"
-                >
-                  {loading ? (
-                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                  ) : (
-                    <Save className="h-4 w-4" />
-                  )}
-                  Lưu thay đổi
-                </button>
+              {/* Input: Vai trò tài khoản (Disabled) */}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <label className="text-xs font-black uppercase tracking-wider text-slate-400">
+                    Vai trò hệ thống
+                  </label>
+                  <span className="flex items-center gap-1 text-[10px] font-bold text-slate-400 uppercase">
+                    <Shield className="h-3 w-3" /> Phân quyền hệ thống
+                  </span>
+                </div>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                    <Shield className="h-4.5 w-4.5 text-slate-300" />
+                  </div>
+                  <input
+                    type="text"
+                    value={currentUser.role === "LANDLORD" ? "Chủ nhà (Landlord)" : currentUser.role === "ADMIN" ? "Quản trị viên (Admin)" : "Người thuê phòng (Renter)"}
+                    disabled
+                    className="w-full pl-11 pr-4 py-3 rounded-2xl border border-slate-100 bg-slate-50/50 text-slate-400 text-sm font-semibold cursor-not-allowed"
+                  />
+                </div>
               </div>
-            )}
 
-          </form>
+              {/* Form actions (Visible only in edit mode) */}
+              {isEditing && (
+                <div className="flex items-center justify-end gap-3 border-t border-slate-50 pt-5 mt-8">
+                  <button
+                    type="button"
+                    onClick={handleCancel}
+                    disabled={loading}
+                    className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-black text-slate-600 hover:bg-slate-50 transition-all cursor-pointer shadow-sm active:scale-95 disabled:opacity-50"
+                  >
+                    <X className="h-4 w-4" />
+                    Hủy bỏ
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="flex items-center gap-2 rounded-2xl bg-primary hover:bg-primary/95 px-5 py-2.5 text-sm font-black text-white hover:shadow-lg hover:shadow-primary/10 transition-all cursor-pointer active:scale-95 disabled:opacity-50"
+                  >
+                    {loading ? (
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    ) : (
+                      <Save className="h-4 w-4" />
+                    )}
+                    Lưu thay đổi
+                  </button>
+                </div>
+              )}
+
+            </form>
+          </div>
+
+          {/* Change Password Card */}
+          <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+            <h2 className="font-heading text-lg font-black text-slate-800 border-b border-slate-50 pb-4 mb-6">
+              Bảo mật & Đổi mật khẩu
+            </h2>
+            <p className="text-sm font-semibold text-slate-400 mb-6 -mt-4">
+              Cập nhật mật khẩu để bảo vệ tài khoản của bạn tốt hơn.
+            </p>
+            <ChangePasswordForm />
+          </div>
         </div>
 
         {/* Right Side: Account Analytics/Stats Card (1 column) */}

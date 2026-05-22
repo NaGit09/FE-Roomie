@@ -1,4 +1,4 @@
-import { useRoomFilter } from "@/hooks/useRoomFilter";
+import { useRoomFilter } from "@/hooks/room/useRoomFilter";
 import React from "react";
 
 const SortRoom = () => {

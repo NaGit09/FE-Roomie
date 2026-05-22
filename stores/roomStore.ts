@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { create } from "zustand";
 import { roomApi } from "@/services/api/room";
 import { GetPostsQueryType, PostCardType, PostDetailType } from "@/schema/room/post";
@@ -35,31 +36,37 @@ export const useRoomStore = create<RoomState>((set) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await roomApi.getRooms();
-      if (response && response.data) {
+
+      if (response) {
         set({ latestRooms: response.data, isLoading: false });
       } else {
         set({ error: "Failed to fetch rooms", isLoading: false });
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+        const error = err as Error & { response?: { data?: { message?: string } } };
       set({
-        error: err?.response?.data?.message || err?.message || "Failed to load rooms",
+        error: error?.response?.data?.message || error?.message || "Failed to load rooms",
         isLoading: false,
       });
     }
   },
 
   fetchRoomDetail: async (postId: number) => {
+
     set({ isLoading: true, error: null });
+
     try {
       const response = await roomApi.getPostDetail(postId);
-      if (response && response.data) {
+
+      if (response) {
         set({ currentRoomDetail: response.data, isLoading: false });
       } else {
         set({ error: "Failed to fetch room detail", isLoading: false });
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const error = err as Error & { response?: { data?: { message?: string } } };
       set({
-        error: err?.response?.data?.message || err?.message || "Failed to load room detail",
+        error: error?.response?.data?.message || error?.message || "Failed to load room detail",
         isLoading: false,
       });
     }
@@ -69,27 +76,30 @@ export const useRoomStore = create<RoomState>((set) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await roomApi.getPostPagination(query);
-      if (response && response.data) {
+      const data = response.data;
+      console.log("Fetched paginated rooms:", data);
+      if (data) {
         set({
-          paginatedRooms: response.data.items,
-          total: response.data.total,
-          page: response.data.page,
-          size: response.data.size,
-          total_pages: response.data.total_pages,
+          paginatedRooms: data.items,
+          total: data.total,
+          page: data.page,
+          size: data.size,
+          total_pages: data.total_pages,
           isLoading: false,
         });
       } else {
         set({ error: "Failed to fetch paginated rooms", isLoading: false });
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+        const error = err as Error & { response?: { data?: { message?: string } } };
       set({
-        error: err?.response?.data?.message || err?.message || "Failed to load paginated rooms",
+        error: error?.response?.data?.message || error?.message || "Failed to load paginated rooms",
         isLoading: false,
       });
     }
   },
 
-  clearCurrentRoomDetail: () => {
+  clearCurrentRoomDetail: () => {   
     set({ currentRoomDetail: null });
   },
 

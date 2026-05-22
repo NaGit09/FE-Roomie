@@ -1,48 +1,56 @@
-import axios from "axios";
-import { getCookie, removeCookie } from "@/utils/CookieUtils";
+import { getCookie } from '@/utils/CookieUtils';
+import axios from 'axios';
 
-const baseURL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 const axiosInstance = axios.create({
   baseURL,
   timeout: 10000,
-  headers: { "Content-Type": "application/json" },
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  // Tốt nhất nên đặt mặc định ở đây nếu Backend luôn yêu cầu Credentials
   withCredentials: true,
 });
 
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = getCookie("jwt");
+    const token = getCookie('jwt');
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    else {
-      // call api refresh token
-    }
+
     return config;
   },
-  (error) => Promise.reject(error),
+  (error) => {
+    return Promise.reject(error);
+  }
 );
 
 axiosInstance.interceptors.response.use(
-  (response) => response.data,
-  (error) => {
-    if (error.response) {
-      if (error.response.status === 401) {
-        removeCookie("jwt");
-        if (typeof window !== "undefined") {
-          window.location.href = "/auth/login";
-        }
-      }
-      const message = error.response.data?.message ?? "An error occurred";
-      return Promise.reject(new Error(message));
-    }
-    if (error.request) {
-      return Promise.reject(new Error("Network error — could not connect to the server"));
-    }
-    return Promise.reject(new Error(error.message));
+  (response) => {
+    // Chỉ trả về data để ở Frontend dùng gọn hơn: response.data
+    return response;
   },
+  (error) => {
+    // Xử lý lỗi tập trung
+    if (error.response) {
+      // Server trả về lỗi (401, 403, 500...)
+      if (error.response.status === 401) {
+        console.warn("Token hết hạn hoặc không hợp lệ, đang điều hướng...");
+        // Có thể thêm logic redirect về /login ở đây
+      }
+      console.error('Backend Error:', error.response.data);
+    } else if (error.request) {
+      // Request đã gửi nhưng không nhận được phản hồi (Lỗi CORS thường rơi vào đây)
+      console.error('CORS hoặc Network Error - Không thể kết nối tới Server');
+    } else {
+      console.error('Setup Error:', error.message);
+    }
+
+    return Promise.reject(error);
+  }
 );
 
 export default axiosInstance;

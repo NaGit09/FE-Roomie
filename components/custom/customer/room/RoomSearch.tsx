@@ -1,7 +1,7 @@
 "use client";
 
 import { SlidersHorizontal, RotateCcw } from "lucide-react";
-import { useRoomFilter } from "@/hooks/useRoomFilter";
+import { useRoomFilter } from "@/hooks/room/useRoomFilter";
 import InputSearch from "./InputSearch";
 import ProvinceSelect from "./ProvinceSelect";
 import DistrictSelect from "./DistrictSelect";

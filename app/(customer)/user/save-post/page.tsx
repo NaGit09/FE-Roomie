@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -31,7 +32,7 @@ export default function SavePostPage() {
             if (!postId) return null;
 
             const detailResponse = await roomApi.getPostDetail(postId);
-            const detail = detailResponse?.data;
+            const detail = detailResponse;
             if (!detail || !detail.room) return null;
 
             const postCardCompatible: PostCardType = {

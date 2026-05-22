@@ -1,7 +1,7 @@
 "use client";
 
 import RoomSearch from "@/components/custom/customer/room/RoomSearch";
-import { useRoomFilter } from "@/hooks/useRoomFilter";
+import { useRoomFilter } from "@/hooks/room/useRoomFilter";
 import SortRoom from "@/components/custom/customer/room/SortRoom";
 import { RoomSkeleton } from "@/components/custom/customer/room/RoomSkeleton";
 import RoomCard from "@/components/custom/customer/home/RoomCard";

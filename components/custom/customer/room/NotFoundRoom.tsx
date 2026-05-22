@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { useRoomFilter } from "@/hooks/useRoomFilter";
+import { useRoomFilter } from "@/hooks/room/useRoomFilter";
 import { Home } from "lucide-react";
 
 const NotFoundRoom = () => {
