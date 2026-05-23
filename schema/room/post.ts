@@ -1,4 +1,3 @@
-import { addressCardSchema } from "./address";
 import z from "zod";
 import { roomCardSchema, roomDetailSchema } from "./room";
 import { feedbackSchema } from "./feedback";

@@ -6,13 +6,21 @@ import { useAuthStore } from "@/stores/authStore";
 import { userApi } from "@/services/api/user";
 import { toast } from "sonner";
 import {
-  User as UserIcon, Mail, Shield, Coins, Edit3, Save, X, Calendar, CheckCircle2, Lock
+  User as UserIcon,
+  Mail,
+  Shield,
+  Coins,
+  Edit3,
+  Save,
+  X,
+  Calendar,
+  CheckCircle2,
+  Lock,
 } from "lucide-react";
-import { ChangePasswordForm } from "@/components/custom/auth/ChangePasswordForm";
 
 export default function ProfilePage() {
   const { user, setUser } = useAuthStore();
-  
+
   // Form edit states
   const [isEditing, setIsEditing] = useState(false);
   const [fullName, setFullName] = useState("");
@@ -40,9 +48,11 @@ export default function ProfilePage() {
 
   if (syncing && !user) {
     return (
-      <div className="flex min-h-[400px] flex-col items-center justify-center gap-3">
+      <div className="flex min-h-100 flex-col items-center justify-center gap-3">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-        <p className="text-sm font-semibold text-slate-400">Đang tải hồ sơ cá nhân...</p>
+        <p className="text-sm font-semibold text-slate-400">
+          Đang tải hồ sơ cá nhân...
+        </p>
       </div>
     );
   }
@@ -74,7 +84,11 @@ export default function ProfilePage() {
       toast.success("Cập nhật thông tin cá nhân thành công!");
       setIsEditing(false);
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || err?.message || "Cập nhật thất bại. Vui lòng thử lại.");
+      toast.error(
+        err?.response?.data?.message ||
+          err?.message ||
+          "Cập nhật thất bại. Vui lòng thử lại.",
+      );
     } finally {
       setLoading(false);
     }
@@ -96,24 +110,25 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-8">
-      
       {/* ── Top Header Hero Banner ── */}
       <div className="relative overflow-hidden rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
         <div className="absolute top-0 right-0 h-40 w-40 rounded-full bg-primary/5 blur-3xl -mr-10 -mt-10" />
-        
+
         <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
-            
             {/* Dynamic Avatar with glowing ring based on role */}
-            <div className={`
+            <div
+              className={`
               relative flex h-20 w-20 shrink-0 items-center justify-center rounded-[2rem] text-xl font-black select-none shadow-md
-              ${currentUser.role === "LANDLORD"
-                ? "bg-amber-100 text-amber-700 shadow-amber-100/50 ring-4 ring-amber-50"
-                : currentUser.role === "ADMIN"
-                ? "bg-purple-100 text-purple-700 shadow-purple-100/50 ring-4 ring-purple-50"
-                : "bg-blue-100 text-blue-700 shadow-blue-100/50 ring-4 ring-blue-50"
+              ${
+                currentUser.role === "LANDLORD"
+                  ? "bg-amber-100 text-amber-700 shadow-amber-100/50 ring-4 ring-amber-50"
+                  : currentUser.role === "ADMIN"
+                    ? "bg-purple-100 text-purple-700 shadow-purple-100/50 ring-4 ring-purple-50"
+                    : "bg-blue-100 text-blue-700 shadow-blue-100/50 ring-4 ring-blue-50"
               }
-            `}>
+            `}
+            >
               {initials}
             </div>
 
@@ -122,20 +137,29 @@ export default function ProfilePage() {
                 {currentUser.full_name}
                 <CheckCircle2 className="h-4 w-4 text-emerald-500 fill-emerald-50" />
               </h1>
-              <p className="text-sm font-semibold text-slate-400">{currentUser.email}</p>
-              
+              <p className="text-sm font-semibold text-slate-400">
+                {currentUser.email}
+              </p>
+
               {/* Status & Role Pill Row */}
               <div className="flex flex-wrap items-center gap-2 mt-1">
-                <span className={`
+                <span
+                  className={`
                   inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider
-                  ${currentUser.role === "LANDLORD"
-                    ? "bg-amber-100 text-amber-700"
-                    : currentUser.role === "ADMIN"
-                    ? "bg-purple-100 text-purple-700"
-                    : "bg-blue-100 text-blue-700"
+                  ${
+                    currentUser.role === "LANDLORD"
+                      ? "bg-amber-100 text-amber-700"
+                      : currentUser.role === "ADMIN"
+                        ? "bg-purple-100 text-purple-700"
+                        : "bg-blue-100 text-blue-700"
                   }
-                `}>
-                  {currentUser.role === "LANDLORD" ? "Chủ nhà" : currentUser.role === "ADMIN" ? "Quản trị" : "Người thuê"}
+                `}
+                >
+                  {currentUser.role === "LANDLORD"
+                    ? "Chủ nhà"
+                    : currentUser.role === "ADMIN"
+                      ? "Quản trị"
+                      : "Người thuê"}
                 </span>
 
                 <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-emerald-600">
@@ -161,7 +185,6 @@ export default function ProfilePage() {
 
       {/* ── Main content grid ── */}
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-        
         {/* Left Side: Form Details & Security (Spans 2 columns) */}
         <div className="lg:col-span-2 space-y-8">
           {/* Form Details Card */}
@@ -171,15 +194,19 @@ export default function ProfilePage() {
             </h2>
 
             <form onSubmit={handleUpdate} className="space-y-6">
-              
               {/* Input: Họ và tên */}
               <div className="space-y-2">
-                <label htmlFor="fullName" className="text-xs font-black uppercase tracking-wider text-slate-400">
+                <label
+                  htmlFor="fullName"
+                  className="text-xs font-black uppercase tracking-wider text-slate-400"
+                >
                   Họ và tên
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
-                    <UserIcon className={`h-4.5 w-4.5 ${isEditing ? "text-primary" : "text-slate-300"}`} />
+                    <UserIcon
+                      className={`h-4.5 w-4.5 ${isEditing ? "text-primary" : "text-slate-300"}`}
+                    />
                   </div>
                   <input
                     type="text"
@@ -189,9 +216,10 @@ export default function ProfilePage() {
                     disabled={!isEditing || loading}
                     className={`
                       w-full pl-11 pr-4 py-3 rounded-2xl border text-sm font-semibold transition-all duration-200 outline-none
-                      ${isEditing
-                        ? "border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/10 text-slate-800 bg-white"
-                        : "border-slate-100 bg-slate-50/50 text-slate-500 cursor-not-allowed"
+                      ${
+                        isEditing
+                          ? "border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/10 text-slate-800 bg-white"
+                          : "border-slate-100 bg-slate-50/50 text-slate-500 cursor-not-allowed"
                       }
                     `}
                     placeholder="Nhập họ và tên của bạn"
@@ -238,7 +266,13 @@ export default function ProfilePage() {
                   </div>
                   <input
                     type="text"
-                    value={currentUser.role === "LANDLORD" ? "Chủ nhà (Landlord)" : currentUser.role === "ADMIN" ? "Quản trị viên (Admin)" : "Người thuê phòng (Renter)"}
+                    value={
+                      currentUser.role === "LANDLORD"
+                        ? "Chủ nhà (Landlord)"
+                        : currentUser.role === "ADMIN"
+                          ? "Quản trị viên (Admin)"
+                          : "Người thuê phòng (Renter)"
+                    }
                     disabled
                     className="w-full pl-11 pr-4 py-3 rounded-2xl border border-slate-100 bg-slate-50/50 text-slate-400 text-sm font-semibold cursor-not-allowed"
                   />
@@ -271,31 +305,18 @@ export default function ProfilePage() {
                   </button>
                 </div>
               )}
-
             </form>
-          </div>
-
-          {/* Change Password Card */}
-          <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
-            <h2 className="font-heading text-lg font-black text-slate-800 border-b border-slate-50 pb-4 mb-6">
-              Bảo mật & Đổi mật khẩu
-            </h2>
-            <p className="text-sm font-semibold text-slate-400 mb-6 -mt-4">
-              Cập nhật mật khẩu để bảo vệ tài khoản của bạn tốt hơn.
-            </p>
-            <ChangePasswordForm />
           </div>
         </div>
 
         {/* Right Side: Account Analytics/Stats Card (1 column) */}
         <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm flex flex-col justify-between">
           <div>
-            <h2 className="font-heading text-lg font-black text-slate-800 border-b border-slate-50 pb-4 mb-6">
+            <h2 className="font-heading text-lg font-black text-slate-800 border-b border-slate-50 pb-1 mb-1">
               Thống kê tài khoản
             </h2>
 
             <div className="space-y-6">
-              
               {/* Coin Usage Stat Card */}
               <div className="rounded-2xl bg-primary/5 p-4 border border-primary/10 relative overflow-hidden group">
                 <div className="absolute right-0 bottom-0 translate-x-3 translate-y-3 opacity-10 group-hover:scale-110 transition-transform duration-300">
@@ -310,7 +331,10 @@ export default function ProfilePage() {
                       Lượt dùng miễn phí
                     </span>
                     <div className="font-heading text-2xl font-black text-primary">
-                      {currentUser.free_usage_count ?? 0} <span className="text-xs font-semibold text-primary/70">lượt</span>
+                      {currentUser.free_usage_count ?? 0}{" "}
+                      <span className="text-xs font-semibold text-primary/70">
+                        lượt
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -318,7 +342,6 @@ export default function ProfilePage() {
 
               {/* Account Status Card */}
               <div className="space-y-4">
-                
                 {/* Join Date Row */}
                 <div className="flex items-center justify-between py-2 border-b border-slate-50">
                   <span className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-slate-400">
@@ -336,7 +359,10 @@ export default function ProfilePage() {
                     <Shield className="h-4 w-4 text-slate-400" />
                     Mã hồ sơ
                   </span>
-                  <span className="text-xs font-extrabold text-slate-400 font-mono tracking-tight select-all truncate max-w-[120px]" title={currentUser.profile_id}>
+                  <span
+                    className="text-xs font-extrabold text-slate-400 font-mono tracking-tight select-all truncate max-w-[120px]"
+                    title={currentUser.profile_id}
+                  >
                     {currentUser.profile_id || "N/A"}
                   </span>
                 </div>
@@ -351,21 +377,11 @@ export default function ProfilePage() {
                     Đã xác minh
                   </span>
                 </div>
-
               </div>
-
             </div>
           </div>
-
-          <div className="mt-8 pt-4 border-t border-slate-50">
-            <p className="text-[11px] font-semibold text-slate-400 leading-relaxed text-center">
-              Roomie bảo mật thông tin tài khoản của bạn. Để thay đổi email đăng nhập, vui lòng liên hệ bộ phận hỗ trợ khách hàng.
-            </p>
-          </div>
         </div>
-
       </div>
-
     </div>
   );
 }

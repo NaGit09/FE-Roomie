@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState, memo, useCallback, useEffect } from "react";
@@ -43,8 +44,8 @@ const fetchSavedIds = async (isAuthenticated: boolean): Promise<string[]> => {
       const list = Array.isArray(response)
         ? response
         : Array.isArray(response?.data)
-        ? response.data
-        : [];
+          ? response.data
+          : [];
 
       savedIdsCache = list
         .map((item: any) => {
@@ -119,12 +120,16 @@ const RoomCard = memo(({ room }: { room: Room }) => {
           toast.success("Đã lưu tin đăng thành công!");
         }
       } catch (err: any) {
-        toast.error(err?.response?.data?.message || err?.message || "Thao tác thất bại. Vui lòng thử lại.");
+        toast.error(
+          err?.response?.data?.message ||
+            err?.message ||
+            "Thao tác thất bại. Vui lòng thử lại.",
+        );
       } finally {
         setLoading(false);
       }
     },
-    [isSaved, isAuthenticated, loading, room.id]
+    [isSaved, isAuthenticated, loading, room.id],
   );
 
   return (
@@ -162,7 +167,7 @@ const RoomCard = memo(({ room }: { room: Room }) => {
             isSaved
               ? "bg-primary text-white shadow-lg shadow-primary/30"
               : "bg-black/10 text-white hover:bg-white hover:text-primary",
-            loading && "opacity-50 pointer-events-none"
+            loading && "opacity-50 pointer-events-none",
           )}
         >
           {loading ? (

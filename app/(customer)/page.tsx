@@ -4,8 +4,7 @@ import dynamic from "next/dynamic";
 import HomeSearch from "@/components/custom/customer/home/HomeSearch";
 import Location from "@/components/custom/customer/home/Location";
 import QNA from "@/components/custom/customer/home/QNA";
-import { ArrowRight, Map as MapIcon, Sparkles } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { ArrowRight, Map as MapIcon } from "lucide-react";
 import NewRoom from "@/components/custom/customer/home/NewRoom";
 import { SectionHeader } from "@/components/custom/customer/layout/SectionHeader";
 
@@ -17,7 +16,7 @@ const MapView = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="group relative flex h-[600px] w-full items-center justify-center overflow-hidden rounded-[3rem] bg-slate-50 border-2 border-dashed border-slate-200">
+      <div className="group relative flex h-150 w-full items-center justify-center overflow-hidden rounded-[3rem] bg-slate-50 border-2 border-dashed border-slate-200">
         <div className="flex flex-col items-center gap-4">
           <div className="h-12 w-12 animate-bounce rounded-full bg-primary/10 flex items-center justify-center">
             <MapIcon className="text-primary h-6 w-6" />
@@ -35,6 +34,8 @@ const MapView = dynamic(
 // Main Page Component
 // ─────────────────────────────────────────────
 export default function CustomerHomePage() {
+  // call api check subcription status, if not active, show banner to subscribe
+  
   return (
     <main className="flex flex-col min-h-screen bg-white">
       {/* 1. HERO SECTION */}

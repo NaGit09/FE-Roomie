@@ -3,7 +3,8 @@ import { ChangePasswordForm } from "@/components/custom/auth/ChangePasswordForm"
 
 export default function ChangePasswordPage() {
   return (
-    <div className="max-w-2xl mx-auto rounded-3xl border border-slate-100 bg-white p-6 md:p-8 shadow-sm">
+<div className="flex flex-col gap-6 bg-slate-50 p-4 md:p-8">
+      <div className="max-w-2xl mx-auto rounded-3xl border border-slate-100 bg-white p-6 md:p-8 shadow-sm">
       <h1 className="font-heading text-xl md:text-2xl font-black text-slate-800 border-b border-slate-50 pb-4 mb-6">
         Bảo mật & Đổi mật khẩu
       </h1>
@@ -12,5 +13,6 @@ export default function ChangePasswordPage() {
       </p>
       <ChangePasswordForm />
     </div>
+</div>
   );
 }

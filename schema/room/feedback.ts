@@ -1,5 +1,5 @@
 import z from "zod";
-import { ratingTypeSchema, type RatingType } from "./rating";
+import { ratingTypeSchema } from "./rating";
 
 export const feedbackSchema = z.object({
     feedback: z.string(),

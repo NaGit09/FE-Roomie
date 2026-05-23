@@ -22,8 +22,8 @@ export default function SavePostPage() {
       const list = Array.isArray(response)
         ? response
         : Array.isArray(response?.data)
-        ? response.data
-        : [];
+          ? response.data
+          : [];
 
       const resolvedDetails = await Promise.all(
         list.map(async (item: any) => {
@@ -32,7 +32,7 @@ export default function SavePostPage() {
             if (!postId) return null;
 
             const detailResponse = await roomApi.getPostDetail(postId);
-            const detail = detailResponse;
+            const detail = detailResponse.data;
             if (!detail || !detail.room) return null;
 
             const postCardCompatible: PostCardType = {
@@ -58,10 +58,13 @@ export default function SavePostPage() {
               isSaved: true,
             };
           } catch (itemErr) {
-            console.warn(`Failed to resolve details for saved post ${item?.post_id}:`, itemErr);
+            console.warn(
+              `Failed to resolve details for saved post ${item?.post_id}:`,
+              itemErr,
+            );
             return null;
           }
-        })
+        }),
       );
 
       // Filter out unresolved or deleted posts gracefully
@@ -81,7 +84,6 @@ export default function SavePostPage() {
 
   return (
     <div className="space-y-6">
-      
       {/* Header Info */}
       <div className="border-b border-slate-100 pb-5">
         <h1 className="font-heading text-2xl font-black text-slate-800 flex items-center gap-2">
@@ -101,7 +103,6 @@ export default function SavePostPage() {
           ))}
         </div>
       ) : rooms.length === 0 ? (
-        
         /* Stunning Premium Empty State */
         <div className="flex flex-col items-center justify-center py-20 px-4 text-center bg-white rounded-3xl border border-slate-100 shadow-sm min-h-[400px]">
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-red-50 text-red-500 mb-6 animate-pulse">
@@ -111,7 +112,8 @@ export default function SavePostPage() {
             Chưa có tin đăng nào được lưu
           </h3>
           <p className="text-sm font-semibold text-slate-400 max-w-sm mb-6 leading-relaxed">
-            Khám phá hàng ngàn phòng trọ chất lượng, verified 100% và lưu lại những căn phòng bạn ưng ý nhất!
+            Khám phá hàng ngàn phòng trọ chất lượng, verified 100% và lưu lại
+            những căn phòng bạn ưng ý nhất!
           </p>
           <Link
             href="/rooms"
@@ -129,7 +131,6 @@ export default function SavePostPage() {
           ))}
         </div>
       )}
-
     </div>
   );
 }
