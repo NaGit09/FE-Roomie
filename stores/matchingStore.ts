@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { create } from "zustand";
 import { UserPreference } from "@/schema/matching/UserPreference";
+import { UserMatching } from "@/schema/matching/UserMatching";
 import { MatchingApi } from "@/services/api/matching";
 
 interface MatchingState {
@@ -16,7 +17,7 @@ interface MatchingState {
   area: number;
 
   // Matching Recommended list & loaders
-  matches: UserPreference[];
+  matches: UserMatching[];
   loadingPreferences: boolean;
   loadingMatches: boolean;
   error: string | null;

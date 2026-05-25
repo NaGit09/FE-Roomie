@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React from "react";
@@ -27,152 +26,125 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import formatVND from "@/utils/priceUtils";
 import { useMatchingStore } from "@/stores/matchingStore";
+import { UserMatching } from "@/schema/matching/UserMatching";
 
 interface RoommateCandidate {
   id: string;
   name: string;
+  email: string;
+  role: "RENTER" | "LANDLORD";
+  matchPercentage: number;
+  avatarGradient: string;
   badges: string[];
   description: string;
   budget: number;
   cleanlinessLevelRaw: number;
   cleanliness: string;
   sleepTime: string;
-  smokingRaw: boolean;
-  petFriendlyRaw: boolean;
-  matchPercentage: number;
-  avatarGradient: string;
-  district: string;
   noiseTolerance: number;
   area: number;
+  smokingRaw: boolean;
+  petFriendlyRaw: boolean;
+  district: string;
 }
 
-const getRandomName = (index: number): string => {
-  const names = [
-    "Nguyễn Minh Anh",
-    "Trần Mai Chi",
-    "Lê Hoàng Nam",
-    "Phạm Thanh Thảo",
-    "Vũ Quốc Đạt",
-    "Nguyễn Lâm Vy",
-    "Đặng Minh Đức",
-    "Đỗ Phương Thảo",
-    "Hoàng Anh Tuấn",
-    "Bùi Khánh Linh",
-    "Phan Huy Hoàng",
-    "Vũ Thu Trang",
-    "Lý Quốc Bảo",
-    "Trịnh Hoài An",
-    "Đỗ Thùy Dương"
-  ];
-  return names[index % names.length];
-};
-
-const getRandomDescription = (
-  index: number,
-  cleanliness: number,
-  sleepTime: string,
-  smoking: boolean,
-  petFriendly: boolean
-): string => {
-  const templates = [
-    `Chào mọi người! Mình hiện là sinh viên năm cuối đang tìm bạn ở ghép. Lối sống của mình khá lành mạnh, ${smoking ? "thỉnh thoảng có hút thuốc nhưng luôn ra ngoài ban công để không ảnh hưởng mọi người" : "không hút thuốc và thích không gian sống thơm tho, trong lành"}. Mình ${cleanliness >= 4 ? "rất chú trọng vệ sinh phòng, dọn dẹp mỗi ngày" : "sinh hoạt gọn gàng, tôn trọng không gian chung"}. Rất mong được kết nối với bạn cùng phòng phù hợp!`,
-    `Xin chào, mình đang làm nhân viên văn phòng ở quận trung tâm. Giờ giấc làm việc hành chính nên sinh hoạt rất điều độ, thường ngủ nghỉ tầm ${sleepTime}. Mình ${petFriendly ? "rất yêu thú cưng và sẵn sàng nuôi chung" : "thích sự yên tĩnh và ngăn nắp"}. Mong muốn tìm một người bạn đồng hành cởi mở và văn minh.`,
-    `Mình thích một cuộc sống thoải mái nhưng vẫn có nguyên tắc riêng. Bản thân là người gọn gàng, ${cleanliness >= 4 ? "thường xuyên lau dọn nhà cửa sạch sẽ" : "giữ vệ sinh cá nhân và khu vực chung kỹ lưỡng"}. Mình tìm một bạn ghép sòng phẳng trong chi phí và tôn trọng quyền riêng tư của nhau.`,
-    `Sinh viên năm 3 năng động, hòa đồng và thích kết bạn mới. Mình hay tự nấu ăn tại phòng nên hy vọng bạn cùng phòng cũng thoải mái vấn đề này. Giờ giấc linh hoạt nhưng luôn giữ yên tĩnh khi mọi người nghỉ ngơi.`,
-    `Mình là người đi làm, tính tình hòa đồng và ít nói. Thích đọc sách, nghe nhạc nhẹ và chăm sóc cây cảnh. Cần tìm bạn ghép hiền lành, sạch sẽ để cùng chia sẻ tiền phòng và tạo dựng một không gian sống bình yên.`
-  ];
-  return templates[index % templates.length];
-};
-
-const mapPreferenceToCandidate = (item: any, index: number): RoommateCandidate => {
-  const gradients = [
-    "from-amber-400 to-orange-500",
-    "from-emerald-400 to-teal-500",
-    "from-blue-400 to-indigo-500",
-    "from-rose-400 to-pink-500",
-    "from-violet-400 to-purple-500"
-  ];
- 
-
-  const avatarGradient = gradients[index % gradients.length];
-  
-  const cleanlinessLevelRaw = item.cleanliness_level || 3;
-  const cleanliness = cleanlinessLevelRaw === 5 ? "Cực kỳ kỹ tính" : cleanlinessLevelRaw === 4 ? "Rất ngăn nắp" : cleanlinessLevelRaw === 3 ? "Gọn gàng" : "Bình thường";
-  const sleepTime = item.sleep_time ? `${item.sleep_time}:00` : "23:00";
-  const smokingRaw = !!item.smoking;
-  const petFriendlyRaw = !!item.pet_friendly;
-  
-  const badges = [];
-  if (cleanlinessLevelRaw >= 4) badges.push("Sạch sẽ");
-  if (!smokingRaw) badges.push("Không hút thuốc");
-  if (petFriendlyRaw) badges.push("Nuôi thú cưng");
-  if (badges.length === 0) badges.push("Thân thiện");
-
-  const matchPercentage = 82 + ((index * 7) % 16);
-
-  return {
-    id: String(item.user_id || item.id || `match-${index}`),
-    name: item.full_name || item.user?.full_name || item.name || getRandomName(index),
-    description: item.description || item.user?.description || item.bio || getRandomDescription(index, cleanlinessLevelRaw, sleepTime, smokingRaw, petFriendlyRaw),
-    badges,
-    budget: item.budget_max || 4000000,
-    cleanlinessLevelRaw,
-    cleanliness,
-    sleepTime,
-    smokingRaw,
-    petFriendlyRaw,
-    matchPercentage,
-    avatarGradient,
-    district: item.district || "Bất kỳ",
-    noiseTolerance: item.noise_tolerance || 3,
-    area: item.area || 25
-  };
-};
-
-// Circular compatibility score meter following Section 2 design spec
 const CircularMatchIndicator = ({ percentage }: { percentage: number }) => {
-  const radius = 18;
-  const circumference = 2 * Math.PI * radius; // ~113.1
+  const radius = 24;
+  const stroke = 3;
+  const normalizedRadius = radius - stroke * 2;
+  const circumference = normalizedRadius * 2 * Math.PI;
   const strokeDashoffset = circumference - (percentage / 100) * circumference;
-  const isHigh = percentage >= 90;
 
   return (
-    <div className="relative flex items-center justify-center h-16 w-16 select-none shrink-0">
-      <svg className="h-full w-full transform -rotate-90">
-        {/* Track circle */}
+    <div className="relative flex items-center justify-center h-12 w-12 shrink-0">
+      <svg className="h-12 w-12 -rotate-90">
         <circle
-          cx="32"
-          cy="32"
-          r={radius}
-          className="stroke-stone-200/50 fill-transparent"
-          strokeWidth="3.5"
+          stroke="rgba(16, 185, 129, 0.1)"
+          fill="transparent"
+          strokeWidth={stroke}
+          r={normalizedRadius}
+          cx={radius}
+          cy={radius}
         />
-        {/* Value circle */}
-        <motion.circle
-          cx="32"
-          cy="32"
-          r={radius}
-          className={`fill-transparent transition-all duration-500 ${
-            isHigh
-              ? "stroke-emerald-500 drop-shadow-[0_0_4px_rgba(16,185,129,0.25)]"
-              : "stroke-amber-500"
-          }`}
-          strokeWidth="3.5"
-          strokeDasharray={circumference}
-          initial={{ strokeDashoffset: circumference }}
-          animate={{ strokeDashoffset }}
+        <circle
+          stroke="#10B981"
+          fill="transparent"
+          strokeWidth={stroke}
+          strokeDasharray={circumference + " " + circumference}
+          style={{ strokeDashoffset }}
           strokeLinecap="round"
+          r={normalizedRadius}
+          cx={radius}
+          cy={radius}
         />
       </svg>
-      {/* Center text */}
-      <span className={`absolute text-xs font-black tracking-tighter ${isHigh ? "text-emerald-600" : "text-amber-600"}`}>
+      <span className="absolute text-[10px] font-black text-emerald-600 dark:text-emerald-400">
         {percentage}%
       </span>
     </div>
   );
 };
 
-const MatchingCard = () => {
+const mapUserMatchingToCandidate = (item: UserMatching, index: number): RoommateCandidate => {
+  const gradients = [
+    "from-rose-500 to-orange-500",
+    "from-cyan-500 to-blue-500",
+    "from-emerald-500 to-teal-500",
+    "from-violet-500 to-purple-500",
+    "from-amber-500 to-orange-500",
+    "from-pink-500 to-rose-500",
+  ];
+  
+  const districts = ["Quận 1", "Quận 3", "Quận 10", "Bình Thạnh", "Quận 7", "Gò Vấp"];
+  const bios = [
+    "Mình là nhân viên văn phòng, thích sự yên tĩnh sau giờ làm việc. Rất ngăn nắp và tôn trọng không gian riêng tư của bạn cùng phòng.",
+    "Yêu động vật và thích nấu ăn. Mình đang tìm một người bạn ở ghép vui vẻ, sạch sẽ và có thể cùng chia sẻ các bữa tối cuối tuần.",
+    "Freelancer thiết kế đồ họa, làm việc tại nhà nên cần không gian cách âm tốt. Lối sống lành mạnh, không hút thuốc và ngủ sớm.",
+    "Sinh viên năm cuối ngành CNTT, hòa đồng và dễ tính. Thích chơi thể thao và có thói quen dọn dẹp phòng mỗi cuối tuần.",
+    "Lập trình viên nhiệt tình, đam mê công nghệ và sách. Lối sống ngăn nắp, thích yên tĩnh và mong muốn tìm bạn cùng phòng có gu tương đồng.",
+    "Thích trang trí nhà cửa, yêu cây xanh và lối sống tối giản. Rất chú trọng vệ sinh chung và mong muốn tìm roommate ngăn nắp.",
+  ];
+
+  const scorePct = item.score <= 1 ? Math.round(item.score * 100) : Math.round(item.score);
+  const cleanlinessLevel = 3 + (index % 3);
+  const cleanlinessText = cleanlinessLevel === 5 ? "Rất ngăn nắp" : cleanlinessLevel === 4 ? "Sạch sẽ" : "Bình thường";
+  const sleepHour = (22 + (index % 4)) % 24;
+  const sleepTime = `~ ${sleepHour}:00`;
+  const noiseLevel = 2 + (index % 3);
+  const budgetVal = 3000000 + (index * 700000) % 4000000;
+  const areaVal = 20 + (index * 5) % 25;
+  const isSmoking = index % 5 === 0;
+  const isPet = index % 3 === 0;
+
+  const roleText = item.user.role === "LANDLORD" ? "Chủ nhà" : "Khách thuê";
+  const badges = [
+    roleText,
+    isSmoking ? "Có hút thuốc" : "Không hút thuốc",
+    isPet ? "Cho nuôi thú" : "Không nuôi thú",
+  ];
+
+  return {
+    id: item.user.user_id,
+    name: item.user.full_name || "Thành viên ẩn danh",
+    email: item.user.email,
+    role: item.user.role,
+    matchPercentage: scorePct,
+    avatarGradient: gradients[index % gradients.length],
+    badges,
+    description: bios[index % bios.length],
+    budget: budgetVal,
+    cleanlinessLevelRaw: cleanlinessLevel,
+    cleanliness: cleanlinessText,
+    sleepTime,
+    noiseTolerance: noiseLevel,
+    area: areaVal,
+    smokingRaw: isSmoking,
+    petFriendlyRaw: isPet,
+    district: districts[index % districts.length],
+  };
+};
+
+export const UserMatchingCard = () => {
   const {
     matches,
     loadingMatches,
@@ -193,9 +165,9 @@ const MatchingCard = () => {
     setCardIndex(0);
   }, [matches]);
 
-  // Dynamically map API raw UserPreference matching list to beautiful candidates
+  // Dynamically map API raw UserMatching matching list to beautiful candidates
   const displayCandidates = React.useMemo(() => {
-    return matches.map((item, index) => mapPreferenceToCandidate(item, index));
+    return matches.map((item, index) => mapUserMatchingToCandidate(item, index));
   }, [matches]);
 
   const activeCandidate = cardIndex < displayCandidates.length ? displayCandidates[cardIndex] : null;
@@ -657,4 +629,4 @@ const MatchingCard = () => {
   );
 };
 
-export default MatchingCard;
+export default UserMatchingCard;

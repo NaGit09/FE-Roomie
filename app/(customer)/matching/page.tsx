@@ -59,14 +59,7 @@ export default function MatchingPage() {
     loadingMatches,
   } = useMatchingStore();
 
-  const [connectingId, setConnectingId] = React.useState<string | null>(null);
-  const [connectedIds, setConnectedIds] = React.useState<string[]>([]);
-  const [cardIndex, setCardIndex] = React.useState(0);
-  const [showDetailPopup, setShowDetailPopup] = React.useState(false);
-  const [selectedCandidate, setSelectedCandidate] = React.useState<any>(null);
-  const [swipeDirection, setSwipeDirection] = React.useState<
-    "left" | "right" | null
-  >(null);
+
 
   React.useEffect(() => {
     setMounted(true);
@@ -84,9 +77,6 @@ export default function MatchingPage() {
     }
   }, [mounted, isAuthenticated, hasPreference, fetchMatches]);
 
-  React.useEffect(() => {
-    setCardIndex(0);
-  }, [matches, isEditingPreference]);
 
   // 1. Hydration loading state
   if (!mounted) {
@@ -168,195 +158,186 @@ export default function MatchingPage() {
   // 4. If hasPreferences is true, show Roommate Recommendation Dashboard
   if (hasPreference === true && !isEditingPreference) {
     return (
-      <div className="min-h-screen bg-background relative overflow-hidden py-16 px-4 sm:px-6 lg:px-8 font-sans">
+      <div className="min-h-screen bg-background relative overflow-hidden py-12 px-4 sm:px-6 lg:px-8 font-sans">
         {/* Background Aesthetic Decorators */}
         <div className="absolute top-0 left-0 right-0 h-[500px] bg-[linear-gradient(to_bottom,rgba(193,68,14,0.04),transparent)] pointer-events-none" />
         <div className="absolute top-[20%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-primary/3 blur-[120px] pointer-events-none animate-[pulse_8s_infinite]" />
         <div className="absolute top-[50%] right-[-10%] w-[40vw] h-[40vw] rounded-full bg-primary/4 blur-[100px] pointer-events-none animate-[pulse_10s_infinite_2s]" />
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#C1440E04_1px,transparent_1px),linear-gradient(to_bottom,#C1440E04_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none" />
 
-        <div className="mx-auto max-w-5xl relative z-10 space-y-12">
+        <div className="mx-auto max-w-7xl relative z-10 space-y-8">
           {/* Header */}
-          <div className="text-center space-y-4 max-w-3xl mx-auto">
+          <div className="text-left space-y-2 max-w-3xl">
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-primary font-body"
             >
               <HeartHandshake className="h-3.5 w-3.5" />
-              So Khớp Roommate
+              So Khớp Roommate AI
             </motion.div>
 
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
-              className="font-heading text-4xl sm:text-5xl font-bold tracking-tight text-slate-900 leading-tight"
+              className="font-heading text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 leading-tight"
             >
-              Tìm Bạn Đồng Hành Ở Ghép
+              Tìm Bạn Đồng Hành Hoàn Hảo
             </motion.h1>
           </div>
 
-          {/* Bento Grid: Active Preferences Card (Bento Grid Section 1 design spec) */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="rounded-3xl border border-white/40 bg-white/40 dark:bg-stone-900/40 backdrop-blur-md p-6 sm:p-8 shadow-xl space-y-6"
-          >
-            {/* Header row */}
-            <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-white/5 pb-4">
-              <div className="space-y-1">
-                <h3 className="font-heading text-lg font-bold text-slate-900 dark:text-white">
-                  Tiêu Chí Sống Hiện Tại Của Bạn
-                </h3>
-                <p className="text-xs text-muted-foreground font-body">
-                  Hệ thống AI đang so khớp chéo các thông số này để gợi ý roommate phù hợp
-                </p>
-              </div>
-              <Button
-                onClick={() => setIsEditingPreference(true)}
-                className="h-9 px-4 rounded-xl border border-primary/20 bg-primary/5 hover:bg-primary text-primary hover:text-white text-xs font-bold transition-all duration-300 flex items-center gap-1.5 cursor-pointer shadow-sm"
-              >
-                <Edit3 className="h-3.5 w-3.5" />
-                Cập nhật
-              </Button>
-            </div>
+          {/* Two-Column Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            {/* LEFT COLUMN: Feature Introduction & Active Preferences */}
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.7, delay: 0.2 }}
+              className="lg:col-span-5 space-y-6"
+            >
+              {/* Feature Intro Card */}
+              <div className="rounded-3xl border border-white/40 bg-white/40 dark:bg-stone-900/40 backdrop-blur-md p-6 shadow-xl space-y-6">
+                <div className="space-y-2">
+                  <h3 className="font-heading text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-primary animate-pulse" />
+                    Roomie Matcher
+                  </h3>
+                  <p className="text-xs text-muted-foreground font-body leading-relaxed">
+                    Hệ thống phân tích chéo chênh lệch lối sống và khả năng tài chính của bạn với các ứng viên khác để tìm ra roommate tương thích nhất.
+                  </p>
+                </div>
 
-            {/* 8-panel Bento Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {/* Box 1: Budget */}
-              <div className="bg-white/60 dark:bg-stone-900/60 backdrop-blur-sm border border-border/50 rounded-2xl p-4 flex items-center gap-3 transition-all duration-300 hover:border-primary/20 hover:bg-white/80">
-                <div className="h-10 w-10 rounded-xl bg-amber-50 dark:bg-amber-950/20 text-amber-500 flex items-center justify-center shrink-0">
-                  <Coins className="h-5 w-5" />
+                {/* How to use */}
+                <div className="space-y-3 pt-2 border-t border-slate-200/50 dark:border-white/5">
+                  <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider font-body">
+                    Cách thức hoạt động
+                  </h4>
+                  <div className="space-y-3">
+                    <div className="flex gap-3 items-start text-xs font-body">
+                      <div className="h-5 w-5 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold shrink-0 mt-0.5">
+                        1
+                      </div>
+                      <div>
+                        <p className="font-semibold text-slate-800 dark:text-slate-200">AI So Khớp Đa Chiều</p>
+                        <p className="text-muted-foreground leading-normal mt-0.5">So sánh giờ ngủ nghỉ, độ vệ sinh, thói quen hút thuốc, và nuôi thú cưng.</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-3 items-start text-xs font-body">
+                      <div className="h-5 w-5 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold shrink-0 mt-0.5">
+                        2
+                      </div>
+                      <div>
+                        <p className="font-semibold text-slate-800 dark:text-slate-200">Tương Tác Vuốt Thẻ</p>
+                        <p className="text-muted-foreground leading-normal mt-0.5">Vuốt phải (Like) để gửi kết nối, vuốt trái (Pass) để bỏ qua gợi ý nhanh chóng.</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-3 items-start text-xs font-body">
+                      <div className="h-5 w-5 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold shrink-0 mt-0.5">
+                        3
+                      </div>
+                      <div>
+                        <p className="font-semibold text-slate-800 dark:text-slate-200">Kết Nối Ẩn Danh An Toàn</p>
+                        <p className="text-muted-foreground leading-normal mt-0.5">Trò chuyện bảo mật qua hệ thống Roomie chat mà không cần lộ Zalo hay SĐT cá nhân.</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block font-body">
-                    Khoảng ngân sách
-                  </span>
-                  <span className="text-[11px] text-slate-800 dark:text-slate-200 font-extrabold block truncate">
-                    {formatVND(budget_min)} - {formatVND(budget_max)}
-                  </span>
-                </div>
-              </div>
 
-              {/* Box 2: District */}
-              <div className="bg-white/60 dark:bg-stone-900/60 backdrop-blur-sm border border-border/50 rounded-2xl p-4 flex items-center gap-3 transition-all duration-300 hover:border-primary/20 hover:bg-white/80">
-                <div className="h-10 w-10 rounded-xl bg-red-50 dark:bg-red-950/20 text-red-500 flex items-center justify-center shrink-0">
-                  <MapPin className="h-5 w-5" />
-                </div>
-                <div className="min-w-0">
-                  <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block font-body">
-                    Khu vực tìm phòng
+                {/* Gesture Guide */}
+                <div className="rounded-2xl bg-slate-50/50 dark:bg-stone-850/50 border border-slate-100 dark:border-white/5 p-4 space-y-2.5">
+                  <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block font-body">
+                    Hướng dẫn vuốt thẻ
                   </span>
-                  <span className="text-[11px] text-slate-800 dark:text-slate-200 font-extrabold block truncate">
-                    {district || "Bất kỳ"}
-                  </span>
-                </div>
-              </div>
-
-              {/* Box 3: Sleep time */}
-              <div className="bg-white/60 dark:bg-stone-900/60 backdrop-blur-sm border border-border/50 rounded-2xl p-4 flex items-center gap-3 transition-all duration-300 hover:border-primary/20 hover:bg-white/80">
-                <div className="h-10 w-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/20 text-indigo-500 flex items-center justify-center shrink-0">
-                  <Clock className="h-5 w-5" />
-                </div>
-                <div className="min-w-0">
-                  <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block font-body">
-                    Giờ ngủ nghỉ
-                  </span>
-                  <span className="text-[11px] text-slate-800 dark:text-slate-200 font-extrabold block truncate">
-                    ~ {sleep_time}:00
-                  </span>
-                </div>
-              </div>
-
-              {/* Box 4: Cleanliness */}
-              <div className="bg-white/60 dark:bg-stone-900/60 backdrop-blur-sm border border-border/50 rounded-2xl p-4 flex items-center gap-3 transition-all duration-300 hover:border-primary/20 hover:bg-white/80">
-                <div className="h-10 w-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 text-emerald-500 flex items-center justify-center shrink-0">
-                  <Sparkles className="h-5 w-5" />
-                </div>
-                <div className="min-w-0">
-                  <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block font-body">
-                    Độ sạch sẽ tối thiểu
-                  </span>
-                  <span className="text-[11px] text-slate-800 dark:text-slate-200 font-extrabold block truncate">
-                    Cấp {cleanliness_level}/5
-                  </span>
-                </div>
-              </div>
-
-              {/* Box 5: Noise tolerance */}
-              <div className="bg-white/60 dark:bg-stone-900/60 backdrop-blur-sm border border-border/50 rounded-2xl p-4 flex items-center gap-3 transition-all duration-300 hover:border-primary/20 hover:bg-white/80">
-                <div className="h-10 w-10 rounded-xl bg-sky-50 dark:bg-sky-950/20 text-sky-500 flex items-center justify-center shrink-0">
-                  <Volume2 className="h-5 w-5" />
-                </div>
-                <div className="min-w-0">
-                  <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block font-body">
-                    Độ ồn chấp nhận
-                  </span>
-                  <span className="text-[11px] text-slate-800 dark:text-slate-200 font-extrabold block truncate">
-                    Cấp độ {noise_tolerance}/5
-                  </span>
+                  <div className="grid grid-cols-3 gap-2 text-center text-[10px] font-body font-bold text-slate-650 dark:text-slate-350">
+                    <div className="bg-white/80 dark:bg-stone-800 p-2 rounded-xl border border-slate-200/50 dark:border-white/5 shadow-sm flex flex-col items-center justify-center gap-1">
+                      <div className="h-6 w-6 rounded-full bg-red-50 text-red-500 flex items-center justify-center shadow-inner">
+                        <X className="h-3 w-3 stroke-[3]" />
+                      </div>
+                      <span>Vuốt Trái: Bỏ qua</span>
+                    </div>
+                    <div className="bg-white/80 dark:bg-stone-800 p-2 rounded-xl border border-slate-200/50 dark:border-white/5 shadow-sm flex flex-col items-center justify-center gap-1">
+                      <div className="h-6 w-6 rounded-full bg-indigo-50 text-indigo-500 flex items-center justify-center shadow-inner">
+                        <Info className="h-3.5 w-3.5 stroke-[2.5]" />
+                      </div>
+                      <span>Bấm Info: Chi tiết</span>
+                    </div>
+                    <div className="bg-white/80 dark:bg-stone-800 p-2 rounded-xl border border-slate-200/50 dark:border-white/5 shadow-sm flex flex-col items-center justify-center gap-1">
+                      <div className="h-6 w-6 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center shadow-inner">
+                        <Heart className="h-3.5 w-3.5 fill-current text-emerald-500" />
+                      </div>
+                      <span>Vuốt Phải: Ghép đôi</span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* Box 6: Area */}
-              <div className="bg-white/60 dark:bg-stone-900/60 backdrop-blur-sm border border-border/50 rounded-2xl p-4 flex items-center gap-3 transition-all duration-300 hover:border-primary/20 hover:bg-white/80">
-                <div className="h-10 w-10 rounded-xl bg-purple-50 dark:bg-purple-950/20 text-purple-500 flex items-center justify-center shrink-0">
-                  <Scaling className="h-5 w-5" />
+              {/* Active Preferences Panel */}
+              <div className="rounded-3xl border border-white/40 bg-white/40 dark:bg-stone-900/40 backdrop-blur-md p-6 shadow-xl space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-white/5 pb-3">
+                  <div className="space-y-0.5">
+                    <h3 className="font-heading text-sm font-bold text-slate-900 dark:text-white">
+                      Tiêu chí tìm roommate của bạn
+                    </h3>
+                  </div>
+                  <Button
+                    onClick={() => setIsEditingPreference(true)}
+                    className="h-7 px-3 rounded-lg border border-primary/20 bg-primary/5 hover:bg-primary text-primary hover:text-white text-[10px] font-bold transition-all duration-300 flex items-center gap-1 cursor-pointer shadow-sm"
+                  >
+                    <Edit3 className="h-3 w-3" />
+                    Cập nhật
+                  </Button>
                 </div>
-                <div className="min-w-0">
-                  <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block font-body">
-                    Diện tích yêu cầu
-                  </span>
-                  <span className="text-[11px] text-slate-800 dark:text-slate-200 font-extrabold block truncate font-body">
-                    Từ {area} m² trở lên
-                  </span>
+
+                <div className="grid grid-cols-2 gap-3 text-[11px]">
+                  <div className="flex items-center gap-2 bg-white/60 dark:bg-stone-850 p-2.5 rounded-xl border border-slate-100 dark:border-white/5">
+                    <Coins className="h-4 w-4 text-amber-500 shrink-0" />
+                    <div className="min-w-0">
+                      <span className="text-[9px] text-slate-400 block font-body">Ngân sách</span>
+                      <span className="font-bold text-slate-800 dark:text-slate-200 block truncate">{formatVND(budget_min)} - {formatVND(budget_max)}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 bg-white/60 dark:bg-stone-850 p-2.5 rounded-xl border border-slate-100 dark:border-white/5">
+                    <MapPin className="h-4 w-4 text-red-500 shrink-0" />
+                    <div className="min-w-0">
+                      <span className="text-[9px] text-slate-400 block font-body">Khu vực</span>
+                      <span className="font-bold text-slate-800 dark:text-slate-200 block truncate">{district || "Bất kỳ"}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 bg-white/60 dark:bg-stone-850 p-2.5 rounded-xl border border-slate-100 dark:border-white/5">
+                    <Clock className="h-4 w-4 text-indigo-500 shrink-0" />
+                    <div className="min-w-0">
+                      <span className="text-[9px] text-slate-400 block font-body">Giờ ngủ nghỉ</span>
+                      <span className="font-bold text-slate-800 dark:text-slate-200 block truncate">~ {sleep_time}:00</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 bg-white/60 dark:bg-stone-850 p-2.5 rounded-xl border border-slate-100 dark:border-white/5">
+                    <Sparkles className="h-4 w-4 text-emerald-500 shrink-0" />
+                    <div className="min-w-0">
+                      <span className="text-[9px] text-slate-400 block font-body">Độ sạch sẽ</span>
+                      <span className="font-bold text-slate-800 dark:text-slate-200 block truncate">Cấp {cleanliness_level}/5</span>
+                    </div>
+                  </div>
                 </div>
               </div>
+            </motion.div>
 
-              {/* Box 7: Smoking */}
-              <div className="bg-white/60 dark:bg-stone-900/60 backdrop-blur-sm border border-border/50 rounded-2xl p-4 flex items-center gap-3 transition-all duration-300 hover:border-primary/20 hover:bg-white/80">
-                <div className="h-10 w-10 rounded-xl bg-amber-50 dark:bg-amber-950/20 text-amber-600 flex items-center justify-center shrink-0">
-                  <Cigarette className="h-5 w-5" />
-                </div>
-                <div className="min-w-0">
-                  <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block font-body">
-                    Thói quen hút thuốc
-                  </span>
-                  <span className="text-[11px] text-slate-800 dark:text-slate-200 font-extrabold block truncate font-body">
-                    {smoking ? "Hút thuốc" : "Không hút thuốc"}
-                  </span>
-                </div>
+            {/* CENTER / RIGHT COLUMN: Interactive Recommendation Deck Card (MatchingCard component) */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.3 }}
+              className="lg:col-span-7 flex justify-center w-full"
+            >
+              <div className="w-full max-w-lg rounded-[2.5rem] border border-white/40 bg-white/30 dark:bg-stone-900/30 backdrop-blur-xl p-6 sm:p-8 shadow-2xl flex flex-col items-center">
+                <MatchingCard />
               </div>
-
-              {/* Box 8: Pet friendly */}
-              <div className="bg-white/60 dark:bg-stone-900/60 backdrop-blur-sm border border-border/50 rounded-2xl p-4 flex items-center gap-3 transition-all duration-300 hover:border-primary/20 hover:bg-white/80">
-                <div className="h-10 w-10 rounded-xl bg-purple-50 dark:bg-purple-950/20 text-purple-600 flex items-center justify-center shrink-0">
-                  <PawPrint className="h-5 w-5" />
-                </div>
-                <div className="min-w-0">
-                  <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block font-body">
-                    Chấp nhận nuôi thú
-                  </span>
-                  <span className="text-[11px] text-slate-800 dark:text-slate-200 font-extrabold block truncate font-body">
-                    {pet_friendly ? "Cho nuôi thú" : "Không nuôi thú"}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Interactive Recommendation Deck Card (MatchingCard component) */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.2 }}
-            className="w-full flex justify-center mt-6"
-          >
-            <div className="w-full max-w-lg rounded-[2.5rem] border border-white/40 bg-white/30 dark:bg-stone-900/30 backdrop-blur-xl p-6 sm:p-8 shadow-2xl">
-              <MatchingCard />
-            </div>
-          </motion.div>
+            </motion.div>
+          </div>
         </div>
       </div>
     );

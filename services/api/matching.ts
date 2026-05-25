@@ -1,6 +1,7 @@
 import { ApiResponse } from "@/schema/common/api.type";
 import axiosInstance from "../axiosInstance";
 import { UserPreference } from "@/schema/matching/UserPreference";
+import { UserMatching } from "@/schema/matching/UserMatching";
 
 const BASE_URL = "/roommates";
 
@@ -13,7 +14,7 @@ export const MatchingApi = {
   },
 
   getMatches: async () => {
-    const response = await axiosInstance.get<ApiResponse<UserPreference[]>>(
+    const response = await axiosInstance.get<ApiResponse<UserMatching[]>>(
       `${BASE_URL}/match`,
     );
     return response.data;
