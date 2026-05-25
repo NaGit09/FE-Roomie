@@ -1,0 +1,318 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { 
+  TrendingUp, 
+  Sparkles,
+  ChevronUp,
+  Download,
+  Calendar,
+  FileText,
+  Filter,
+  ArrowRight,
+  TrendingDown,
+  LineChart,
+  Compass
+} from "lucide-react";
+import { useAuthStore } from "@/stores/authStore";
+import formatVND from "@/utils/priceUtils";
+import { 
+  ResponsiveContainer, 
+  AreaChart, 
+  Area, 
+  XAxis, 
+  YAxis, 
+  Tooltip, 
+  CartesianGrid, 
+  BarChart, 
+  Bar, 
+  Legend, 
+  PieChart, 
+  Pie, 
+  Cell 
+} from "recharts";
+import { toast } from "sonner";
+
+export default function LandlordStatisticPage() {
+  const { user } = useAuthStore();
+  const [mounted, setMounted] = useState(false);
+  const [timeRange, setTimeRange] = useState<"30" | "90" | "365">("90");
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  if (!mounted) return null;
+
+  const currentUser = user || {
+    full_name: "Nguyễn Văn Landlord",
+    email: "landlord@roomie.com",
+    role: "LANDLORD"
+  };
+
+  // Mock data for charts
+  const revenueData = [
+    { month: "Tháng 12", revenue: 19000000 },
+    { month: "Tháng 01", revenue: 21500000 },
+    { month: "Tháng 02", revenue: 22000000 },
+    { month: "Tháng 03", revenue: 25000000 },
+    { month: "Tháng 04", revenue: 27800000 },
+    { month: "Tháng 05", revenue: 28500000 },
+  ];
+
+  const postTrafficData = [
+    { name: "Tin Quận 1", views: 1850, connects: 120 },
+    { name: "Tin Quận 3", views: 1200, connects: 75 },
+    { name: "Tin Quận 10", views: 950, connects: 68 },
+    { name: "Tin Bình Thạnh", views: 2400, connects: 190 },
+    { name: "Tin Thủ Đức", views: 800, connects: 42 },
+  ];
+
+  const roomStatusData = [
+    { name: "Đã có khách ở", value: 12, color: "#10B981" },
+    { name: "Phòng trống", value: 3, color: "#F59E0B" },
+  ];
+
+  const RADIAN = Math.PI / 180;
+  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+    return (
+      <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" className="text-[10px] font-black">
+        {`${(percent * 100).toFixed(0)}%`}
+      </text>
+    );
+  };
+
+  const handleExport = (format: "pdf" | "excel") => {
+    toast.info(`Đang tạo báo cáo thống kê định dạng ${format.toUpperCase()}...`);
+    setTimeout(() => {
+      toast.success(`Đã xuất và tải xuống báo cáo thành công!`);
+    }, 1500);
+  };
+
+  return (
+    <div className="space-y-10 animate-fade-in text-[#F8FAFC]">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 border-b border-white/5 pb-6">
+        <div className="space-y-1.5">
+          <motion.div
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="inline-flex items-center gap-2 rounded-full border border-[#8B5CF6]/20 bg-[#8B5CF6]/5 px-4.5 py-1.5 text-xs font-semibold uppercase tracking-widest text-[#8B5CF6]"
+          >
+            <LineChart className="h-3.5 w-3.5" />
+            Báo cáo Vận hành
+          </motion.div>
+          <h1 className="font-heading text-3xl font-extrabold tracking-tight text-slate-100">
+            Báo cáo thống kê chi tiết
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-400 font-medium font-body leading-relaxed max-w-xl">
+            Theo dõi dòng tiền doanh thu thực tế, lượt tiếp cận khách thuê và phân bổ hiệu suất lấp đầy phòng trống.
+          </p>
+        </div>
+
+        {/* Exporter actions */}
+        <div className="flex items-center gap-2.5 shrink-0 self-start sm:self-center">
+          <button
+            onClick={() => handleExport("excel")}
+            className="h-11 px-5 rounded-xl border border-white/10 hover:bg-white/5 text-slate-350 text-xs font-black uppercase tracking-wider cursor-pointer transition-all flex items-center gap-1.5 shadow-sm"
+          >
+            <Download className="h-4 w-4" />
+            Excel
+          </button>
+          <button
+            onClick={() => handleExport("pdf")}
+            className="h-11 px-5 rounded-xl bg-[#F59E0B] hover:bg-[#FBBF24] text-slate-900 text-xs font-black uppercase tracking-wider cursor-pointer transition-all flex items-center gap-1.5 shadow-md shadow-[#F59E0B]/10"
+          >
+            <FileText className="h-4 w-4" />
+            Xuất PDF
+          </button>
+        </div>
+      </div>
+
+      {/* Filter range toggles */}
+      <div className="flex justify-between items-center bg-[#0f172a]/40 border border-white/5 rounded-2xl p-4">
+        <div className="flex items-center gap-2 text-xs text-slate-400 font-bold uppercase tracking-widest">
+          <Filter className="h-4 w-4 text-slate-500" />
+          <span>Khoảng thời gian:</span>
+        </div>
+        
+        <div className="flex items-center gap-1 bg-[#0b0f19] p-1 rounded-xl border border-white/5">
+          {[
+            { id: "30", label: "30 Ngày qua" },
+            { id: "90", label: "90 Ngày qua" },
+            { id: "365", label: "1 Năm qua" },
+          ].map((range) => (
+            <button
+              key={range.id}
+              onClick={() => setTimeRange(range.id as any)}
+              className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
+                timeRange === range.id
+                  ? "bg-[#F59E0B] text-slate-900 shadow"
+                  : "text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              {range.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Grid Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        {/* CHART 1: AreaChart Doanh Thu (8 Columns) */}
+        <div className="lg:col-span-8 rounded-[2.5rem] border border-white/5 bg-[#0f172a]/40 backdrop-blur-md p-6 sm:p-8 shadow-xl space-y-6">
+          <div className="flex justify-between items-center">
+            <div className="space-y-1">
+              <span className="text-[9px] font-black uppercase text-[#F59E0B] tracking-widest block">
+                Financial Report
+              </span>
+              <h3 className="text-lg font-bold text-slate-100">Dòng tiền doanh thu</h3>
+            </div>
+            <div className="flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 text-[10px] font-bold text-emerald-400">
+              <ChevronUp className="h-3.5 w-3.5" />
+              +50% Tăng trưởng
+            </div>
+          </div>
+
+          <div className="h-[280px] w-full text-xs font-semibold">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={revenueData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.25} />
+                    <stop offset="95%" stopColor="#F59E0B" stopOpacity={0.0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
+                <XAxis 
+                  dataKey="month" 
+                  stroke="rgba(255,255,255,0.3)" 
+                  tickLine={false} 
+                  axisLine={false}
+                  dy={10}
+                />
+                <YAxis 
+                  stroke="rgba(255,255,255,0.3)" 
+                  tickLine={false} 
+                  axisLine={false}
+                  tickFormatter={(v) => `${v / 1000000}M`}
+                  dx={-10}
+                />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: "#0f172a", borderColor: "rgba(255,255,255,0.1)", borderRadius: "1rem" }}
+                  labelStyle={{ color: "rgba(255,255,255,0.4)", fontWeight: "bold", fontSize: "10px" }}
+                  itemStyle={{ color: "#F59E0B", fontWeight: "bold" }}
+                  formatter={(value: any) => [formatVND(value), "Doanh thu"]}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="revenue" 
+                  stroke="#F59E0B" 
+                  strokeWidth={3}
+                  fillOpacity={1} 
+                  fill="url(#colorRevenue)" 
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* CHART 2: PieChart Lấp đầy phòng (4 Columns) */}
+        <div className="lg:col-span-4 rounded-[2.5rem] border border-white/5 bg-[#0f172a]/40 backdrop-blur-md p-6 sm:p-8 shadow-xl flex flex-col justify-between space-y-6">
+          <div className="space-y-1">
+            <span className="text-[9px] font-black uppercase text-[#FBBF24] tracking-widest block">
+              Occupancy Ratio
+            </span>
+            <h3 className="text-lg font-bold text-slate-100">Trạng thái phòng thuê</h3>
+          </div>
+
+          <div className="h-[180px] w-full relative flex items-center justify-center">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={roomStatusData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={renderCustomizedLabel}
+                  outerRadius={75}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {roomStatusData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip 
+                  contentStyle={{ backgroundColor: "#0f172a", borderColor: "rgba(255,255,255,0.1)", borderRadius: "0.75rem" }}
+                  itemStyle={{ fontWeight: "bold" }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+            {/* Center Absolute indicator */}
+            <div className="absolute text-center select-none pointer-events-none">
+              <span className="text-2xl font-black text-slate-100">15</span>
+              <span className="text-[8px] font-bold text-slate-450 block uppercase tracking-widest">Tổng số phòng</span>
+            </div>
+          </div>
+
+          {/* Custom Legends list */}
+          <div className="space-y-2.5">
+            {roomStatusData.map((item, idx) => (
+              <div key={idx} className="flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2 font-medium">
+                  <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
+                  <span className="text-slate-350">{item.name}</span>
+                </div>
+                <span className="font-extrabold text-slate-100">{item.value} Phòng</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* CHART 3: BarChart Tin đăng clicks (12 Columns FULL) */}
+        <div className="lg:col-span-12 rounded-[2.5rem] border border-white/5 bg-[#0f172a]/40 backdrop-blur-md p-6 sm:p-8 shadow-xl space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <span className="text-[9px] font-black uppercase text-[#8B5CF6] tracking-widest block">
+                Post Performance Traffic
+              </span>
+              <h3 className="text-lg font-bold text-slate-100">Hiệu suất tương tác tin đăng</h3>
+            </div>
+            <div className="rounded-xl bg-white/5 border border-white/5 p-1 flex gap-1.5 text-[9px] font-black uppercase tracking-widest text-slate-400">
+              <span className="flex items-center gap-1 px-3 py-1 bg-[#8B5CF6]/20 rounded-lg text-[#8B5CF6] border border-[#8B5CF6]/30">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#8B5CF6]" /> Lượt xem
+              </span>
+              <span className="flex items-center gap-1 px-3 py-1 bg-[#F59E0B]/20 rounded-lg text-[#F59E0B] border border-[#F59E0B]/30">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#F59E0B]" /> Kết nối
+              </span>
+            </div>
+          </div>
+
+          <div className="h-[280px] w-full text-xs font-semibold">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={postTrafficData} margin={{ top: 20, right: 10, left: 10, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
+                <XAxis dataKey="name" stroke="rgba(255,255,255,0.3)" tickLine={false} axisLine={false} dy={5} />
+                <YAxis stroke="rgba(255,255,255,0.3)" tickLine={false} axisLine={false} dx={-5} />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: "#0f172a", borderColor: "rgba(255,255,255,0.1)", borderRadius: "1rem" }}
+                  labelStyle={{ color: "rgba(255,255,255,0.4)", fontWeight: "bold", fontSize: "10px" }}
+                />
+                <Legend verticalAlign="top" height={36} content={() => null} />
+                <Bar dataKey="views" name="Lượt xem tin" fill="#8B5CF6" radius={[6, 6, 0, 0]} maxBarSize={28} />
+                <Bar dataKey="connects" name="Kết nối thành công" fill="#F59E0B" radius={[6, 6, 0, 0]} maxBarSize={28} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}

@@ -77,7 +77,6 @@ export const useRoomStore = create<RoomState>((set) => ({
     try {
       const response = await roomApi.getPostPagination(query);
       const data = response.data;
-      console.log("Fetched paginated rooms:", data);
       if (data) {
         set({
           paginatedRooms: data.items,

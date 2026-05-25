@@ -26,9 +26,12 @@ import {
   Heart,
   Info,
   RefreshCw,
+  Crown,
 } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { useMatchingStore } from "@/stores/matchingStore";
+import { useSubscriptionStore } from "@/stores/subscriptionStore";
+import SubscriptionModal from "@/components/custom/customer/matching/SubscriptionModal";
 import UserPreference from "@/components/custom/customer/matching/user_preference/UserPreference";
 import MatchingCard from "@/components/custom/customer/matching/matching_item/UserCard";
 import { Button } from "@/components/ui/button";
@@ -39,6 +42,8 @@ import formatVND from "@/utils/priceUtils";
 export default function MatchingPage() {
   const [mounted, setMounted] = React.useState(false);
   const { isAuthenticated } = useAuthStore();
+  const { isSubscribed } = useSubscriptionStore();
+  const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = React.useState(false);
   const {
     hasPreference,
     isEditingPreference,
@@ -76,6 +81,16 @@ export default function MatchingPage() {
       fetchMatches();
     }
   }, [mounted, isAuthenticated, hasPreference, fetchMatches]);
+
+  // Delay opening the modal slightly when landing
+  React.useEffect(() => {
+    if (mounted && isAuthenticated && !isSubscribed) {
+      const timer = setTimeout(() => {
+        setIsSubscriptionModalOpen(true);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [mounted, isAuthenticated, isSubscribed]);
 
 
   // 1. Hydration loading state
@@ -159,6 +174,7 @@ export default function MatchingPage() {
   if (hasPreference === true && !isEditingPreference) {
     return (
       <div className="min-h-screen bg-background relative overflow-hidden py-12 px-4 sm:px-6 lg:px-8 font-sans">
+        <SubscriptionModal isOpen={isSubscriptionModalOpen} onClose={() => setIsSubscriptionModalOpen(false)} />
         {/* Background Aesthetic Decorators */}
         <div className="absolute top-0 left-0 right-0 h-[500px] bg-[linear-gradient(to_bottom,rgba(193,68,14,0.04),transparent)] pointer-events-none" />
         <div className="absolute top-[20%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-primary/3 blur-[120px] pointer-events-none animate-[pulse_8s_infinite]" />
@@ -167,24 +183,49 @@ export default function MatchingPage() {
 
         <div className="mx-auto max-w-7xl relative z-10 space-y-8">
           {/* Header */}
-          <div className="text-left space-y-2 max-w-3xl">
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-primary font-body"
-            >
-              <HeartHandshake className="h-3.5 w-3.5" />
-              So Khớp Roommate AI
-            </motion.div>
+          <div className="text-left space-y-2 max-w-7xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 pb-6">
+            <div className="space-y-2">
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-primary font-body"
+              >
+                <HeartHandshake className="h-3.5 w-3.5" />
+                So Khớp Roommate AI
+              </motion.div>
 
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="font-heading text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 leading-tight"
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.1 }}
+                className="font-heading text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 leading-tight"
+              >
+                Tìm Bạn Đồng Hành Hoàn Hảo
+              </motion.h1>
+            </div>
+
+            {/* Premium Upgrade Display */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="flex items-center gap-3 self-start sm:self-center shrink-0"
             >
-              Tìm Bạn Đồng Hành Hoàn Hảo
-            </motion.h1>
+              {isSubscribed ? (
+                <div className="flex items-center gap-2.5 rounded-2xl border border-amber-400 bg-amber-500/10 px-5 py-3 text-xs font-extrabold text-amber-700 dark:text-amber-400 shadow-md shadow-amber-500/5">
+                  <Crown className="h-4 w-4 text-amber-500 animate-pulse" />
+                  <span>Hội Viên Premium Active</span>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setIsSubscriptionModalOpen(true)}
+                  className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 px-5 py-3 text-xs font-black uppercase tracking-wider text-white shadow-lg hover:shadow-orange-500/20 active:scale-95 transition-all cursor-pointer"
+                >
+                  <Sparkles className="h-4 w-4 animate-pulse" />
+                  <span>Nâng cấp Premium</span>
+                </button>
+              )}
+            </motion.div>
           </div>
 
           {/* Two-Column Layout */}
@@ -346,6 +387,7 @@ export default function MatchingPage() {
   // 5. Default state: if hasPreference === false or isEditingPreference is true, show the Preference Setup Form
   return (
     <div className="min-h-screen bg-background relative overflow-hidden py-16 px-4 sm:px-6 lg:px-8 font-sans">
+      <SubscriptionModal isOpen={isSubscriptionModalOpen} onClose={() => setIsSubscriptionModalOpen(false)} />
       {/* Background Aesthetic Decorators */}
       <div className="absolute top-0 left-0 right-0 h-125 bg-[linear-gradient(to_bottom,rgba(193,68,14,0.04),transparent)] pointer-events-none" />
       <div className="absolute top-[20%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-primary/3 blur-[120px] pointer-events-none animate-[pulse_8s_infinite]" />

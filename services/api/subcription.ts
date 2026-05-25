@@ -12,9 +12,15 @@ export const SubscriptionApi = {
     return response.data;
   },
   
-  check_subscription: async () => {
-    const response = await axiosInstance.get<ApiResponse<boolean>>(
-      `${BASE_URL}/check`,
+  get_all_renter_subscriptions: async () => {
+    const response = await axiosInstance.get<ApiResponse<Subscription[]>>(
+      `${BASE_URL}/all_renter`,
+    );
+    return response.data;
+  },
+    get_all_landlord_subscriptions: async () => {
+    const response = await axiosInstance.get<ApiResponse<Subscription[]>>(
+      `${BASE_URL}/all_landlord`,
     );
     return response.data;
   }
