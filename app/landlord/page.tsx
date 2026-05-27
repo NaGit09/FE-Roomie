@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { 
   Home, 
@@ -17,21 +17,29 @@ import {
 import { useAuthStore } from "@/stores/authStore";
 import formatVND from "@/utils/priceUtils";
 import Link from "next/link";
+import { userApi } from "@/services/api/user";
+
 export default function LandlordDashboardIndex() {
-  const { user } = useAuthStore();
-  const [mounted, setMounted] = useState(false);
+
+  const { user , setUser , isAuthenticated } = useAuthStore();
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    // Define an async function inside the effect
+    const fetchUser = async () => {
+      if (isAuthenticated && !user) {
+        try {
 
-  if (!mounted) return null;
+          const userData = await userApi.getMe();
 
-  const currentUser = user || {
-    full_name: "Nguyễn Văn Landlord",
-    email: "landlord@roomie.com",
-    role: "LANDLORD"
-  };
+          setUser(userData.data);
+        } catch (error) {
+          console.error("Failed to fetch user:", error);
+        }
+      }
+    };
+
+    fetchUser();
+  }, [isAuthenticated, user, setUser]);
 
   // Mock statistics data
   const stats = [
@@ -97,7 +105,7 @@ export default function LandlordDashboardIndex() {
           transition={{ duration: 0.5, delay: 0.1 }}
           className="font-heading text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-100 leading-tight"
         >
-          Xin chào, <span className="bg-gradient-to-r from-[#F59E0B] via-[#FBBF24] to-[#8B5CF6] bg-clip-text text-transparent italic font-display">{currentUser.full_name}</span>
+          Xin chào, <span className="bg-linear-to-r from-[#F59E0B] via-[#FBBF24] to-[#8B5CF6] bg-clip-text text-transparent italic font-display">{user?.full_name}</span>
         </motion.h1>
         <p className="text-xs sm:text-sm text-slate-400 font-medium font-body max-w-2xl leading-relaxed">
           Chào mừng bạn quay lại hệ thống quản trị Roomie Landlord. Dưới đây là thông số vận hành kinh doanh và tình hình khai thác phòng của bạn trong 30 ngày qua.
@@ -162,13 +170,13 @@ export default function LandlordDashboardIndex() {
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5, delay: 0.4 }}
-        className="rounded-[2.5rem] bg-gradient-to-tr from-[#0F172A] via-[#1E293B]/60 to-[#0F172A] border border-white/5 p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl relative overflow-hidden"
+        className="rounded-[2.5rem] bg-linear-to-tr from-[#0F172A] via-[#1E293B]/60 to-[#0F172A] border border-white/5 p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl relative overflow-hidden"
       >
         {/* Glow */}
-        <div className="absolute top-[-50%] right-[-10%] w-[30%] h-[100%] rounded-full bg-[#F59E0B]/10 blur-[80px] pointer-events-none" />
+        <div className="absolute top-[-50%] right-[-10%] w-[30%] h-full rounded-full bg-[#F59E0B]/10 blur-[80px] pointer-events-none" />
 
         <div className="flex items-center gap-5">
-          <div className="h-16 w-16 rounded-2xl bg-gradient-to-tr from-[#F59E0B]/20 to-[#FBBF24]/10 border border-[#F59E0B]/30 flex items-center justify-center text-[#F59E0B] shadow-inner shrink-0">
+          <div className="h-16 w-16 rounded-2xl bg-linear-to-tr from-[#F59E0B]/20 to-[#FBBF24]/10 border border-[#F59E0B]/30 flex items-center justify-center text-[#F59E0B] shadow-inner shrink-0">
             <Zap className="h-8 w-8 text-[#F59E0B] animate-pulse" />
           </div>
           <div className="space-y-1.5 text-left">
@@ -207,7 +215,7 @@ export default function LandlordDashboardIndex() {
             ].map((renter, idx) => (
               <div key={idx} className="flex justify-between items-center pt-4 first:pt-0">
                 <div className="flex items-center gap-3">
-                  <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-[#8B5CF6]/30 to-[#8B5CF6]/5 border border-[#8B5CF6]/20 text-[#8B5CF6] text-xs font-black flex items-center justify-center">
+                  <div className="h-9 w-9 rounded-xl bg-linear-to-tr from-[#8B5CF6]/30 to-[#8B5CF6]/5 border border-[#8B5CF6]/20 text-[#8B5CF6] text-xs font-black flex items-center justify-center">
                     {renter.name.split(" ").slice(-1)[0][0]}
                   </div>
                   <div className="space-y-0.5">

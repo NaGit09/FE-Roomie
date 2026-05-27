@@ -47,7 +47,7 @@ export default function LoginPage() {
       {/* Right side - Login Form Wrapper */}
       <div className="w-full lg:w-1/2 flex items-center justify-center px-8 py-12 bg-background relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(193,68,14,0.03),transparent)] pointer-events-none" />
-        <div className="w-full max-w-[400px] animate-in fade-in slide-in-from-bottom-4 duration-700 relative z-10">
+        <div className="w-full max-w-100 animate-in fade-in slide-in-from-bottom-4 duration-700 relative z-10">
           <div className="flex flex-col space-y-2 mb-8 lg:hidden">
             <Link href="/" className="flex items-center gap-2 mb-4">
               <div className="bg-primary p-1.5 rounded-lg shadow-md shadow-primary/20">

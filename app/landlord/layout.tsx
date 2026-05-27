@@ -119,16 +119,16 @@ export default function LandlordLayout({
   ];
 
   return (
-    <div className="bg-[#0b0f19] text-[#F8FAFC] min-h-screen font-sans antialiased overflow-x-hidden relative flex">
+    <div className="bg-[#0b0f19] text-[#F8FAFC] min-h-screen md:h-screen font-sans antialiased overflow-x-hidden md:overflow-hidden relative flex">
       {/* Background radial glowing effects */}
       <div className="absolute top-0 left-0 w-[50vw] h-[50vw] rounded-full bg-[#F59E0B]/5 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-0 right-0 w-[40vw] h-[40vw] rounded-full bg-[#8B5CF6]/5 blur-[100px] pointer-events-none" />
 
       {/* Grid Layout: 1 Row, 2 Columns */}
-      <div className="w-full grid grid-cols-1 md:grid-cols-[280px_1fr] relative z-10 min-h-screen">
+      <div className="w-full grid grid-cols-1 md:grid-cols-[280px_1fr] relative z-10 min-h-screen md:h-screen md:overflow-hidden">
         
         {/* COLUMN 1: Sidebar Nav Menu */}
-        <aside className="border-r border-white/5 bg-[#0f172a]/60 backdrop-blur-xl p-6 flex flex-col justify-between h-screen sticky top-0">
+        <aside className="border-r border-white/5 bg-[#0f172a]/60 backdrop-blur-xl p-6 flex flex-col justify-between h-fit md:h-full md:sticky md:top-0 overflow-y-auto shrink-0">
           
           {/* Top Branding & Profile Summary */}
           <div className="space-y-8">
@@ -221,7 +221,7 @@ export default function LandlordLayout({
         </aside>
 
         {/* COLUMN 2: Content pane */}
-        <main className="min-w-0 p-8 sm:p-12 flex flex-col justify-start">
+        <main className="min-w-0 p-8 sm:p-12 flex flex-col justify-start md:overflow-y-auto md:h-screen">
           {children}
         </main>
       </div>

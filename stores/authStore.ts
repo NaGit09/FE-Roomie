@@ -32,6 +32,8 @@ export const useAuthStore = create<AuthState>()(
 
         setCookie("user_id", data.user_id);
 
+        setCookie("role", data.role);
+
         set({ accessToken: data.access_token, isAuthenticated: true });
       },
 

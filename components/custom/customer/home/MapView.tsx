@@ -1,11 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
-// Fix broken default marker icons when bundled by webpack/Next.js
 const DefaultIcon = L.icon({
   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
   iconRetinaUrl:
@@ -27,7 +25,7 @@ export default function MapView() {
       center={HCM_COORDS}
       zoom={13}
       scrollWheelZoom={true}
-      className="w-full h-[600px] rounded-xl"
+      className="w-full h-150 rounded-xl"
     >
       <TileLayer
         attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"

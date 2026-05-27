@@ -13,6 +13,7 @@ export const loginResSchema = z.object({
   token_type: z.string(),
   expires_in: z.number(),
   user_id: z.string(),
+  role: z.enum(["RENTER", "LANDLORD", "ADMIN"]),
 });
 
 export type LoginResSchema = z.infer<typeof loginResSchema>;

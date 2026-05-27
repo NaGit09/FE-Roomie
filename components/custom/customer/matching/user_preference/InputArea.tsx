@@ -1,14 +1,14 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
 import { Scaling } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { useUserPreferenceForm } from "@/hooks/matching/useUserPreferenceForm";
-const InputArea = () => {
-  const {
-    form: {
-      register,
-      formState: { errors },
-    },
-  } = useUserPreferenceForm();
+
+interface InputAreaProps {
+  register: any;
+  errors: any;
+}
+
+const InputArea: React.FC<InputAreaProps> = ({ register, errors }) => {
   return (
     <div className="space-y-1.5 w-full">
       <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block font-body">

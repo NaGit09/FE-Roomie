@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Home,
   User,
@@ -22,6 +22,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuthStore } from "@/stores/authStore";
+import { userApi } from "@/services/api/user";
+
 const NAV_LINKS = [
   { href: "/", label: "Trang chủ" },
   { href: "/matching", label: "Tìm bạn" },
@@ -32,10 +34,9 @@ const NAV_LINKS = [
 
 export default function CustomerHeader() {
   const pathname = usePathname();
-  const { user, isAuthenticated, clearAuth } = useAuthStore();
+  const { user, isAuthenticated, clearAuth, setUser } = useAuthStore();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  // Generate initials cleanly from user's full_name
   const initials =
     user && user.full_name
       ? user.full_name
@@ -53,6 +54,23 @@ export default function CustomerHeader() {
     window.location.href = "/auth/login";
     setMobileOpen(false);
   };
+  useEffect(() => {
+    // Define an async function inside the effect
+    const fetchUser = async () => {
+      if (isAuthenticated && !user) {
+        try {
+
+          const userData = await userApi.getMe();
+
+          setUser(userData.data);
+        } catch (error) {
+          console.error("Failed to fetch user:", error);
+        }
+      }
+    };
+
+    fetchUser();
+  }, [isAuthenticated, user, setUser]);
   return (
     <header className="sticky top-0 z-50 w-full">
       {/* Main bar */}

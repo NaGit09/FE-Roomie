@@ -1,14 +1,15 @@
 import { LoginReqSchema, LoginResSchema } from "@/schema/auth/login";
-import { RegisterReqSchema, RegisterResSchema } from "@/schema/auth/register";
+import { RegisterReqSchema } from "@/schema/auth/register";
 import axiosInstance from "@/services/axiosInstance";
 
 import { ApiResponse } from "@/schema/common/api.type";
 import { ForgotPasswordSchema } from "@/schema/auth/forgot-password";
 import { ChangePasswordSchema } from "@/schema/auth/change-password";
 
-const BASE_URL = "/users/auth";
+const BASE_URL = "/auth";
 
-export const authApi = {
+export const AuthApi = {
+  
   login: async (data: LoginReqSchema) => {
     const response = await axiosInstance.post<ApiResponse<LoginResSchema>>(
       `${BASE_URL}/login`,
@@ -17,18 +18,25 @@ export const authApi = {
     return response.data;
   },
 
-  register: async (data: RegisterReqSchema): Promise<void> => {
-    await axiosInstance.post<ApiResponse<RegisterResSchema>>(
+  register: async (data: RegisterReqSchema) => {
+    await axiosInstance.post<ApiResponse<boolean>>(
       `${BASE_URL}/register`,
       data,
     );
   },
 
-  forgotPassword: async (data: ForgotPasswordSchema): Promise<void> => {
+  register_landlord: async (data: RegisterReqSchema) => {
+    await axiosInstance.post<ApiResponse<boolean>>(
+      `${BASE_URL}/register/landlord`,
+      data,
+    );
+  },
+
+  forgotPassword: async (data: ForgotPasswordSchema) => {
     await axiosInstance.post(`${BASE_URL}/forgot-password`, data);
   },
 
-  changePassword: async (data: ChangePasswordSchema): Promise<void> => {
+  changePassword: async (data: ChangePasswordSchema) => {
     await axiosInstance.post(`${BASE_URL}/change-password`, data);
   },
 
@@ -37,5 +45,9 @@ export const authApi = {
       `${BASE_URL}/refresh-token`,
     );
     return res.data;
+  },
+
+  logout: async (): Promise<void> => {
+    await axiosInstance.post(`${BASE_URL}/logout`);
   },
 };

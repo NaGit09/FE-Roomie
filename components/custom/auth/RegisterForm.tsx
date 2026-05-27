@@ -7,20 +7,19 @@ import { Mail, Lock, User, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { useRegister } from "@/hooks/auth/useRegister";
-import { type RegisterReqSchema, registerReqSchema } from "@/schema/auth/register";
+import {
+  type RegisterReqSchema,
+  registerReqSchema,
+} from "@/schema/auth/register";
 
 export function RegisterForm() {
-
   const { register: registerUser, loading, error } = useRegister();
-  
+
   const {
     register,
     handleSubmit,
-    setValue,
-    watch,
     formState: { errors },
   } = useForm<RegisterReqSchema>({ resolver: zodResolver(registerReqSchema) });
 

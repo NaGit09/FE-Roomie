@@ -184,9 +184,6 @@ export const UserMatchingCard = () => {
 
   const handleSwipeRight = () => {
     setSwipeDirection("right");
-    if (activeCandidate) {
-      handleConnect(activeCandidate.id, activeCandidate.name);
-    }
     setTimeout(() => {
       setCardIndex((prev) => prev + 1);
       setSwipeDirection(null);
@@ -243,7 +240,7 @@ export const UserMatchingCard = () => {
             {nextCandidate && (
               <div className="absolute inset-0 w-full h-full rounded-3xl bg-white/60 dark:bg-stone-850/60 backdrop-blur-md border border-white/30 shadow-lg scale-[0.95] translate-y-4 opacity-50 pointer-events-none -z-10 transition-all duration-300 flex flex-col justify-between p-6">
                 <div className="flex items-start justify-between">
-                  <div className={`h-12 w-12 rounded-xl bg-gradient-to-tr ${nextCandidate.avatarGradient} text-white font-heading font-black text-md flex items-center justify-center opacity-70`}>
+                  <div className={`h-12 w-12 rounded-xl bg-linear-to-tr ${nextCandidate.avatarGradient} text-white font-heading font-black text-md flex items-center justify-center opacity-70`}>
                     {nextCandidate.name.split(" ").slice(-1)[0][0]}
                   </div>
                   <span className="inline-flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-600 border border-emerald-100 px-2 py-0.5 rounded-full">

@@ -1,13 +1,11 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import {
   Home,
-  Target,
   Heart,
-  Shield,
   ArrowRight,
   Building2,
   CheckCircle,
@@ -17,197 +15,34 @@ import {
   ChevronRight,
   Smile,
   BadgeCheck,
-  Lock,
   MapPin,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-// ── Data Constants ──────────────────────────────────────────────
-
-const STATS = [
-  { value: 10000, suffix: "+", label: "Khách Thuê Hài Lòng" },
-  { value: 3500,  suffix: "+", label: "Căn Phòng Xác Thực" },
-  { value: 120,   suffix: "+", label: "Thành Phố Phủ Sóng" },
-  { value: 98,    suffix: "%", label: "Tỷ Lệ Hài Lòng" },
-];
-
-const VALUES = [
-  {
-    icon: Shield,
-    title: "100% Xác Thực Thực Tế",
-    subtitle: "Chính Sách Chống Gian Lận",
-    description:
-      "Mỗi căn phòng trên Roomie đều trải qua quy trình kiểm tra thực địa 24 bước nghiêm ngặt bởi nhân viên địa phương. Chúng tôi thực hiện quét 3D, đối chiếu giấy tờ sở hữu và chỉ số điện nước để bạn an tâm ký thuê.",
-    color: "from-orange-500/10 to-amber-500/10",
-  },
-  {
-    icon: Heart,
-    title: "Hòa Hợp Phong Cách Sống",
-    subtitle: "Cộng Đồng & Bình Yên",
-    description:
-      "Một ngôi nhà chỉ thực sự ấm áp khi bạn hòa hợp với những người sống cùng. Thuật toán thông minh của chúng tôi tính toán đến giờ giấc sinh hoạt, thói quen dọn dẹp và ranh giới cá nhân — không chỉ dừng lại ở ngân sách và diện tích.",
-    color: "from-pink-500/10 to-rose-500/10",
-  },
-  {
-    icon: Target,
-    title: "Công Nghệ Bất Động Sản Chính Xác",
-    subtitle: "Tối Ưu Thời Gian Tìm Kiếm",
-    description:
-      "Hệ thống AI của chúng tôi chấm điểm và ánh xạ hồ sơ của bạn với hàng ngàn phòng trong vài mili-giây. Loại bỏ hoàn toàn thời gian lướt tìm vô ích, thời gian trung bình để tìm thấy căn nhà ưng ý trên Roomie chỉ mất 4.8 ngày.",
-    color: "from-blue-500/10 to-indigo-500/10",
-  },
-  {
-    icon: Lock,
-    title: "Tấm Khiên Bảo Mật Thông Tin",
-    subtitle: "Quyền Riêng Tư Tuyệt Đối",
-    description:
-      "Nhắn tin, đặt lịch xem phòng và thương lượng hợp đồng hoàn toàn an toàn ngay trên nền tảng. Số điện thoại, Zalo và email của bạn sẽ luôn được mã hóa ẩn danh cho đến khi hợp đồng điện tử được chính thức ký kết.",
-    color: "from-emerald-500/10 to-teal-500/10",
-  },
-];
-
-const TEAM = [
-  {
-    name: "An Nguyễn",
-    role: "Co-founder & CEO",
-    initials: "AN",
-    bio: "Cựu Giám đốc sản phẩm tại startup PropTech hàng đầu. Mang trong mình khát vọng đem lại sự an toàn và triết lý lấy con người làm trọng tâm vào thị trường cho thuê Đông Nam Á.",
-    dreamRoom: {
-      title: "Căn Gác Lửng Tối Giản Ngập Tràn Ánh Sáng",
-      location: "Quận 3, TP. Hồ Chí Minh",
-      tags: ["☕ Gần Quán Cà Phê", "🧹 Vệ Sinh Ngăn Nắp", "🏡 Diện Tích Rộng Rãi"],
-      lifestyle: "Dậy sớm đón bình minh, thích tự pha cà phê tại nhà, yêu thích thiết kế trần cao thoáng đãng.",
-      funFact: "Thành lập Roomie sau khi phải ở khách sạn tạm bợ suốt 21 ngày chỉ để tìm kiếm một căn hộ thực tế đúng như quảng cáo khi trở về TP.HCM."
-    }
-  },
-  {
-    name: "Linh Trần",
-    role: "Co-founder & CTO",
-    initials: "LT",
-    bio: "Kiến trúc sư phần mềm Full-stack với 8 năm kinh nghiệm xây dựng hệ thống lớn. Đam mê cơ sở dữ liệu đồ thị, bảo mật dữ liệu và hợp đồng số thông minh.",
-    dreamRoom: {
-      title: "Căn Hộ Studio Tự Động Hóa Thông Minh",
-      location: "Tây Hồ, Hà Nội",
-      tags: ["💻 Internet Tốc Độ Cao", "🤫 Yên Tĩnh & Cách Âm", "🏡 Diện Tích Rộng Rãi"],
-      lifestyle: "Cú đêm chính hiệu, thích lắp ráp nhà thông minh, có sở thích sưu tầm bàn phím cơ custom.",
-      funFact: "Lập trình bản chạy thử đầu tiên của thuật toán ghép đôi chỉ trong 48 giờ hackathon liên tục nhờ sự đồng hành của caffeine, đối chiếu thử trên 100 phòng giả lập."
-    }
-  },
-  {
-    name: "Minh Phạm",
-    role: "Head of Design",
-    initials: "MP",
-    bio: "Từng làm việc tại agency sáng tạo toàn cầu hàng đầu. Minh tin rằng thiết kế tuyệt vời là thiết kế tạo cảm giác tự nhiên nhất và chạm đến cảm xúc người dùng.",
-    dreamRoom: {
-      title: "Căn Hộ Gác Lửng Phong Cách Bắc Âu Xanh Mát",
-      location: "Sơn Trà, Đà Nẵng",
-      tags: ["🏡 Diện Tích Rộng Rãi", "🐱 Thân Thiện Thú Cưng", "☕ Gần Quán Cà Phê"],
-      lifestyle: "Thích trồng cây bàng Singapore, chạy bộ dọc bờ biển mỗi chiều, theo đuổi lối sống tối giản.",
-      funFact: "Tự tay vẽ những nét biểu tượng cấu trúc đầu tiên của Roomie lên bức tường gạch tại văn phòng làm việc chung năm 2021."
-    }
-  },
-  {
-    name: "Thu Lê",
-    role: "Head of Operations",
-    initials: "TL",
-    bio: "Từng xây dựng và quản trị đội ngũ vận hành tại hai startup kỳ lân trong khu vực. Người giữ lửa cho mạng lưới thẩm định viên thực địa chuyên nghiệp và năng suất.",
-    dreamRoom: {
-      title: "Căn Hộ Studio Hiện Đại Tiện Nghi",
-      location: "Quận 2, TP. Hồ Chí Minh",
-      tags: ["🧹 Vệ Sinh Ngăn Nắp", "🤫 Yên Tĩnh & Cách Âm", "🐱 Thân Thiện Thú Cưng"],
-      lifestyle: "Tập yoga thường xuyên, tình nguyện viên tại trạm cứu hộ động vật, quản lý thời gian cực kỳ nghiêm ngặt.",
-      funFact: "Tự tay tối ưu thuật toán dẫn đường cho nhân viên thẩm định thực địa, giúp giảm 42% thời gian di chuyển và lượng khí thải carbon phát sinh."
-    }
-  },
-];
-
-const MILESTONES = [
-  {
-    year: "2021",
-    title: "Khởi Đầu Kiến Tạo",
-    event: "Roomie được thành lập tại một không gian làm việc chung nhỏ ở Quận 1, TP.HCM, bởi ba nhà sáng lập với tầm nhìn về những căn phòng thuê được xác thực 100%.",
-    detail: "Ban đầu ra mắt dưới dạng một công cụ web đơn giản kết nối các chủ nhà uy tín với nhân viên văn phòng, lập trình viên cần thuê phòng dài hạn tin cậy."
-  },
-  {
-    year: "2022",
-    title: "Cam Kết Xác Thực Toàn Diện",
-    event: "Tiên phong chuẩn hóa quy trình 'Thẩm định thực tế tại nhà' ở TP.HCM. Đạt mốc 500 căn phòng được kiểm định toàn diện và 2.000 thành viên hoạt động.",
-    detail: "Giới thiệu cơ chế giữ tiền cọc trung gian an toàn, loại bỏ hoàn toàn các trường hợp chủ nhà ảo bùng tiền cọc."
-  },
-  {
-    year: "2023",
-    title: "Kỷ Nguyên Thuật Toán Ghép Đôi",
-    event: "Mở rộng dịch vụ ra Hà Nội và Đà Nẵng. Chính thức ra mắt thuật toán ghép đôi tương thích phong cách sống độc bản.",
-    detail: "Ứng dụng công nghệ quét không gian 3D, cho phép khách thuê ở tỉnh xa tham quan toàn cảnh căn phòng trực quan trước khi đến trực tiếp."
-  },
-  {
-    year: "2024",
-    title: "Bứt Phá Quy Mô & Gọi Vốn Series A",
-    event: "Vượt mốc 10.000 khách thuê hài lòng trên ứng dụng. Gọi vốn thành công vòng Series A để phát triển hạ tầng pháp lý hợp đồng số.",
-    detail: "Tích hợp hệ thống thông báo khai báo tạm trú tự động, giúp cả khách thuê trong nước và nước ngoài hoàn tất thủ tục hành chính dễ dàng."
-  },
-  {
-    year: "2025",
-    title: "Vươn Tầm Khu Vực",
-    event: "Mở rộng đến các thành phố lớn tại Đông Nam Á. Phủ sóng trên 120+ đô thị, tiếp tục khôi phục niềm tin trong lĩnh vực thuê nhà tại mỗi điểm đến.",
-    detail: "Ra mắt các tính năng đa ngôn ngữ để xóa nhòa rào cản giữa khách thuê người nước ngoài và các chủ nhà địa phương uy tín."
-  },
-];
-
-// ── Interactive Matching Simulator Mock Data ─────────────────────
-
-const LIFESTYLE_TAGS = [
-  { id: "Spacious", label: "🏡 Diện Tích Rộng Rãi", desc: "Diện tích phòng > 25m²" },
-  { id: "Pet Friendly", label: "🐱 Thân Thiện Thú Cưng", desc: "Chào đón thú cưng" },
-  { id: "Near Cafes", label: "☕ Gần Quán Cà Phê", desc: "Khoảng cách đi bộ" },
-  { id: "High-speed Wifi", label: "💻 Internet Tốc Độ Cao", desc: "Đường truyền cáp quang" },
-  { id: "Quiet Space", label: "🤫 Yên Tĩnh & Cách Âm", desc: "Phù hợp người nhạy âm" },
-  { id: "Clean & Tidy", label: "🧹 Vệ Sinh Ngăn Nắp", desc: "Có lịch dọn dẹp chung" },
-];
-
-const CANDIDATE_ROOMS = [
-  {
-    id: 1,
-    name: "Urban Oasis Loft",
-    location: "Quận 1, TP. Hồ Chí Minh",
-    tags: ["Spacious", "Near Cafes", "Clean & Tidy"],
-    price: "8,500,000 ₫",
-    features: "Ban công riêng, trần cao 4m, không gian cà phê chung tầng trệt tiện lợi.",
-    baseMatch: 58,
-    color: "from-rose-500/20 to-orange-500/20",
-  },
-  {
-    id: 2,
-    name: "Tech Haven Studio",
-    location: "Tây Hồ, Hà Nội",
-    tags: ["High-speed Wifi", "Quiet Space", "Spacious"],
-    price: "7,200,000 ₫",
-    features: "Góc làm việc chuyên dụng, cửa kính hộp cách âm, máy phát điện mặt trời dự phòng.",
-    baseMatch: 52,
-    color: "from-cyan-500/20 to-blue-500/20",
-  },
-  {
-    id: 3,
-    name: "Green Garden Room",
-    location: "Ngũ Hành Sơn, Đà Nẵng",
-    tags: ["Pet Friendly", "Quiet Space", "Near Cafes"],
-    price: "6,000,000 ₫",
-    features: "Lối ra sân vườn thảm cỏ mát mẻ, trạm tắm thú cưng riêng, đi bộ ngắn ra bãi biển.",
-    baseMatch: 48,
-    color: "from-emerald-500/20 to-amber-500/20",
-  },
-];
+import {
+  STATS,
+  VALUES,
+  TEAM,
+  LIFESTYLE_TAGS,
+  CANDIDATE_ROOMS,
+  MILESTONES,
+} from "@/constant/about";
 
 // ── Helper Components ───────────────────────────────────────────
 
-function AnimatedCounter({ target, suffix = "" }: { target: number; suffix?: string }) {
+function AnimatedCounter({
+  target,
+  suffix = "",
+}: {
+  target: number;
+  suffix?: string;
+}) {
   const [count, setCount] = useState(0);
   const ref = useRef<HTMLSpanElement>(null);
   const isInView = useInView(ref, { once: true, amount: 0.5 });
 
   useEffect(() => {
     if (!isInView) return;
-    
+
     let start = 0;
     const duration = 1500;
     const steps = 60;
@@ -231,7 +66,8 @@ function AnimatedCounter({ target, suffix = "" }: { target: number; suffix?: str
 
   return (
     <span ref={ref} className="tabular-nums">
-      {count.toLocaleString()}{suffix}
+      {count.toLocaleString()}
+      {suffix}
     </span>
   );
 }
@@ -240,8 +76,13 @@ function AnimatedCounter({ target, suffix = "" }: { target: number; suffix?: str
 
 export default function AboutPage() {
   // Interactive Simulator States
-  const [selectedTags, setSelectedTags] = useState<string[]>(["Near Cafes", "Spacious"]);
-  const [activeTeamMember, setActiveTeamMember] = useState<typeof TEAM[0] | null>(null);
+  const [selectedTags, setSelectedTags] = useState<string[]>([
+    "Near Cafes",
+    "Spacious",
+  ]);
+  const [activeTeamMember, setActiveTeamMember] = useState<
+    (typeof TEAM)[0] | null
+  >(null);
   const [activeWayTab, setActiveWayTab] = useState<"roomie" | "old">("roomie");
 
   // Tag toggle handler for matching engine
@@ -262,20 +103,18 @@ export default function AboutPage() {
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden font-sans">
-      
       {/* ── Background Aesthetic Decorators ── */}
-      <div className="absolute top-0 left-0 right-0 h-[600px] bg-[linear-gradient(to_bottom,rgba(193,68,14,0.04),transparent)] pointer-events-none" />
-      
+      <div className="absolute top-0 left-0 right-0 h-150 bg-[linear-gradient(to_bottom,rgba(193,68,14,0.04),transparent)] pointer-events-none" />
+
       <div className="absolute top-[20%] left-[-10%] w-[45vw] h-[45vw] rounded-full bg-primary/3 blur-[120px] pointer-events-none animate-[pulse_8s_infinite]" />
       <div className="absolute top-[60%] right-[-10%] w-[35vw] h-[35vw] rounded-full bg-primary/4 blur-[100px] pointer-events-none animate-[pulse_10s_infinite_1s]" />
 
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#C1440E05_1px,transparent_1px),linear-gradient(to_bottom,#C1440E05_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#C1440E05_1px,transparent_1px),linear-gradient(to_bottom,#C1440E05_1px,transparent_1px)] bg-size-[32px_32px] pointer-events-none" />
 
       {/* ── 1. Hero Cinematic Section ── */}
       <section className="relative pt-32 pb-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
@@ -285,29 +124,42 @@ export default function AboutPage() {
               <Sparkles className="h-3.5 w-3.5 animate-pulse" />
               Giới thiệu Roomie
             </div>
-            
+
             <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-foreground leading-[1.1]">
               Nâng Tầm Không Gian Thuê, <br />
-              <span className="text-primary font-display italic font-medium">Khởi Nguồn Cuộc Sống Đẹp.</span>
+              <span className="text-primary font-display italic font-medium">
+                Khởi Nguồn Cuộc Sống Đẹp.
+              </span>
             </h1>
 
             <p className="text-muted-foreground text-base sm:text-lg leading-relaxed max-w-2xl font-body">
-              Roomie là hệ sinh thái công nghệ bất động sản (PropTech) thế hệ mới, được thiết kế để kết nối hoàn hảo giữa phong cách sống cá nhân và không gian kiến trúc thực tế. Chúng tôi tin rằng một căn phòng không chỉ đơn thuần là giao dịch thuê — đó là thánh đường bình yên của riêng bạn.
+              Roomie là hệ sinh thái công nghệ bất động sản (PropTech) thế hệ
+              mới, được thiết kế để kết nối hoàn hảo giữa phong cách sống cá
+              nhân và không gian kiến trúc thực tế. Chúng tôi tin rằng một căn
+              phòng không chỉ đơn thuần là giao dịch thuê — đó là thánh đường
+              bình yên của riêng bạn.
             </p>
 
             <div className="flex flex-wrap gap-4 pt-2">
-              <Button asChild size="lg" className="rounded-full px-8 font-semibold bg-primary text-primary-foreground hover:bg-primary/95 transition-all shadow-lg shadow-primary/20 cursor-pointer">
+              <Button
+                asChild
+                size="lg"
+                className="rounded-full px-8 font-semibold bg-primary text-primary-foreground hover:bg-primary/95 transition-all shadow-lg shadow-primary/20 cursor-pointer"
+              >
                 <Link href="/rooms">
                   Khám Phá Phòng Ngay <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
-              <a href="#simulator" className="inline-flex items-center justify-center rounded-full px-8 py-3 font-semibold text-foreground border border-border bg-card/40 hover:bg-card/90 transition-all cursor-pointer font-body text-sm">
+              <a
+                href="#simulator"
+                className="inline-flex items-center justify-center rounded-full px-8 py-3 font-semibold text-foreground border border-border bg-card/40 hover:bg-card/90 transition-all cursor-pointer font-body text-sm"
+              >
                 Trải Nghiệm Mô Phỏng Ghép Đôi
               </a>
             </div>
           </motion.div>
 
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.2 }}
@@ -315,17 +167,20 @@ export default function AboutPage() {
           >
             {/* Visual Glass Block illustrating the technology */}
             <div className="relative rounded-2xl border border-primary/10 bg-card/60 backdrop-blur-md p-6 sm:p-8 shadow-2xl shadow-primary/5 space-y-6">
-              
-              <div className="absolute top-[-10px] right-[-10px] w-20 h-20 bg-primary/10 rounded-full blur-xl pointer-events-none" />
-              
+              <div className="absolute top-2.5 right-2.5 w-20 h-20 bg-primary/10 rounded-full blur-xl pointer-events-none" />
+
               <div className="flex items-center justify-between pb-4 border-b border-border/50">
                 <div className="flex items-center gap-3">
                   <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white shadow-md shadow-primary/30">
                     <Building2 className="h-5 w-5" />
                   </div>
                   <div>
-                    <h3 className="font-heading font-bold text-base text-foreground">Hệ thống Roomie</h3>
-                    <p className="text-xs text-muted-foreground font-body">Mô-đun Tương Thích Hoạt Động V2.4</p>
+                    <h3 className="font-heading font-bold text-base text-foreground">
+                      Hệ thống Roomie
+                    </h3>
+                    <p className="text-xs text-muted-foreground font-body">
+                      Mô-đun Tương Thích Hoạt Động V2.4
+                    </p>
                   </div>
                 </div>
                 <span className="flex h-2.5 w-2.5 rounded-full bg-emerald-500 animate-ping" />
@@ -334,11 +189,15 @@ export default function AboutPage() {
               <div className="space-y-4 font-body">
                 <div className="p-4 rounded-xl bg-background/50 border border-border/30 space-y-2">
                   <div className="flex justify-between text-xs font-semibold">
-                    <span className="text-muted-foreground">Thẩm Định & Xác Thực Tin Đăng</span>
-                    <span className="text-primary flex items-center gap-1"><BadgeCheck className="h-3.5 w-3.5" /> 100% Xác Thực</span>
+                    <span className="text-muted-foreground">
+                      Thẩm Định & Xác Thực Tin Đăng
+                    </span>
+                    <span className="text-primary flex items-center gap-1">
+                      <BadgeCheck className="h-3.5 w-3.5" /> 100% Xác Thực
+                    </span>
                   </div>
                   <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
-                    <motion.div 
+                    <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: "100%" }}
                       transition={{ duration: 1.2, delay: 0.5 }}
@@ -349,11 +208,13 @@ export default function AboutPage() {
 
                 <div className="p-4 rounded-xl bg-background/50 border border-border/30 space-y-2">
                   <div className="flex justify-between text-xs font-semibold">
-                    <span className="text-muted-foreground">Độ Tương Thích Bạn Cùng Nhà Trung Bình</span>
+                    <span className="text-muted-foreground">
+                      Độ Tương Thích Bạn Cùng Nhà Trung Bình
+                    </span>
                     <span className="text-foreground">94.8% Tương Thích</span>
                   </div>
                   <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
-                    <motion.div 
+                    <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: "94.8%" }}
                       transition={{ duration: 1.2, delay: 0.7 }}
@@ -365,9 +226,11 @@ export default function AboutPage() {
 
               <div className="flex items-center gap-3 bg-primary/5 border border-primary/10 rounded-xl p-3.5 text-xs text-primary font-body">
                 <Cpu className="h-4.5 w-4.5 shrink-0" />
-                <span>Thuật toán so khớp PropTech của chúng tôi tính toán dựa trên thói quen thực tế, giảm thiểu 62% tỷ lệ xung đột khi ở chung.</span>
+                <span>
+                  Thuật toán so khớp PropTech của chúng tôi tính toán dựa trên
+                  thói quen thực tế, giảm thiểu 62% tỷ lệ xung đột khi ở chung.
+                </span>
               </div>
-
             </div>
           </motion.div>
         </div>
@@ -378,18 +241,20 @@ export default function AboutPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
             {STATS.map(({ value, suffix, label }, idx) => (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 15 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: idx * 0.1 }}
-                key={label} 
+                key={label}
                 className="text-center space-y-2 group cursor-default"
               >
                 <div className="font-heading text-4xl sm:text-5xl font-bold text-primary group-hover:scale-105 transition-transform duration-300">
                   <AnimatedCounter target={value} suffix={suffix} />
                 </div>
-                <p className="text-sm font-body text-muted-foreground font-medium uppercase tracking-wider">{label}</p>
+                <p className="text-sm font-body text-muted-foreground font-medium uppercase tracking-wider">
+                  {label}
+                </p>
               </motion.div>
             ))}
           </div>
@@ -397,7 +262,10 @@ export default function AboutPage() {
       </section>
 
       {/* ── 3. Interactive Matching Simulator ── */}
-      <section id="simulator" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-24 scroll-mt-20">
+      <section
+        id="simulator"
+        className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-24 scroll-mt-20"
+      >
         <div className="text-center space-y-3 mb-16 max-w-3xl mx-auto">
           <div className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-primary font-body">
             <Cpu className="h-3 w-3" /> Thử Nghiệm Thực Tế
@@ -406,18 +274,24 @@ export default function AboutPage() {
             Trải Nghiệm Trình Ghép Đôi AI
           </h2>
           <p className="text-muted-foreground text-sm sm:text-base font-body leading-relaxed">
-            Lựa chọn các chỉ số phong cách sống của bạn để xem cách Roomie tính toán độ tương thích, tự động sắp xếp lại danh sách phòng và làm nổi bật các lựa chọn phù hợp nhất theo thuật toán AI tức thì.
+            Lựa chọn các chỉ số phong cách sống của bạn để xem cách Roomie tính
+            toán độ tương thích, tự động sắp xếp lại danh sách phòng và làm nổi
+            bật các lựa chọn phù hợp nhất theo thuật toán AI tức thì.
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-          
           {/* Left panel: Build profile */}
           <div className="lg:col-span-5 rounded-2xl border border-border/80 bg-card/40 backdrop-blur-md p-6 sm:p-8 flex flex-col justify-between space-y-8 shadow-lg">
             <div className="space-y-6">
               <div className="space-y-1.5">
-                <h3 className="font-heading font-bold text-xl text-foreground">1. Chỉ Số Phong Cách Sống</h3>
-                <p className="text-xs text-muted-foreground font-body">Chọn các tiêu chí ưu tiên của bạn để tính toán điểm tương thích với từng căn phòng.</p>
+                <h3 className="font-heading font-bold text-xl text-foreground">
+                  1. Chỉ Số Phong Cách Sống
+                </h3>
+                <p className="text-xs text-muted-foreground font-body">
+                  Chọn các tiêu chí ưu tiên của bạn để tính toán điểm tương
+                  thích với từng căn phòng.
+                </p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
@@ -433,8 +307,12 @@ export default function AboutPage() {
                           : "bg-background/40 border-border/60 hover:border-primary/30 text-muted-foreground hover:text-foreground"
                       }`}
                     >
-                      <span className="text-sm font-semibold mb-0.5">{tag.label}</span>
-                      <span className="text-[10px] opacity-80 font-body leading-tight">{tag.desc}</span>
+                      <span className="text-sm font-semibold mb-0.5">
+                        {tag.label}
+                      </span>
+                      <span className="text-[10px] opacity-80 font-body leading-tight">
+                        {tag.desc}
+                      </span>
                     </button>
                   );
                 })}
@@ -448,10 +326,13 @@ export default function AboutPage() {
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {selectedTags.length === 0 ? (
-                  <span className="text-xs text-muted-foreground font-body italic">Chưa chọn tiêu chí (hiển thị điểm cơ sở)</span>
+                  <span className="text-xs text-muted-foreground font-body italic">
+                    Chưa chọn tiêu chí (hiển thị điểm cơ sở)
+                  </span>
                 ) : (
                   selectedTags.map((tag) => {
-                    const tagLabel = LIFESTYLE_TAGS.find(t => t.id === tag)?.label || tag;
+                    const tagLabel =
+                      LIFESTYLE_TAGS.find((t) => t.id === tag)?.label || tag;
                     return (
                       <span
                         key={tag}
@@ -469,8 +350,12 @@ export default function AboutPage() {
           {/* Right panel: Rooms reorder */}
           <div className="lg:col-span-7 space-y-4 flex flex-col justify-start">
             <div className="flex items-center justify-between px-2">
-              <h3 className="font-heading font-bold text-lg text-foreground">2. Sắp Xếp Độ Tương Thích Trực Tiếp</h3>
-              <span className="text-xs text-muted-foreground font-body">Sắp xếp theo chỉ số phù hợp giảm dần</span>
+              <h3 className="font-heading font-bold text-lg text-foreground">
+                2. Sắp Xếp Độ Tương Thích Trực Tiếp
+              </h3>
+              <span className="text-xs text-muted-foreground font-body">
+                Sắp xếp theo chỉ số phù hợp giảm dần
+              </span>
             </div>
 
             <div className="space-y-4">
@@ -487,21 +372,32 @@ export default function AboutPage() {
                   >
                     {/* Architectural Abstract Visual Indicator */}
                     <div className="flex gap-4 items-center">
-                      <div className={`h-16 w-16 shrink-0 rounded-xl bg-gradient-to-tr ${room.color} border border-primary/5 flex items-center justify-center relative overflow-hidden group-hover:scale-105 transition-transform duration-300`}>
+                      <div
+                        className={`h-16 w-16 shrink-0 rounded-xl bg-linear-to-tr ${room.color} border border-primary/5 flex items-center justify-center relative overflow-hidden group-hover:scale-105 transition-transform duration-300`}
+                      >
                         <div className="absolute inset-0 bg-[linear-gradient(to_tr,rgba(193,68,14,0.1),transparent)]" />
                         <Home className="h-7 w-7 text-primary relative z-10" />
                       </div>
 
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                          <h4 className="font-heading font-bold text-base text-foreground">{room.name}</h4>
-                          <span className="text-[10px] text-muted-foreground flex items-center font-body"><MapPin className="h-3 w-3 mr-0.5 shrink-0" /> {room.location}</span>
+                          <h4 className="font-heading font-bold text-base text-foreground">
+                            {room.name}
+                          </h4>
+                          <span className="text-[10px] text-muted-foreground flex items-center font-body">
+                            <MapPin className="h-3 w-3 mr-0.5 shrink-0" />{" "}
+                            {room.location}
+                          </span>
                         </div>
-                        <p className="text-xs text-muted-foreground font-body leading-relaxed max-w-sm">{room.features}</p>
+                        <p className="text-xs text-muted-foreground font-body leading-relaxed max-w-sm">
+                          {room.features}
+                        </p>
                         <div className="flex flex-wrap gap-1 pt-1">
                           {room.tags.map((t) => {
                             const isMatch = selectedTags.includes(t);
-                            const currentTagObj = LIFESTYLE_TAGS.find(tag => tag.id === t);
+                            const currentTagObj = LIFESTYLE_TAGS.find(
+                              (tag) => tag.id === t,
+                            );
                             return (
                               <span
                                 key={t}
@@ -511,7 +407,12 @@ export default function AboutPage() {
                                     : "bg-muted/30 border border-border/40 text-muted-foreground"
                                 }`}
                               >
-                                {currentTagObj ? currentTagObj.label.split(" ").slice(1).join(" ") : t}
+                                {currentTagObj
+                                  ? currentTagObj.label
+                                      .split(" ")
+                                      .slice(1)
+                                      .join(" ")
+                                  : t}
                               </span>
                             );
                           })}
@@ -520,18 +421,26 @@ export default function AboutPage() {
                     </div>
 
                     <div className="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto shrink-0 pt-3 sm:pt-0 border-t sm:border-t-0 border-border/30">
-                      <span className="font-heading text-sm font-semibold text-primary mb-1">{room.price}</span>
-                      
+                      <span className="font-heading text-sm font-semibold text-primary mb-1">
+                        {room.price}
+                      </span>
+
                       <div className="flex items-center gap-2">
                         <div className="text-right">
-                          <span className="text-[9px] text-muted-foreground block font-body">Độ tương thích</span>
-                          <span className="font-heading text-lg font-bold text-foreground tabular-nums">{room.score}%</span>
+                          <span className="text-[9px] text-muted-foreground block font-body">
+                            Độ tương thích
+                          </span>
+                          <span className="font-heading text-lg font-bold text-foreground tabular-nums">
+                            {room.score}%
+                          </span>
                         </div>
-                        <div className={`flex h-10 w-10 items-center justify-center rounded-full font-heading font-bold text-xs ${
-                          room.score >= 80 
-                            ? "bg-primary text-primary-foreground shadow-md shadow-primary/20 animate-pulse" 
-                            : "bg-muted text-muted-foreground"
-                        }`}>
+                        <div
+                          className={`flex h-10 w-10 items-center justify-center rounded-full font-heading font-bold text-xs ${
+                            room.score >= 80
+                              ? "bg-primary text-primary-foreground shadow-md shadow-primary/20 animate-pulse"
+                              : "bg-muted text-muted-foreground"
+                          }`}
+                        >
                           {room.score}%
                         </div>
                       </div>
@@ -546,21 +455,25 @@ export default function AboutPage() {
 
       {/* ── 4. The "Old Way" vs "The Roomie Way" Switcher ── */}
       <section className="bg-card/25 border-y border-border/40 py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-        
         <div className="absolute top-[30%] left-[5%] w-64 h-64 bg-primary/2 rounded-full blur-[80px] pointer-events-none" />
-        
+
         <div className="mx-auto max-w-7xl relative z-10">
-          
           <div className="text-center space-y-4 mb-16 max-w-2xl mx-auto">
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary font-body">Tiêu Chuẩn Vượt Trội</p>
-            <h2 className="font-heading text-3xl sm:text-4xl font-bold tracking-tight">Tái Định Nghĩa Trải Nghiệm Tìm Phòng</h2>
-            <p className="text-muted-foreground text-sm sm:text-base font-body leading-relaxed">
-              Chúng tôi loại bỏ hoàn toàn những bất cập của phương thức tìm phòng truyền thống và kiến tạo một quy chuẩn mới tự động hóa dựa trên sự tin tưởng và minh bạch tuyệt đối.
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary font-body">
+              Tiêu Chuẩn Vượt Trội
             </p>
-            
+            <h2 className="font-heading text-3xl sm:text-4xl font-bold tracking-tight">
+              Tái Định Nghĩa Trải Nghiệm Tìm Phòng
+            </h2>
+            <p className="text-muted-foreground text-sm sm:text-base font-body leading-relaxed">
+              Chúng tôi loại bỏ hoàn toàn những bất cập của phương thức tìm
+              phòng truyền thống và kiến tạo một quy chuẩn mới tự động hóa dựa
+              trên sự tin tưởng và minh bạch tuyệt đối.
+            </p>
+
             {/* Elegant Selector Switch */}
             <div className="inline-flex rounded-full bg-muted/60 p-1 border border-border/30 max-w-xs mx-auto">
-              <button 
+              <button
                 onClick={() => setActiveWayTab("roomie")}
                 className={`rounded-full px-5 py-2 text-xs font-semibold transition-all cursor-pointer ${
                   activeWayTab === "roomie"
@@ -570,7 +483,7 @@ export default function AboutPage() {
               >
                 Trải Nghiệm Với Roomie
               </button>
-              <button 
+              <button
                 onClick={() => setActiveWayTab("old")}
                 className={`rounded-full px-5 py-2 text-xs font-semibold transition-all cursor-pointer ${
                   activeWayTab === "old"
@@ -599,8 +512,13 @@ export default function AboutPage() {
                       <Sparkles className="h-5.5 w-5.5 text-primary" />
                     </div>
                     <div>
-                      <h3 className="font-heading font-bold text-xl text-foreground">Tiêu chuẩn của Roomie</h3>
-                      <p className="text-xs text-muted-foreground font-body">Hệ sinh thái co-living kết hợp hoàn hảo giữa công nghệ & sự thấu hiểu</p>
+                      <h3 className="font-heading font-bold text-xl text-foreground">
+                        Tiêu chuẩn của Roomie
+                      </h3>
+                      <p className="text-xs text-muted-foreground font-body">
+                        Hệ sinh thái co-living kết hợp hoàn hảo giữa công nghệ &
+                        sự thấu hiểu
+                      </p>
                     </div>
                   </div>
 
@@ -623,11 +541,18 @@ export default function AboutPage() {
                         desc: "Cơ cấu hợp đồng được pháp lý hóa điện tử, tiền cọc được giữ an toàn trong ví điện tử trung gian cho đến khi bạn xác nhận nhận phòng thành công.",
                       },
                     ].map((item, idx) => (
-                      <div key={idx} className="flex gap-3 items-start bg-background/35 border border-border/30 rounded-xl p-4 hover:border-primary/20 transition-all">
+                      <div
+                        key={idx}
+                        className="flex gap-3 items-start bg-background/35 border border-border/30 rounded-xl p-4 hover:border-primary/20 transition-all"
+                      >
                         <CheckCircle className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                         <div>
-                          <h4 className="font-semibold text-sm text-foreground mb-1">{item.title}</h4>
-                          <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
+                          <h4 className="font-semibold text-sm text-foreground mb-1">
+                            {item.title}
+                          </h4>
+                          <p className="text-xs text-muted-foreground leading-relaxed">
+                            {item.desc}
+                          </p>
                         </div>
                       </div>
                     ))}
@@ -647,8 +572,12 @@ export default function AboutPage() {
                       <X className="h-5.5 w-5.5 text-destructive" />
                     </div>
                     <div>
-                      <h3 className="font-heading font-bold text-xl text-white">Sự Hỗn Loạn Truyền Thống</h3>
-                      <p className="text-xs text-other-4/50 font-body">Hành trình đầy rủi ro, áp lực và tốn kém thời gian</p>
+                      <h3 className="font-heading font-bold text-xl text-white">
+                        Sự Hỗn Loạn Truyền Thống
+                      </h3>
+                      <p className="text-xs text-other-4/50 font-body">
+                        Hành trình đầy rủi ro, áp lực và tốn kém thời gian
+                      </p>
                     </div>
                   </div>
 
@@ -671,11 +600,18 @@ export default function AboutPage() {
                         desc: "Bị yêu cầu đặt cọc tiền mặt trực tiếp bởi những chủ nhà chưa được xác minh, không có cơ chế bảo vệ khi xảy ra tranh chấp.",
                       },
                     ].map((item, idx) => (
-                      <div key={idx} className="flex gap-3 items-start bg-background/5 border border-white/5 rounded-xl p-4 hover:border-white/10 transition-all">
+                      <div
+                        key={idx}
+                        className="flex gap-3 items-start bg-background/5 border border-white/5 rounded-xl p-4 hover:border-white/10 transition-all"
+                      >
                         <X className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
                         <div>
-                          <h4 className="font-semibold text-sm text-white mb-1">{item.title}</h4>
-                          <p className="text-xs text-other-4/60 leading-relaxed">{item.desc}</p>
+                          <h4 className="font-semibold text-sm text-white mb-1">
+                            {item.title}
+                          </h4>
+                          <p className="text-xs text-other-4/60 leading-relaxed">
+                            {item.desc}
+                          </p>
                         </div>
                       </div>
                     ))}
@@ -690,54 +626,73 @@ export default function AboutPage() {
       {/* ── 5. Core Values ── */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-24">
         <div className="text-center space-y-3 mb-16 max-w-2xl mx-auto">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary font-body">Giá Trị Cốt Lõi</p>
-          <h2 className="font-heading text-3xl sm:text-4xl font-bold tracking-tight">Các Trụ Cột Nền Tảng</h2>
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary font-body">
+            Giá Trị Cốt Lõi
+          </p>
+          <h2 className="font-heading text-3xl sm:text-4xl font-bold tracking-tight">
+            Các Trụ Cột Nền Tảng
+          </h2>
           <p className="text-muted-foreground text-sm sm:text-base font-body">
-            Roomie vận hành dựa trên các nguyên tắc nghiêm ngặt nhằm đảm bảo sự tin cậy, an toàn và hòa hợp cao nhất trong toàn bộ cộng đồng.
+            Roomie vận hành dựa trên các nguyên tắc nghiêm ngặt nhằm đảm bảo sự
+            tin cậy, an toàn và hòa hợp cao nhất trong toàn bộ cộng đồng.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {VALUES.map(({ icon: Icon, title, subtitle, description, color }, idx) => (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.2 }}
-              transition={{ duration: 0.6, delay: idx * 0.1 }}
-              key={title}
-              className="rounded-2xl border border-border/50 bg-card/25 p-6 sm:p-8 flex flex-col sm:flex-row gap-5 hover:border-primary/30 transition-all duration-300 group cursor-default shadow-sm hover:shadow-md"
-            >
-              <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr ${color} border border-primary/5 group-hover:scale-105 transition-transform duration-300`}>
-                <Icon className="h-6 w-6 text-primary" />
-              </div>
-              <div className="space-y-2">
-                <div>
-                  <span className="text-[10px] font-bold text-primary/80 uppercase tracking-widest block font-body mb-0.5">{subtitle}</span>
-                  <h3 className="font-heading font-bold text-lg text-foreground">{title}</h3>
+          {VALUES.map(
+            ({ icon: Icon, title, subtitle, description, color }, idx) => (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ duration: 0.6, delay: idx * 0.1 }}
+                key={title}
+                className="rounded-2xl border border-border/50 bg-card/25 p-6 sm:p-8 flex flex-col sm:flex-row gap-5 hover:border-primary/30 transition-all duration-300 group cursor-default shadow-sm hover:shadow-md"
+              >
+                <div
+                  className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-linear-to-tr ${color} border border-primary/5 group-hover:scale-105 transition-transform duration-300`}
+                >
+                  <Icon className="h-6 w-6 text-primary" />
                 </div>
-                <p className="text-sm text-muted-foreground font-body leading-relaxed">{description}</p>
-              </div>
-            </motion.div>
-          ))}
+                <div className="space-y-2">
+                  <div>
+                    <span className="text-[10px] font-bold text-primary/80 uppercase tracking-widest block font-body mb-0.5">
+                      {subtitle}
+                    </span>
+                    <h3 className="font-heading font-bold text-lg text-foreground">
+                      {title}
+                    </h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground font-body leading-relaxed">
+                    {description}
+                  </p>
+                </div>
+              </motion.div>
+            ),
+          )}
         </div>
       </section>
 
       {/* ── 6. Dynamic Chronological Timeline ── */}
       <section className="bg-card/20 border-y border-border/40 py-24 px-4 sm:px-6 lg:px-8 relative">
         <div className="mx-auto max-w-3xl relative">
-          
           <div className="text-center space-y-4 mb-20">
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary font-body">Cột Mốc & Tăng Trưởng</p>
-            <h2 className="font-heading text-3xl sm:text-4xl font-bold tracking-tight">Hành Trình Phát Triển</h2>
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary font-body">
+              Cột Mốc & Tăng Trưởng
+            </p>
+            <h2 className="font-heading text-3xl sm:text-4xl font-bold tracking-tight">
+              Hành Trình Phát Triển
+            </h2>
             <p className="text-muted-foreground text-sm font-body max-w-md mx-auto">
-              Lịch sử phát triển từ một công cụ môi giới nhỏ cấp địa phương thành một hệ sinh thái PropTech phủ sóng khu vực.
+              Lịch sử phát triển từ một công cụ môi giới nhỏ cấp địa phương
+              thành một hệ sinh thái PropTech phủ sóng khu vực.
             </p>
           </div>
 
           <div className="relative">
             {/* Chronological Path Line */}
-            <div className="absolute left-[20px] sm:left-[28px] top-4 bottom-4 w-[2px] bg-gradient-to-b from-primary/80 via-primary/30 to-border" />
-            
+            <div className="absolute left-5 sm:left-7 top-4 bottom-4 w-0.5 bg-linear-to-b from-primary/80 via-primary/30 to-border" />
+
             <div className="space-y-12">
               {MILESTONES.map((milestone, idx) => (
                 <motion.div
@@ -750,15 +705,23 @@ export default function AboutPage() {
                 >
                   {/* Year Indicator Node */}
                   <div className="absolute left-0 top-1 flex h-10 w-10 sm:h-14 sm:w-14 items-center justify-center rounded-full border border-primary/30 bg-background shadow-md group-hover:border-primary transition-all duration-300 shrink-0">
-                    <span className="font-heading text-xs sm:text-sm font-bold text-primary">{milestone.year}</span>
+                    <span className="font-heading text-xs sm:text-sm font-bold text-primary">
+                      {milestone.year}
+                    </span>
                   </div>
-                  
+
                   <div className="space-y-2 pt-1.5 font-body">
                     <div>
-                      <span className="text-[10px] font-bold text-primary uppercase tracking-widest block mb-0.5">{milestone.title}</span>
-                      <h4 className="font-heading text-lg font-bold text-foreground leading-tight">{milestone.event}</h4>
+                      <span className="text-[10px] font-bold text-primary uppercase tracking-widest block mb-0.5">
+                        {milestone.title}
+                      </span>
+                      <h4 className="font-heading text-lg font-bold text-foreground leading-tight">
+                        {milestone.event}
+                      </h4>
                     </div>
-                    <p className="text-sm text-muted-foreground leading-relaxed font-body">{milestone.detail}</p>
+                    <p className="text-sm text-muted-foreground leading-relaxed font-body">
+                      {milestone.detail}
+                    </p>
                   </div>
                 </motion.div>
               ))}
@@ -770,10 +733,16 @@ export default function AboutPage() {
       {/* ── 7. Interactive Team & Dream Room Showcases ── */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-24">
         <div className="text-center space-y-4 mb-16 max-w-2xl mx-auto">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary font-body">Đội Ngũ Sáng Lập</p>
-          <h2 className="font-heading text-3xl sm:text-4xl font-bold tracking-tight">Gặp Gỡ Đội Ngũ Roomie</h2>
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary font-body">
+            Đội Ngũ Sáng Lập
+          </p>
+          <h2 className="font-heading text-3xl sm:text-4xl font-bold tracking-tight">
+            Gặp Gỡ Đội Ngũ Roomie
+          </h2>
           <p className="text-muted-foreground text-sm font-body">
-            Chúng tôi là tập hợp của những kỹ sư, nhà thiết kế và chuyên gia vận hành cùng chung niềm tin rằng sự minh bạch trong nhà ở là quyền lợi tối thiểu của mọi người.
+            Chúng tôi là tập hợp của những kỹ sư, nhà thiết kế và chuyên gia vận
+            hành cùng chung niềm tin rằng sự minh bạch trong nhà ở là quyền lợi
+            tối thiểu của mọi người.
           </p>
         </div>
 
@@ -800,11 +769,17 @@ export default function AboutPage() {
                 </div>
               </div>
               <div className="space-y-0.5">
-                <h3 className="font-heading font-bold text-lg text-foreground">{member.name}</h3>
-                <p className="text-xs font-semibold text-primary uppercase tracking-wider font-body">{member.role}</p>
+                <h3 className="font-heading font-bold text-lg text-foreground">
+                  {member.name}
+                </h3>
+                <p className="text-xs font-semibold text-primary uppercase tracking-wider font-body">
+                  {member.role}
+                </p>
               </div>
-              <p className="text-xs text-muted-foreground leading-relaxed font-body line-clamp-3">{member.bio}</p>
-              
+              <p className="text-xs text-muted-foreground leading-relaxed font-body line-clamp-3">
+                {member.bio}
+              </p>
+
               <div className="pt-2 border-t border-border/40">
                 <span className="text-[10px] font-semibold text-primary group-hover:text-primary/80 transition-colors uppercase tracking-widest flex items-center justify-center gap-1">
                   Xem Hồ Sơ Ghép Đôi <ArrowRight className="h-3 w-3 shrink-0" />
@@ -845,27 +820,45 @@ export default function AboutPage() {
                     {activeTeamMember.initials}
                   </div>
                   <div>
-                    <h3 className="font-heading font-bold text-xl text-foreground">{activeTeamMember.name}</h3>
-                    <p className="text-xs font-semibold text-primary uppercase tracking-wide font-body">{activeTeamMember.role}</p>
+                    <h3 className="font-heading font-bold text-xl text-foreground">
+                      {activeTeamMember.name}
+                    </h3>
+                    <p className="text-xs font-semibold text-primary uppercase tracking-wide font-body">
+                      {activeTeamMember.role}
+                    </p>
                   </div>
                 </div>
 
                 <div className="space-y-4 font-body">
                   <div className="space-y-1">
-                    <span className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Tiểu sử & Định hướng</span>
-                    <p className="text-xs sm:text-sm text-foreground leading-relaxed">{activeTeamMember.bio}</p>
+                    <span className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">
+                      Tiểu sử & Định hướng
+                    </span>
+                    <p className="text-xs sm:text-sm text-foreground leading-relaxed">
+                      {activeTeamMember.bio}
+                    </p>
                   </div>
 
                   {/* Ideal Room details illustrating the PropTech concept */}
                   <div className="bg-background/80 border border-primary/10 rounded-xl p-4 space-y-3">
                     <div className="flex justify-between items-center">
-                      <span className="text-[10px] uppercase font-bold tracking-widest text-primary flex items-center gap-1"><Heart className="h-3 w-3 shrink-0" /> Hồ Sơ Co-Living Mơ Ước</span>
-                      <span className="text-[9px] text-muted-foreground flex items-center"><MapPin className="h-3 w-3 mr-0.5 shrink-0" /> {activeTeamMember.dreamRoom.location}</span>
+                      <span className="text-[10px] uppercase font-bold tracking-widest text-primary flex items-center gap-1">
+                        <Heart className="h-3 w-3 shrink-0" /> Hồ Sơ Co-Living
+                        Mơ Ước
+                      </span>
+                      <span className="text-[9px] text-muted-foreground flex items-center">
+                        <MapPin className="h-3 w-3 mr-0.5 shrink-0" />{" "}
+                        {activeTeamMember.dreamRoom.location}
+                      </span>
                     </div>
 
                     <div className="space-y-1">
-                      <h4 className="font-heading font-bold text-base text-foreground">{activeTeamMember.dreamRoom.title}</h4>
-                      <p className="text-xs text-muted-foreground leading-relaxed">{activeTeamMember.dreamRoom.lifestyle}</p>
+                      <h4 className="font-heading font-bold text-base text-foreground">
+                        {activeTeamMember.dreamRoom.title}
+                      </h4>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        {activeTeamMember.dreamRoom.lifestyle}
+                      </p>
                     </div>
 
                     <div className="flex flex-wrap gap-1.5 pt-1">
@@ -882,12 +875,20 @@ export default function AboutPage() {
 
                   <div className="flex items-center gap-2.5 bg-muted/40 border border-border/30 rounded-xl p-3.5 text-xs text-muted-foreground leading-relaxed">
                     <Smile className="h-4.5 w-4.5 text-primary shrink-0" />
-                    <span><strong className="text-foreground">Sự Thật Thú Vị:</strong> {activeTeamMember.dreamRoom.funFact}</span>
+                    <span>
+                      <strong className="text-foreground">
+                        Sự Thật Thú Vị:
+                      </strong>{" "}
+                      {activeTeamMember.dreamRoom.funFact}
+                    </span>
                   </div>
                 </div>
 
                 <div className="flex justify-end">
-                  <Button onClick={() => setActiveTeamMember(null)} className="rounded-full px-6 font-semibold bg-primary hover:bg-primary/90 text-white cursor-pointer">
+                  <Button
+                    onClick={() => setActiveTeamMember(null)}
+                    className="rounded-full px-6 font-semibold bg-primary hover:bg-primary/90 text-white cursor-pointer"
+                  >
                     Hoàn tất
                   </Button>
                 </div>
@@ -899,8 +900,7 @@ export default function AboutPage() {
 
       {/* ── 8. Call to Action (CTA) ── */}
       <section className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 pb-28 pt-8">
-        <div className="relative rounded-3xl bg-gradient-to-br from-other-3 to-slate-950 text-white overflow-hidden p-8 sm:p-12 lg:p-16 text-center space-y-8 shadow-2xl border border-white/5">
-          
+        <div className="relative rounded-3xl bg-linear-to-br from-other-3 to-slate-950 text-white overflow-hidden p-8 sm:p-12 lg:p-16 text-center space-y-8 shadow-2xl border border-white/5">
           {/* CTA Background blobs */}
           <div className="absolute top-[-40%] right-[-10%] w-[35vw] h-[35vw] rounded-full bg-primary/10 blur-[80px] pointer-events-none" />
           <div className="absolute bottom-[-30%] left-[-10%] w-[30vw] h-[30vw] rounded-full bg-primary/5 blur-[70px] pointer-events-none" />
@@ -915,27 +915,40 @@ export default function AboutPage() {
             <div className="space-y-3">
               <h2 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-tight">
                 Sẵn Sàng Tìm Kiếm Thánh Đường <br />
-                <span className="text-primary font-display italic font-medium">Bình Yên Của Bạn?</span>
+                <span className="text-primary font-display italic font-medium">
+                  Bình Yên Của Bạn?
+                </span>
               </h2>
               <p className="text-other-4/70 text-sm sm:text-base leading-relaxed font-body">
-                Tham gia cùng hàng ngàn cư dân đô thị đã tìm thấy không gian sống xác thực, hoàn hảo với phong cách cá nhân cùng Roomie tại TP. Hồ Chí Minh, Hà Nội và Đà Nẵng.
+                Tham gia cùng hàng ngàn cư dân đô thị đã tìm thấy không gian
+                sống xác thực, hoàn hảo với phong cách cá nhân cùng Roomie tại
+                TP. Hồ Chí Minh, Hà Nội và Đà Nẵng.
               </p>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-              <Button asChild size="lg" className="rounded-full px-8 font-semibold bg-primary text-primary-foreground hover:bg-primary/95 transition-all shadow-lg shadow-primary/20 cursor-pointer">
+              <Button
+                asChild
+                size="lg"
+                className="rounded-full px-8 font-semibold bg-primary text-primary-foreground hover:bg-primary/95 transition-all shadow-lg shadow-primary/20 cursor-pointer"
+              >
                 <Link href="/rooms">
-                  Tìm Phòng Ngay <ArrowRight className="ml-2 h-4 w-4 animate-[bounce_1.5s_infinite_horizontal]" />
+                  Tìm Phòng Ngay{" "}
+                  <ArrowRight className="ml-2 h-4 w-4 animate-[bounce_1.5s_infinite_horizontal]" />
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="rounded-full px-8 font-semibold border-white/20 text-white hover:bg-white/10 hover:text-white cursor-pointer font-body">
+              <Button
+                asChild
+                size="lg"
+                variant="outline"
+                className="rounded-full px-8 font-semibold border-white/20 text-white hover:bg-white/10 hover:text-white cursor-pointer font-body"
+              >
                 <Link href="/contact">Liên Hệ Với Chúng Tôi</Link>
               </Button>
             </div>
           </div>
         </div>
       </section>
-
     </div>
   );
 }

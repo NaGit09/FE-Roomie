@@ -110,6 +110,7 @@ export default function HomeSearch() {
         </div>
 
       </div>
+      
     </section>
   );
 }

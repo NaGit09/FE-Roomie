@@ -2,15 +2,13 @@ import { useState } from "react";
 import { useAuthStore } from "@/stores/authStore";
 import { useRouter } from "next/navigation";
 import { authApi } from "@/services/api/auth";
-import { userApi } from "@/services/api/user";
 import { toast } from "sonner";
 import type { LoginReqSchema } from "@/schema/auth/login";
-import { UserProfile } from "@/schema/user/profile";
 
 export function useLogin() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { setAuth, setUser } = useAuthStore();
+  const { setAuth } = useAuthStore();
   const router = useRouter();
 
   const login = async (data: LoginReqSchema) => {
@@ -23,28 +21,16 @@ export function useLogin() {
       if (res && res.data.access_token) {
         setAuth(res.data);
 
-        try {
-          const userProfile = await userApi.getMe();
+        if (res.data.role === "ADMIN") {
+          router.push("/admin/");
 
-          const profileData = userProfile.data as UserProfile;
+        } else if (res.data.role === "LANDLORD") {
+          router.push("/landlord/");
 
-          setUser(userProfile.data as UserProfile);
-
-          const displayName = profileData.full_name || profileData.email;
-
-          toast.success(
-            `Đăng nhập thành công! Chào mừng trở lại, ${displayName}.`,
-          );
-        } catch (profileErr) {
-          console.warn(
-            "Failed to fetch user profile immediately after login:",
-            profileErr,
-          );
-          toast.success("Đăng nhập thành công!");
+        } else {
+          router.push("/");
         }
 
-        // 4. Forward user to home explorer page
-        router.push("/");
       } else {
         const errorMsg =
           "Đăng nhập thất bại. Vui lòng kiểm tra lại tài khoản và mật khẩu.";

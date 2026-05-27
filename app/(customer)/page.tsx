@@ -2,11 +2,12 @@
 
 import dynamic from "next/dynamic";
 import HomeSearch from "@/components/custom/customer/home/HomeSearch";
-import Location from "@/components/custom/customer/home/Location";
-import QNA from "@/components/custom/customer/home/QNA";
+import Location from "@/components/custom/customer/home/Location/Location";
+import QNA from "@/components/custom/customer/home/QNA/QNA";
 import { ArrowRight, Map as MapIcon } from "lucide-react";
 import NewRoom from "@/components/custom/customer/home/NewRoom";
 import { SectionHeader } from "@/components/custom/customer/layout/SectionHeader";
+import StateContainer from "@/components/custom/common/StateContainer";
 
 // ─────────────────────────────────────────────
 // Dynamic Imports
@@ -16,16 +17,11 @@ const MapView = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="group relative flex h-150 w-full items-center justify-center overflow-hidden rounded-[3rem] bg-slate-50 border-2 border-dashed border-slate-200">
-        <div className="flex flex-col items-center gap-4">
-          <div className="h-12 w-12 animate-bounce rounded-full bg-primary/10 flex items-center justify-center">
-            <MapIcon className="text-primary h-6 w-6" />
-          </div>
-          <p className="font-bold uppercase tracking-widest text-slate-400 text-[10px]">
-            Đang khởi tạo bản đồ...
-          </p>
+      <StateContainer state="loading" className="h-96">
+        <div className="w-full flex justify-center">
+          <MapIcon className="h-12 w-12 text-slate-400 animate-pulse" />
         </div>
-      </div>
+      </StateContainer>
     ),
   },
 );
@@ -34,8 +30,7 @@ const MapView = dynamic(
 // Main Page Component
 // ─────────────────────────────────────────────
 export default function CustomerHomePage() {
-  // call api check subcription status, if not active, show banner to subscribe
-  
+
   return (
     <main className="flex flex-col min-h-screen bg-white">
       {/* 1. HERO SECTION */}

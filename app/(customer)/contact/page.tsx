@@ -2,56 +2,25 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { useState } from "react";
 import {
-  Mail, Phone, MapPin, Clock, Send, CheckCircle2, Loader2, User,
+  Mail,
+  Phone,
+  Send,
+  CheckCircle2,
+  Loader2,
+  User,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-
-// ── Schema ──────────────────────────────────────────────────────
-const contactSchema = z.object({
-  firstName:   z.string().min(1, "Vui lòng nhập tên của bạn"),
-  lastName:    z.string().min(1, "Vui lòng nhập họ của bạn"),
-  email:       z.email("Địa chỉ email không hợp lệ").min(1, "Vui lòng nhập email"),
-  phone:       z.string().min(7, "Vui lòng nhập số điện thoại hợp lệ"),
-  problem:     z.string().min(10, "Vui lòng mô tả yêu cầu của bạn (tối thiểu 10 ký tự)"),
-});
-type ContactSchema = z.infer<typeof contactSchema>;
-
-// ── Info cards ───────────────────────────────────────────────────
-const INFO_ITEMS = [
-  {
-    icon: MapPin,
-    label: "Văn Phòng",
-    value: "123 Đường Nguyễn Huệ",
-    sub: "Quận 1, TP. Hồ Chí Minh",
-  },
-  {
-    icon: Mail,
-    label: "Gửi Email",
-    value: "hello@roomie.vn",
-    sub: "Phản hồi trong vòng 24 giờ",
-  },
-  {
-    icon: Phone,
-    label: "Hotline Liên Hệ",
-    value: "090 123 4567",
-    sub: "Thứ 2 – Thứ 6, 8:00 – 18:00",
-  },
-  {
-    icon: Clock,
-    label: "Giờ Hỗ Trợ",
-    value: "Thứ 2 – Thứ 6",
-    sub: "8:00 – 18:00 (Giờ Việt Nam)",
-  },
-];
+import { contactSchema, ContactSchema } from "@/schema/user/contact";
+import { INFO_ITEMS } from "@/constant/info";
 
 // ── Page ────────────────────────────────────────────────────────
 export default function ContactPage() {
+
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -65,7 +34,6 @@ export default function ContactPage() {
   const onSubmit = async (data: ContactSchema) => {
     setLoading(true);
     console.log("Contact form submission:", data);
-    // TODO: wire to API → authApi.contact(data) or similar
     await new Promise((r) => setTimeout(r, 1000));
     setLoading(false);
     setSent(true);
@@ -74,7 +42,6 @@ export default function ContactPage() {
 
   return (
     <div className="min-h-screen bg-background font-sans">
-
       {/* ── Hero banner ── */}
       <section className="bg-other-3 text-white py-16 px-4">
         <div className="mx-auto max-w-3xl text-center space-y-3">
@@ -85,7 +52,9 @@ export default function ContactPage() {
             Roomie Luôn Sẵn Sàng Hỗ Trợ
           </h1>
           <p className="text-other-4/80 text-base leading-relaxed max-w-xl mx-auto font-body">
-            Bạn có thắc mắc về phòng đăng, cần hỗ trợ tài khoản hay chỉ muốn gửi lời chào? Hãy điền thông tin vào biểu mẫu, đội ngũ của chúng tôi sẽ liên hệ lại ngay.
+            Bạn có thắc mắc về phòng đăng, cần hỗ trợ tài khoản hay chỉ muốn gửi
+            lời chào? Hãy điền thông tin vào biểu mẫu, đội ngũ của chúng tôi sẽ
+            liên hệ lại ngay.
           </p>
         </div>
       </section>
@@ -93,7 +62,6 @@ export default function ContactPage() {
       {/* ── Main content ── */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-12">
-
           {/* ── Info column ── */}
           <div className="lg:col-span-2 flex flex-col gap-6">
             <div className="space-y-1">
@@ -118,7 +86,9 @@ export default function ContactPage() {
                     <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                       {label}
                     </p>
-                    <p className="text-sm font-semibold text-foreground mt-0.5">{value}</p>
+                    <p className="text-sm font-semibold text-foreground mt-0.5">
+                      {value}
+                    </p>
                     <p className="text-xs text-muted-foreground">{sub}</p>
                   </div>
                 </div>
@@ -136,9 +106,12 @@ export default function ContactPage() {
                     <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-green-400" />
                   </div>
                   <div className="space-y-1.5">
-                    <h3 className="font-heading text-xl font-bold text-foreground">Gửi tin nhắn thành công!</h3>
+                    <h3 className="font-heading text-xl font-bold text-foreground">
+                      Gửi tin nhắn thành công!
+                    </h3>
                     <p className="text-sm text-muted-foreground max-w-xs">
-                      Cảm ơn bạn đã liên hệ với Roomie. Đội ngũ hỗ trợ của chúng tôi sẽ phản hồi lại bạn trong vòng 24 giờ.
+                      Cảm ơn bạn đã liên hệ với Roomie. Đội ngũ hỗ trợ của chúng
+                      tôi sẽ phản hồi lại bạn trong vòng 24 giờ.
                     </p>
                   </div>
                   <Button
@@ -158,15 +131,24 @@ export default function ContactPage() {
                       Gửi Tin Nhắn Cho Chúng Tôi
                     </h2>
                     <p className="text-sm text-muted-foreground font-body">
-                      Tất cả các trường thông tin đều bắt buộc. Chúng tôi cam kết bảo mật thông tin của bạn.
+                      Tất cả các trường thông tin đều bắt buộc. Chúng tôi cam
+                      kết bảo mật thông tin của bạn.
                     </p>
                   </div>
 
-                  <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 font-body">
+                  <form
+                    onSubmit={handleSubmit(onSubmit)}
+                    className="space-y-5 font-body"
+                  >
                     {/* Name row */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-1.5">
-                        <Label htmlFor="firstName" className="text-sm font-medium">Tên</Label>
+                        <Label
+                          htmlFor="firstName"
+                          className="text-sm font-medium"
+                        >
+                          Tên
+                        </Label>
                         <div className="relative">
                           <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
                           <Input
@@ -177,12 +159,19 @@ export default function ContactPage() {
                           />
                         </div>
                         {errors.firstName && (
-                          <p className="text-xs text-destructive">{errors.firstName.message}</p>
+                          <p className="text-xs text-destructive">
+                            {errors.firstName.message}
+                          </p>
                         )}
                       </div>
 
                       <div className="space-y-1.5">
-                        <Label htmlFor="lastName" className="text-sm font-medium">Họ</Label>
+                        <Label
+                          htmlFor="lastName"
+                          className="text-sm font-medium"
+                        >
+                          Họ
+                        </Label>
                         <div className="relative">
                           <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
                           <Input
@@ -193,14 +182,18 @@ export default function ContactPage() {
                           />
                         </div>
                         {errors.lastName && (
-                          <p className="text-xs text-destructive">{errors.lastName.message}</p>
+                          <p className="text-xs text-destructive">
+                            {errors.lastName.message}
+                          </p>
                         )}
                       </div>
                     </div>
 
                     {/* Email */}
                     <div className="space-y-1.5">
-                      <Label htmlFor="email" className="text-sm font-medium">Địa chỉ Email</Label>
+                      <Label htmlFor="email" className="text-sm font-medium">
+                        Địa chỉ Email
+                      </Label>
                       <div className="relative">
                         <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
                         <Input
@@ -212,13 +205,17 @@ export default function ContactPage() {
                         />
                       </div>
                       {errors.email && (
-                        <p className="text-xs text-destructive">{errors.email.message}</p>
+                        <p className="text-xs text-destructive">
+                          {errors.email.message}
+                        </p>
                       )}
                     </div>
 
                     {/* Phone */}
                     <div className="space-y-1.5">
-                      <Label htmlFor="phone" className="text-sm font-medium">Số điện thoại</Label>
+                      <Label htmlFor="phone" className="text-sm font-medium">
+                        Số điện thoại
+                      </Label>
                       <div className="relative">
                         <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
                         <Input
@@ -230,7 +227,9 @@ export default function ContactPage() {
                         />
                       </div>
                       {errors.phone && (
-                        <p className="text-xs text-destructive">{errors.phone.message}</p>
+                        <p className="text-xs text-destructive">
+                          {errors.phone.message}
+                        </p>
                       )}
                     </div>
 
@@ -242,11 +241,13 @@ export default function ContactPage() {
                       <Textarea
                         id="problem"
                         placeholder="Hãy cho chúng tôi biết bạn cần hỗ trợ gì — thông tin càng chi tiết, chúng tôi hỗ trợ càng nhanh chóng..."
-                        className="min-h-[130px] resize-none bg-background/50 border-border/75"
+                        className="min-h-32.5 resize-none bg-background/50 border-border/75"
                         {...register("problem")}
                       />
                       {errors.problem && (
-                        <p className="text-xs text-destructive">{errors.problem.message}</p>
+                        <p className="text-xs text-destructive">
+                          {errors.problem.message}
+                        </p>
                       )}
                     </div>
 
@@ -256,9 +257,15 @@ export default function ContactPage() {
                       disabled={loading}
                     >
                       {loading ? (
-                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Đang gửi…</>
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Đang gửi…
+                        </>
                       ) : (
-                        <><Send className="mr-2 h-4 w-4" />Gửi tin nhắn</>
+                        <>
+                          <Send className="mr-2 h-4 w-4" />
+                          Gửi tin nhắn
+                        </>
                       )}
                     </Button>
                   </form>
@@ -266,7 +273,6 @@ export default function ContactPage() {
               )}
             </div>
           </div>
-
         </div>
       </section>
     </div>

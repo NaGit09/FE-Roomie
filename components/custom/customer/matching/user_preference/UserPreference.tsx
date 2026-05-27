@@ -19,6 +19,7 @@ export default function UserPreference() {
     form: {
       formState: { errors },
       setValue,
+      register,
     },
     provinces,
     districts,
@@ -117,7 +118,7 @@ export default function UserPreference() {
 
             <div className="flex flex-col gap-6 mt-6">
               {/* Area Input */}
-              <InputArea />
+              <InputArea register={register} errors={errors} />
             </div>
           </div>
 

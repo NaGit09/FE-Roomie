@@ -2,7 +2,7 @@ import { ApiResponse } from "@/schema/common/api.type";
 import axiosInstance from "../axiosInstance";
 import { UserProfile } from "@/schema/user/profile";
 
-const BASE_URL = "/users/users";
+const BASE_URL = "/users";
 
 export const userApi = {
   

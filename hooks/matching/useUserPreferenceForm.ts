@@ -45,41 +45,60 @@ export function useUserPreferenceForm() {
     },
   });
 
-  // Sync store values to react-hook-form in real-time
+  // Sync store values to react-hook-form in real-time only when values are different
   useEffect(() => {
-    form.setValue("budget_min", store.budget_min, { shouldValidate: true });
+    if (form.getValues("budget_min") !== store.budget_min) {
+      form.setValue("budget_min", store.budget_min, { shouldValidate: true });
+    }
   }, [store.budget_min, form]);
 
   useEffect(() => {
-    form.setValue("budget_max", store.budget_max, { shouldValidate: true });
+    if (form.getValues("budget_max") !== store.budget_max) {
+      form.setValue("budget_max", store.budget_max, { shouldValidate: true });
+    }
   }, [store.budget_max, form]);
 
   useEffect(() => {
-    form.setValue("sleep_time", store.sleep_time, { shouldValidate: true });
+    if (form.getValues("sleep_time") !== store.sleep_time) {
+      form.setValue("sleep_time", store.sleep_time, { shouldValidate: true });
+    }
   }, [store.sleep_time, form]);
 
   useEffect(() => {
-    form.setValue("smoking", store.smoking, { shouldValidate: true });
+    if (form.getValues("smoking") !== store.smoking) {
+      form.setValue("smoking", store.smoking, { shouldValidate: true });
+    }
   }, [store.smoking, form]);
 
   useEffect(() => {
-    form.setValue("district", store.district, { shouldValidate: true });
+    if (form.getValues("district") !== store.district) {
+      form.setValue("district", store.district, { shouldValidate: true });
+    }
   }, [store.district, form]);
 
   useEffect(() => {
-    form.setValue("noise_tolerance", store.noise_tolerance, { shouldValidate: true });
+    if (form.getValues("noise_tolerance") !== store.noise_tolerance) {
+      form.setValue("noise_tolerance", store.noise_tolerance, { shouldValidate: true });
+    }
   }, [store.noise_tolerance, form]);
 
   useEffect(() => {
-    form.setValue("cleanliness_level", store.cleanliness_level, { shouldValidate: true });
+    if (form.getValues("cleanliness_level") !== store.cleanliness_level) {
+      form.setValue("cleanliness_level", store.cleanliness_level, { shouldValidate: true });
+    }
   }, [store.cleanliness_level, form]);
 
   useEffect(() => {
-    form.setValue("pet_friendly", store.pet_friendly, { shouldValidate: true });
+    if (form.getValues("pet_friendly") !== store.pet_friendly) {
+      form.setValue("pet_friendly", store.pet_friendly, { shouldValidate: true });
+    }
   }, [store.pet_friendly, form]);
 
   useEffect(() => {
-    form.setValue("area", store.area, { shouldValidate: true });
+    const currentFormArea = form.getValues("area");
+    if (currentFormArea !== store.area && Number(currentFormArea) !== Number(store.area)) {
+      form.setValue("area", store.area, { shouldValidate: true });
+    }
   }, [store.area, form]);
 
   // Watchers for component rendering / real-time feedback
@@ -94,9 +113,10 @@ export function useUserPreferenceForm() {
   const watchArea = form.watch("area");
 
   useEffect(() => {
-    if (watchArea !== undefined && watchArea !== null && !isNaN(watchArea)) {
-      if (store.area !== watchArea) {
-        store.setArea(watchArea);
+    if (watchArea !== undefined && watchArea !== null && watchArea !== "" && !isNaN(Number(watchArea))) {
+      const numericArea = Number(watchArea);
+      if (store.area !== numericArea) {
+        store.setArea(numericArea);
       }
     }
   }, [watchArea, store]);

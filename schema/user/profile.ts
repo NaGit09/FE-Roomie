@@ -9,7 +9,16 @@ export const UserProfileSchema = z.object({
     free_usage_count: z.number().int(),
     status: z.enum(["ACTIVE", "INACTIVE"]),
     created_at: z.string(),
-    updated_at: z.string()
+    updated_at: z.string(),
+    landlord_profile: z.object({
+        phonenumber: z.string().nullable(),
+        facebook: z.string().nullable(),
+        gmail: z.email(),
+        id: z.uuid(),
+        user_id: z.uuid(),
+        created_at: z.string(),
+        updated_at: z.string(),
+    }).optional(),
 });
 
 export type UserProfile = z.infer<typeof UserProfileSchema>;

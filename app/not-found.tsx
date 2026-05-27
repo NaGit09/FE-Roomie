@@ -7,7 +7,7 @@ export default function NotFound() {
     <div className="min-h-screen flex items-center justify-center bg-background px-6 py-12 selection:bg-primary/20">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(193,68,14,0.05),transparent_60%)] pointer-events-none" />
 
-      <div className="w-full max-w-[420px] text-center animate-in fade-in slide-in-from-bottom-4 duration-700 relative z-10 space-y-6">
+      <div className="w-full max-w-105 text-center animate-in fade-in slide-in-from-bottom-4 duration-700 relative z-10 space-y-6">
         {/* Icon */}
         <div className="flex justify-center">
           <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-muted/50 border border-border/40">
