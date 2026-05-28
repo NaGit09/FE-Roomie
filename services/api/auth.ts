@@ -42,7 +42,7 @@ export const AuthApi = {
 
   refreshToken: async () => {
     const res = await axiosInstance.post<ApiResponse<LoginResSchema>>(
-      `${BASE_URL}/refresh-token`,
+      `${BASE_URL}/refresh`,
     );
     return res.data;
   },

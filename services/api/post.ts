@@ -1,6 +1,7 @@
 import { ApiResponse } from "@/schema/common/api.type";
 import axiosInstance from "../axiosInstance";
 import {
+  CreatePost,
   GetPostsQueryType,
   PostCardType,
   PostDetailType,
@@ -55,6 +56,15 @@ export const PostApi = {
         limit,
       },
     });
+    return response.data;
+  },
+
+  createpPost: async (createPost: CreatePost) => {
+    const response = await axiosInstance.post<ApiResponse<PostDetailType>>(
+      `${BASE_URL}`,
+      createPost,
+    );
+
     return response.data;
   },
 };

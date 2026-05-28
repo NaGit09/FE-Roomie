@@ -163,7 +163,7 @@ export default function HistorySubscriptionPage() {
     }
 
     setCheckoutPlan(finalPlan);
-    router.push("/order");
+    router.push(`/order?subscription_id=${plan.id}`);
   };
 
   const getDisplayPrice = (plan: Subscription) => {

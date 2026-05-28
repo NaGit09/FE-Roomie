@@ -1,34 +1,32 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { 
   CreditCard, 
   Crown, 
   Sparkles,
   CheckCircle,
-  Calendar,
   Zap,
   Info,
-  Download,
-  Clock,
   Compass,
   ArrowRight,
-  ShieldCheck,
-  X,
   Check,
   HelpCircle,
   Gift
 } from "lucide-react";
-import { useAuthStore } from "@/stores/authStore";
 import { SubscriptionApi } from "@/services/api/subcription";
-import { Subscription, SubscriptionDetail } from "@/schema/user/subcription";
+import { Subscription, SubscriptionDetail, UpgradeSubscription } from "@/schema/user/subcription";
 import formatVND from "@/utils/priceUtils";
 import { toast } from "sonner";
+import { useSubscriptionStore } from "@/stores/subscriptionStore";
+import { useRouter } from "next/navigation";
 
 export default function LandlordSubscriptionPage() {
-  const { user } = useAuthStore();
+  const router = useRouter();
+  const { setCheckoutPlan } = useSubscriptionStore();
+
   const [mounted, setMounted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
@@ -40,6 +38,11 @@ export default function LandlordSubscriptionPage() {
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [loadingPlans, setLoadingPlans] = useState(false);
 
+  // Upgrade Recommendation States
+  const [upgradeInfo, setUpgradeInfo] = useState<UpgradeSubscription | null>(null);
+  const [loadingUpgrade, setLoadingUpgrade] = useState(false);
+  const [showUpgradeSection, setShowUpgradeSection] = useState(false);
+
   const fetchSubscriptionStatus = async () => {
     setIsLoading(true);
     try {
@@ -48,24 +51,39 @@ export default function LandlordSubscriptionPage() {
       const active = checkRes && checkRes.code === 200 ? checkRes.data : false;
       setHasActiveSub(active);
 
-      // 2. Fetch available packages if inactive
-      if (!active) {
-        setLoadingPlans(true);
-        try {
-          const plansRes = await SubscriptionApi.get_all_landlord_subscriptions();
-          if (plansRes && plansRes.code === 200 && Array.isArray(plansRes.data)) {
-            setAvailablePlans(plansRes.data);
-          } else {
-            setAvailablePlans([]);
-          }
-        } catch (planErr) {
-          console.error("Failed to fetch available landlord plans:", planErr);
-        } finally {
-          setLoadingPlans(false);
+      // 2. Fetch available packages ALWAYS
+      setLoadingPlans(true);
+      try {
+        const plansRes = await SubscriptionApi.get_all_landlord_subscriptions();
+        if (plansRes && plansRes.code === 200 && Array.isArray(plansRes.data)) {
+          setAvailablePlans(plansRes.data);
+        } else {
+          setAvailablePlans([]);
         }
+      } catch (planErr) {
+        console.error("Failed to fetch available landlord plans:", planErr);
+      } finally {
+        setLoadingPlans(false);
       }
 
-      // 3. Fetch past subscriptions history log
+      // 3. Fetch upgrade recommendations if active
+      if (active) {
+        setLoadingUpgrade(true);
+        try {
+          const upgradeRes = await SubscriptionApi.upgrade_subscription();
+          if (upgradeRes && upgradeRes.code === 200) {
+            setUpgradeInfo(upgradeRes.data);
+          }
+        } catch (upgradeErr) {
+          console.error("Failed to check upgrade recommendation:", upgradeErr);
+        } finally {
+          setLoadingUpgrade(false);
+        }
+      } else {
+        setUpgradeInfo(null);
+      }
+
+      // 4. Fetch past subscriptions history log
       setLoadingHistory(true);
       try {
         const historyRes = await SubscriptionApi.get_user_subscription();
@@ -200,28 +218,17 @@ export default function LandlordSubscriptionPage() {
   };
 
   // Subscribe package handler
-  const handleSubscribe = async (plan: Subscription) => {
-    if (!plan.id) return;
-    try {
-      const displayPrice = getDisplayPrice(plan);
-      const subscribePayload = {
-        ...plan,
-        sub_price: billingCycle === "yearly" ? displayPrice * 12 : plan.sub_price,
-        sub_title: billingCycle === "yearly" ? `${plan.sub_title} (12 Tháng)` : plan.sub_title,
-        sub_time: billingCycle === "yearly" ? "12 Tháng" : plan.sub_time
-      };
+  const handleSubscribe = (plan: Subscription) => {
+    const displayPrice = getDisplayPrice(plan);
+    const subscribePayload = {
+      ...plan,
+      sub_price: billingCycle === "yearly" ? displayPrice * 12 : plan.sub_price,
+      sub_title: billingCycle === "yearly" ? `${plan.sub_title} (12 Tháng)` : plan.sub_title,
+      sub_time: billingCycle === "yearly" ? "12 Tháng" : plan.sub_time
+    };
 
-      const res = await SubscriptionApi.subscribe(plan.id);
-      if (res && res.code === 200) {
-        toast.success(`Nâng cấp thành công gói "${subscribePayload.sub_title}"!`);
-        fetchSubscriptionStatus();
-      } else {
-        toast.error(res?.message || "Đăng ký không thành công. Vui lòng thử lại!");
-      }
-    } catch (err: any) {
-      console.error("Failed to subscribe plan:", err);
-      toast.error(err?.response?.data?.message || "Lỗi khi đăng ký gói cước. Vui lòng nạp thêm xu hoặc thử lại!");
-    }
+    setCheckoutPlan(subscribePayload);
+    router.push(`/order?subscription_id=${plan.id}`);
   };
 
   // Cancel subscription handler
@@ -275,229 +282,417 @@ export default function LandlordSubscriptionPage() {
             Đang xác minh lịch sử tài khoản...
           </span>
         </div>
-      ) : hasActiveSub && activeSubDetail ? (
-        /* ── 2a. LIQUID GLASS ACTIVE SUBSCRIBER CARD ── */
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="rounded-[2.5rem] bg-gradient-to-tr from-[#0F172A]/80 via-[#1e293b]/40 to-[#0F172A]/80 border border-white/10 p-6 sm:p-10 shadow-2xl relative overflow-hidden flex flex-col lg:flex-row justify-between lg:items-center gap-8 z-10 backdrop-blur-xl"
-        >
-          {/* Spotlight animated blur node */}
-          <div className="absolute top-[-50%] right-[-10%] w-[45%] h-[120%] rounded-full bg-gradient-to-br from-[#F59E0B]/15 via-[#FBBF24]/5 to-transparent blur-[80px] pointer-events-none animate-pulse" />
-
-          <div className="space-y-6 flex-1 text-left">
-            <div className="space-y-2">
-              <div className="flex flex-wrap items-center gap-2.5">
-                <span className="text-[8px] font-black uppercase bg-[#FBBF24]/10 border border-[#FBBF24]/30 text-[#FBBF24] px-3 py-1 rounded-full shadow-md animate-pulse flex items-center gap-1">
-                  <Crown className="h-3 w-3 fill-current text-[#F59E0B]" /> Active Member
-                </span>
-                <span className="text-[8px] font-black uppercase bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-3 py-1 rounded-full shadow-sm">
-                  Đang hoạt động
-                </span>
-              </div>
-              
-              <h2 className="text-2xl sm:text-3xl font-black text-slate-100 leading-tight">
-                {activePlanTitle}
-              </h2>
-              
-              <p className="text-xs text-slate-450 font-body max-w-xl leading-relaxed">
-                Tài khoản của bạn đã được nâng cấp lên hạng cước Chủ nhà cao cấp. Bài viết của bạn sẽ được ưu tiên xuất hiện đầu tiên trên bảng tin so khớp, và kích hoạt đầy đủ hệ thống AI để giới thiệu Renter tương thích.
-              </p>
-            </div>
-
-            <hr className="border-white/5" />
-
-            {/* Pricing details grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 text-xs font-semibold">
-              <div className="space-y-1">
-                <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest block font-body">Biểu phí định kỳ</span>
-                <span className="text-sm font-black text-[#F59E0B]">
-                  {activeSubDetail.sub_id ? formatVND(userSubscriptions.find(s => s.id === activeSubDetail.id)?.sub_id === 1 ? 199000 : 1668000) : "Nạp xu gia hạn"}
-                </span>
-              </div>
-              
-              <div className="space-y-1">
-                <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest block font-body">Chu kỳ tiếp theo</span>
-                <span className="text-sm font-black text-slate-200">{formatDate(activeSubDetail.time_end)}</span>
-              </div>
-              
-              <div className="space-y-1 col-span-2 sm:col-span-1">
-                <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest block font-body">Kênh thụ hưởng</span>
-                <span className="text-sm font-black text-slate-200">Ví xu hệ thống</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Action Cancel button */}
-          <div className="flex flex-col gap-2.5 shrink-0 w-full lg:w-fit self-stretch lg:self-center justify-center z-10">
-            <button
-              onClick={() => handleCancelSubscription(activeSubDetail.id!, activePlanTitle)}
-              className="h-12 px-6 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-black uppercase tracking-wider cursor-pointer border border-red-500/10 transition-all text-center"
-            >
-              Hủy gia hạn tự động
-            </button>
-          </div>
-        </motion.div>
       ) : (
-        /* ── 2b. LIQUID GLASS AVAILABLE PACKAGES GRID ── */
-        <div className="space-y-6 bg-[#0f172a]/20 border border-white/5 rounded-[2.5rem] p-6 sm:p-10 relative overflow-hidden backdrop-blur-xl text-left z-10 shadow-2xl">
-          {/* Background glowing iridescent node */}
-          <div className="absolute top-[-30%] left-[-10%] w-[40%] h-[60%] rounded-full bg-gradient-to-tr from-[#D946EF]/10 via-[#F59E0B]/5 to-transparent blur-[90px] pointer-events-none" />
+        <div className="space-y-10">
+          
+          {/* ── 2a. ACTIVE SUBSCRIBER CARD ── */}
+          {hasActiveSub && activeSubDetail && (
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="rounded-[2.5rem] bg-gradient-to-tr from-[#0F172A]/80 via-[#1e293b]/40 to-[#0F172A]/80 border border-white/10 p-6 sm:p-10 shadow-2xl relative overflow-hidden flex flex-col lg:flex-row justify-between lg:items-center gap-8 z-10 backdrop-blur-xl"
+            >
+              {/* Spotlight animated blur node */}
+              <div className="absolute top-[-50%] right-[-10%] w-[45%] h-[120%] rounded-full bg-gradient-to-br from-[#F59E0B]/15 via-[#FBBF24]/5 to-transparent blur-[80px] pointer-events-none animate-pulse" />
 
-          {/* Pricing header controls */}
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 relative z-10">
-            <div className="space-y-1.5">
-              <h2 className="text-xl font-black text-[#F59E0B] flex items-center gap-2 font-heading">
-                <Crown className="h-5 w-5 text-[#FBBF24] animate-pulse" />
-                Nâng cấp Gói hội viên Chủ nhà
-              </h2>
-              <p className="text-xs text-slate-450 font-medium font-body max-w-xl leading-relaxed">
-                Đăng tin phòng không giới hạn, đẩy tin tự động, mở khóa toàn bộ tiêu chí so khớp của Renter và hỗ trợ kỹ thuật 24/7.
-              </p>
-            </div>
-
-            {/* Switch Billing Cycle Toggle */}
-            <div className="bg-[#0b0f19] p-1 rounded-2xl flex items-center border border-white/5 shadow-inner self-start md:self-center">
-              <button
-                type="button"
-                onClick={() => setBillingCycle("monthly")}
-                className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all duration-300 cursor-pointer ${
-                  billingCycle === "monthly"
-                    ? "bg-white/10 text-[#FBBF24] shadow-sm"
-                    : "text-slate-500 hover:text-slate-300"
-                }`}
-              >
-                Hàng tháng
-              </button>
-              <button
-                type="button"
-                onClick={() => setBillingCycle("yearly")}
-                className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all duration-300 flex items-center gap-1 cursor-pointer ${
-                  billingCycle === "yearly"
-                    ? "bg-white/10 text-[#FBBF24] shadow-sm"
-                    : "text-slate-500 hover:text-slate-300"
-                }`}
-              >
-                Hàng năm
-                <span className="bg-[#F97316] text-white text-[8px] font-black uppercase px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
-                  <Gift className="h-2 w-2" />
-                  -30%
-                </span>
-              </button>
-            </div>
-          </div>
-
-          {loadingPlans ? (
-            <div className="h-44 flex flex-col items-center justify-center gap-3">
-              <Compass className="h-7 w-7 text-[#F59E0B] animate-spin" />
-              <span className="text-[9px] font-black uppercase tracking-widest text-slate-550">
-                Đang đối chiếu bảng giá chủ nhà...
-              </span>
-            </div>
-          ) : (
-            /* Premium plans cards layout */
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch pt-4 relative z-10">
-              {availablePlans.map((plan) => {
-                const planType = normalizePlanType(plan.sub_type);
-                const isGold = planType === "GOLD";
-                const isDiamond = planType === "DIAMOND";
-                const gradient = getPlanGradient(plan.sub_type);
-                const badge = getPlanBadge(plan.sub_type);
-                const displayPrice = getDisplayPrice(plan);
-                const originalMonthlyPrice = plan.sub_price;
-                
-                return (
-                  <motion.div
-                    key={plan.id}
-                    whileHover={{ y: -6, scale: 1.02 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                    className={`relative rounded-[2rem] border bg-[#0f172a]/60 backdrop-blur-md p-6 flex flex-col justify-between shadow-lg group cursor-pointer ${gradient}`}
-                  >
-                    {/* Badge */}
-                    <span className={`absolute -top-3 right-6 rounded-full px-3 py-0.5 text-[8px] font-black uppercase tracking-widest text-slate-900 shadow-md ${
-                      isGold 
-                        ? "bg-[#FBBF24]" 
-                        : isDiamond 
-                          ? "bg-fuchsia-400" 
-                          : "bg-slate-400"
-                    }`}>
-                      {badge}
+              <div className="space-y-6 flex-1 text-left">
+                <div className="space-y-2">
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    <span className="text-[8px] font-black uppercase bg-[#FBBF24]/10 border border-[#FBBF24]/30 text-[#FBBF24] px-3 py-1 rounded-full shadow-md animate-pulse flex items-center gap-1 font-heading">
+                      <Crown className="h-3 w-3 fill-current text-[#F59E0B]" /> Active Member
                     </span>
+                    <span className="text-[8px] font-black uppercase bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-3 py-1 rounded-full shadow-sm font-heading">
+                      Đang hoạt động
+                    </span>
+                  </div>
+                  
+                  <h2 className="text-2xl sm:text-3xl font-black text-slate-100 leading-tight font-heading">
+                    {activePlanTitle}
+                  </h2>
+                  
+                  <p className="text-xs text-slate-400 font-body max-w-xl leading-relaxed">
+                    Tài khoản của bạn đã được nâng cấp lên hạng cước Chủ nhà cao cấp. Bài viết của bạn sẽ được ưu tiên xuất hiện đầu tiên trên bảng tin so khớp, và kích hoạt đầy đủ hệ thống AI để giới thiệu Renter tương thích.
+                  </p>
+                </div>
 
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-0.5 text-left">
-                          <h3 className="font-extrabold text-sm text-[#FBBF24] group-hover:text-white transition-colors">
-                            {plan.sub_title}
-                          </h3>
-                          <span className="text-[8px] uppercase font-black tracking-widest text-slate-500 block font-body">
-                            Thời hạn: {billingCycle === "yearly" ? "12 Tháng" : plan.sub_time}
-                          </span>
-                        </div>
-                        <div className="p-2.5 rounded-xl bg-white/5 border border-white/5">
-                          {getPlanIcon(plan.sub_type)}
-                        </div>
-                      </div>
+                <hr className="border-white/5" />
 
-                      {/* Display Pricing details */}
-                      <div className="space-y-0.5 text-left">
-                        <div className="flex items-baseline gap-1">
-                          <span className="text-2xl font-black text-slate-100 bg-gradient-to-r from-slate-100 to-slate-400 bg-clip-text">
-                            {formatVND(displayPrice)}
-                          </span>
-                          <span className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">
-                            / tháng
-                          </span>
-                        </div>
-                        {billingCycle === "yearly" ? (
-                          <div className="space-y-0.5 text-[8px] font-bold">
-                            <span className="text-slate-500 uppercase tracking-wider block">
-                              Thanh toán định kỳ {formatVND(displayPrice * 12)} / năm
-                            </span>
-                            <span className="text-emerald-400 uppercase tracking-wider block">
-                              Tiết kiệm {formatVND((originalMonthlyPrice - displayPrice) * 12)} / năm
-                            </span>
-                          </div>
-                        ) : (
-                          isDiamond && (
-                            <span className="text-[8px] font-extrabold text-emerald-400 uppercase tracking-wider block">
-                              Tiết kiệm ~120.000đ / tháng
-                            </span>
-                          )
-                        )}
-                      </div>
+                {/* Pricing details grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 text-xs font-semibold">
+                  <div className="space-y-1 text-left">
+                    <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest block font-body">Biểu phí định kỳ</span>
+                    <span className="text-sm font-black text-[#F59E0B]">
+                      {activeSubDetail.sub_id ? formatVND(userSubscriptions.find(s => s.id === activeSubDetail.id)?.sub_id === 1 ? 199000 : 1668000) : "Nạp xu gia hạn"}
+                    </span>
+                  </div>
+                  
+                  <div className="space-y-1 text-left">
+                    <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest block font-body">Chu kỳ tiếp theo</span>
+                    <span className="text-sm font-black text-slate-200 font-body">{formatDate(activeSubDetail.time_end)}</span>
+                  </div>
+                  
+                  <div className="space-y-1 text-left col-span-2 sm:col-span-1">
+                    <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest block font-body">Kênh thụ hưởng</span>
+                    <span className="text-sm font-black text-slate-200">Ví xu hệ thống</span>
+                  </div>
+                </div>
+              </div>
 
-                      <p className="text-[10px] text-slate-400 leading-relaxed font-medium text-left">
-                        {plan.sub_description}
-                      </p>
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row lg:flex-col gap-3 shrink-0 w-full lg:w-fit self-stretch lg:self-center justify-center z-10">
+                {upgradeInfo && upgradeInfo.can_upgrade && upgradeInfo.higher_packages.length > 0 && (
+                  <button
+                    onClick={() => {
+                      setShowUpgradeSection(true);
+                      setTimeout(() => {
+                        const element = document.getElementById("upgrade-section");
+                        if (element) {
+                          element.scrollIntoView({ behavior: "smooth" });
+                        } else {
+                          toast.info("Vui lòng cuộn xuống để xem các gói nâng cấp!");
+                        }
+                      }, 100);
+                    }}
+                    className="h-12 px-6 rounded-xl bg-[#F59E0B] hover:bg-[#FBBF24] text-slate-900 text-xs font-black uppercase tracking-wider cursor-pointer transition-all text-center flex items-center justify-center gap-1.5 shadow-md shadow-[#F59E0B]/10 active:scale-95"
+                  >
+                    <Sparkles className="h-4 w-4 fill-current text-slate-900 animate-pulse" />
+                    Nâng cấp gói cước
+                  </button>
+                )}
+                
+                <button
+                  onClick={() => handleCancelSubscription(activeSubDetail.id!, activePlanTitle)}
+                  className="h-12 px-6 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-black uppercase tracking-wider cursor-pointer border border-red-500/10 transition-all text-center flex items-center justify-center active:scale-95"
+                >
+                  Hủy gia hạn tự động
+                </button>
+              </div>
+            </motion.div>
+          )}
 
-                      <hr className="border-white/5" />
+          {/* ── 2b. UPGRADE RECOMMENDATION SECTION ── */}
+          {hasActiveSub && showUpgradeSection && upgradeInfo && upgradeInfo.can_upgrade && upgradeInfo.higher_packages.length > 0 && (
+            <div id="upgrade-section" className="space-y-6 bg-[#0f172a]/20 border border-white/5 rounded-[2.5rem] p-6 sm:p-10 relative overflow-hidden backdrop-blur-xl text-left z-10 shadow-2xl">
+              {/* Glowing background */}
+              <div className="absolute top-[-30%] left-[-10%] w-[40%] h-[60%] rounded-full bg-gradient-to-tr from-[#D946EF]/10 via-[#F59E0B]/5 to-transparent blur-[90px] pointer-events-none" />
 
-                      {/* Features checklist */}
-                      <ul className="space-y-2 text-[10px] text-slate-400 font-body font-medium text-left">
-                        {getPlanFeatures(plan.sub_type).map((feature, idx) => (
-                          <li key={idx} className="flex gap-2 items-start leading-tight">
-                            <div className="h-4.5 w-4.5 rounded-full flex items-center justify-center shrink-0 mt-0.5 bg-white/5 border border-white/5 text-slate-400">
-                              <Check className="h-2.5 w-2.5" />
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 relative z-10">
+                <div className="space-y-1.5">
+                  <h2 className="text-xl font-black text-[#F59E0B] flex items-center gap-2 font-heading">
+                    <Sparkles className="h-5 w-5 text-[#D946EF] animate-pulse" />
+                    Nâng cấp Trải Nghiệm Chủ Nhà Pro
+                  </h2>
+                  <p className="text-xs text-slate-405 font-medium font-body max-w-xl leading-relaxed">
+                    Bạn đang sử dụng gói <strong className="text-[#FBBF24]">{activePlanTitle}</strong>. Hãy nâng cấp lên gói cao hơn để sở hữu những đặc quyền tối thượng!
+                  </p>
+                </div>
+
+                {/* Switch Billing Cycle Toggle */}
+                <div className="bg-[#0b0f19] p-1 rounded-2xl flex items-center border border-white/5 shadow-inner self-start md:self-center">
+                  <button
+                    type="button"
+                    onClick={() => setBillingCycle("monthly")}
+                    className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all duration-300 cursor-pointer ${
+                      billingCycle === "monthly"
+                        ? "bg-white/10 text-[#FBBF24] shadow-sm"
+                        : "text-slate-500 hover:text-slate-350"
+                    }`}
+                  >
+                    Hàng tháng
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBillingCycle("yearly")}
+                    className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all duration-300 flex items-center gap-1 cursor-pointer ${
+                      billingCycle === "yearly"
+                        ? "bg-white/10 text-[#FBBF24] shadow-sm"
+                        : "text-slate-500 hover:text-slate-350"
+                    }`}
+                  >
+                    Hàng năm
+                    <span className="bg-[#F97316] text-white text-[8px] font-black uppercase px-1.5 py-0.5 rounded-full flex items-center gap-0.5 font-heading">
+                      <Gift className="h-2 w-2" />
+                      -30%
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              {loadingUpgrade ? (
+                <div className="h-44 flex flex-col items-center justify-center gap-3">
+                  <Compass className="h-7 w-7 text-[#F59E0B] animate-spin" />
+                  <span className="text-[9px] font-black uppercase tracking-widest text-slate-555 font-body">
+                    Đang đối chiếu các gói nâng cấp...
+                  </span>
+                </div>
+              ) : (
+                /* Higher plans cards layout */
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch pt-4 relative z-10">
+                  {upgradeInfo.higher_packages.map((plan) => {
+                    const planType = normalizePlanType(plan.sub_type);
+                    const isGold = planType === "GOLD";
+                    const isDiamond = planType === "DIAMOND";
+                    const gradient = getPlanGradient(plan.sub_type);
+                    const badge = getPlanBadge(plan.sub_type);
+                    const displayPrice = getDisplayPrice(plan);
+                    const originalMonthlyPrice = plan.sub_price;
+                    
+                    return (
+                      <motion.div
+                        key={plan.id}
+                        whileHover={{ y: -6, scale: 1.02 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                        className={`relative rounded-[2rem] border bg-[#0f172a]/60 backdrop-blur-md p-6 flex flex-col justify-between shadow-lg group cursor-pointer ${gradient}`}
+                      >
+                        {/* Badge */}
+                        <span className={`absolute -top-3 right-6 rounded-full px-3 py-0.5 text-[8px] font-black uppercase tracking-widest text-slate-900 shadow-md ${
+                          isGold 
+                            ? "bg-[#FBBF24]" 
+                            : isDiamond 
+                              ? "bg-fuchsia-400" 
+                              : "bg-slate-400"
+                        }`}>
+                          {badge}
+                        </span>
+
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between">
+                            <div className="space-y-0.5 text-left font-heading">
+                              <h3 className="font-extrabold text-sm text-[#FBBF24] group-hover:text-white transition-colors">
+                                {plan.sub_title}
+                              </h3>
+                              <span className="text-[8px] uppercase font-black tracking-widest text-slate-500 block font-body">
+                                Thời hạn: {billingCycle === "yearly" ? "12 Tháng" : plan.sub_time}
+                              </span>
                             </div>
-                            <span>{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
+                            <div className="p-2.5 rounded-xl bg-white/5 border border-white/5">
+                              {getPlanIcon(plan.sub_type)}
+                            </div>
+                          </div>
 
-                    <button
-                      onClick={() => handleSubscribe(plan)}
-                      className="w-full mt-6 py-3 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer shadow-md bg-gradient-to-r from-[#F59E0B] via-[#FBBF24] to-[#F59E0B] text-slate-900 hover:brightness-105 active:scale-95"
-                    >
-                      Kích hoạt gói ngay
-                      <ArrowRight className="h-3.5 w-3.5 text-slate-900" />
-                    </button>
-                  </motion.div>
-                );
-              })}
+                          {/* Display Pricing details */}
+                          <div className="space-y-0.5 text-left">
+                            <div className="flex items-baseline gap-1">
+                              <span className="text-2xl font-black text-slate-100 bg-gradient-to-r from-slate-100 to-slate-400 bg-clip-text">
+                                {formatVND(displayPrice)}
+                              </span>
+                              <span className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">
+                                / tháng
+                              </span>
+                            </div>
+                            {billingCycle === "yearly" ? (
+                              <div className="space-y-0.5 text-[8px] font-bold">
+                                <span className="text-slate-500 uppercase tracking-wider block">
+                                  Thanh toán định kỳ {formatVND(displayPrice * 12)} / năm
+                                </span>
+                                <span className="text-emerald-400 uppercase tracking-wider block">
+                                  Tiết kiệm {formatVND((originalMonthlyPrice - displayPrice) * 12)} / năm
+                                </span>
+                              </div>
+                            ) : (
+                              isDiamond && (
+                                <span className="text-[8px] font-extrabold text-emerald-400 uppercase tracking-wider block">
+                                  Tiết kiệm ~120.000đ / tháng
+                                </span>
+                              )
+                            )}
+                          </div>
+
+                          <p className="text-[10px] text-slate-400 leading-relaxed font-medium text-left font-body">
+                            {plan.sub_description}
+                          </p>
+
+                          <hr className="border-white/5" />
+
+                          {/* Features checklist */}
+                          <ul className="space-y-2 text-[10px] text-slate-400 font-body font-medium text-left">
+                            {getPlanFeatures(plan.sub_type).map((feature, idx) => (
+                              <li key={idx} className="flex gap-2 items-start leading-tight">
+                                <div className="h-4.5 w-4.5 rounded-full flex items-center justify-center shrink-0 mt-0.5 bg-white/5 border border-white/5 text-slate-400">
+                                  <Check className="h-2.5 w-2.5" />
+                                </div>
+                                <span>{feature}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+
+                        <button
+                          onClick={() => handleSubscribe(plan)}
+                          className="w-full mt-6 py-3 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer shadow-md bg-gradient-to-r from-[#F59E0B] via-[#FBBF24] to-[#F59E0B] text-slate-900 hover:brightness-105 active:scale-95"
+                        >
+                          Nâng cấp gói ngay
+                          <ArrowRight className="h-3.5 w-3.5 text-slate-900" />
+                        </button>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
+
+          {/* ── 2c. ALL AVAILABLE PACKAGES GRID ── */}
+          <div className="space-y-6 bg-[#0f172a]/20 border border-white/5 rounded-[2.5rem] p-6 sm:p-10 relative overflow-hidden backdrop-blur-xl text-left z-10 shadow-2xl">
+            {/* Background glowing iridescent node */}
+            <div className="absolute top-[-30%] left-[-10%] w-[40%] h-[60%] rounded-full bg-gradient-to-tr from-[#D946EF]/10 via-[#F59E0B]/5 to-transparent blur-[90px] pointer-events-none" />
+
+            {/* Pricing header controls */}
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 relative z-10">
+              <div className="space-y-1.5">
+                <h2 className="text-xl font-black text-[#F59E0B] flex items-center gap-2 font-heading">
+                  <Crown className="h-5 w-5 text-[#FBBF24] animate-pulse" />
+                  {hasActiveSub ? "Các Gói Cước Chủ Nhà Roomie" : "Nâng cấp Gói hội viên Chủ nhà"}
+                </h2>
+                <p className="text-xs text-slate-400 font-medium font-body max-w-xl leading-relaxed">
+                  Đăng tin phòng không giới hạn, đẩy tin tự động, mở khóa toàn bộ tiêu chí so khớp của Renter và hỗ trợ kỹ thuật 24/7.
+                </p>
+              </div>
+
+              {/* Switch Billing Cycle Toggle */}
+              <div className="bg-[#0b0f19] p-1 rounded-2xl flex items-center border border-white/5 shadow-inner self-start md:self-center">
+                <button
+                  type="button"
+                  onClick={() => setBillingCycle("monthly")}
+                  className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all duration-300 cursor-pointer ${
+                    billingCycle === "monthly"
+                      ? "bg-white/10 text-[#FBBF24] shadow-sm"
+                      : "text-slate-500 hover:text-slate-350"
+                  }`}
+                >
+                  Hàng tháng
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setBillingCycle("yearly")}
+                  className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all duration-300 flex items-center gap-1 cursor-pointer ${
+                    billingCycle === "yearly"
+                      ? "bg-white/10 text-[#FBBF24] shadow-sm"
+                      : "text-slate-500 hover:text-slate-350"
+                  }`}
+                >
+                  Hàng năm
+                  <span className="bg-[#F97316] text-white text-[8px] font-black uppercase px-1.5 py-0.5 rounded-full flex items-center gap-0.5 font-heading">
+                    <Gift className="h-2 w-2" />
+                    -30%
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {loadingPlans ? (
+              <div className="h-44 flex flex-col items-center justify-center gap-3">
+                <Compass className="h-7 w-7 text-[#F59E0B] animate-spin" />
+                <span className="text-[9px] font-black uppercase tracking-widest text-slate-555 font-body">
+                  Đang đối chiếu bảng giá chủ nhà...
+                </span>
+              </div>
+            ) : (
+              /* Premium plans cards layout */
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch pt-4 relative z-10">
+                {availablePlans.map((plan) => {
+                  const planType = normalizePlanType(plan.sub_type);
+                  const isGold = planType === "GOLD";
+                  const isDiamond = planType === "DIAMOND";
+                  const gradient = getPlanGradient(plan.sub_type);
+                  const badge = getPlanBadge(plan.sub_type);
+                  const displayPrice = getDisplayPrice(plan);
+                  const originalMonthlyPrice = plan.sub_price;
+                  
+                  return (
+                    <motion.div
+                      key={plan.id}
+                      whileHover={{ y: -6, scale: 1.02 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                      className={`relative rounded-[2rem] border bg-[#0f172a]/60 backdrop-blur-md p-6 flex flex-col justify-between shadow-lg group cursor-pointer ${gradient}`}
+                    >
+                      {/* Badge */}
+                      <span className={`absolute -top-3 right-6 rounded-full px-3 py-0.5 text-[8px] font-black uppercase tracking-widest text-slate-900 shadow-md ${
+                        isGold 
+                          ? "bg-[#FBBF24]" 
+                          : isDiamond 
+                            ? "bg-fuchsia-400" 
+                            : "bg-slate-400"
+                      }`}>
+                        {badge}
+                      </span>
+
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-0.5 text-left font-heading">
+                            <h3 className="font-extrabold text-sm text-[#FBBF24] group-hover:text-white transition-colors">
+                              {plan.sub_title}
+                            </h3>
+                            <span className="text-[8px] uppercase font-black tracking-widest text-slate-555 block font-body">
+                              Thời hạn: {billingCycle === "yearly" ? "12 Tháng" : plan.sub_time}
+                            </span>
+                          </div>
+                          <div className="p-2.5 rounded-xl bg-white/5 border border-white/5">
+                            {getPlanIcon(plan.sub_type)}
+                          </div>
+                        </div>
+
+                        {/* Display Pricing details */}
+                        <div className="space-y-0.5 text-left">
+                          <div className="flex items-baseline gap-1">
+                            <span className="text-2xl font-black text-slate-100 bg-gradient-to-r from-slate-100 to-slate-400 bg-clip-text">
+                              {formatVND(displayPrice)}
+                            </span>
+                            <span className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">
+                              / tháng
+                            </span>
+                          </div>
+                          {billingCycle === "yearly" ? (
+                            <div className="space-y-0.5 text-[8px] font-bold">
+                              <span className="text-slate-500 uppercase tracking-wider block">
+                                Thanh toán định kỳ {formatVND(displayPrice * 12)} / năm
+                              </span>
+                              <span className="text-emerald-400 uppercase tracking-wider block">
+                                Tiết kiệm {formatVND((originalMonthlyPrice - displayPrice) * 12)} / năm
+                              </span>
+                            </div>
+                          ) : (
+                            isDiamond && (
+                              <span className="text-[8px] font-extrabold text-emerald-400 uppercase tracking-wider block">
+                                Tiết kiệm ~120.000đ / tháng
+                              </span>
+                            )
+                          )}
+                        </div>
+
+                        <p className="text-[10px] text-slate-400 leading-relaxed font-medium text-left font-body">
+                          {plan.sub_description}
+                        </p>
+
+                        <hr className="border-white/5" />
+
+                        {/* Features checklist */}
+                        <ul className="space-y-2 text-[10px] text-slate-400 font-body font-medium text-left">
+                          {getPlanFeatures(plan.sub_type).map((feature, idx) => (
+                            <li key={idx} className="flex gap-2 items-start leading-tight">
+                              <div className="h-4.5 w-4.5 rounded-full flex items-center justify-center shrink-0 mt-0.5 bg-white/5 border border-white/5 text-slate-400">
+                                <Check className="h-2.5 w-2.5" />
+                              </div>
+                              <span>{feature}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      <button
+                        onClick={() => handleSubscribe(plan)}
+                        className="w-full mt-6 py-3 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer shadow-md bg-gradient-to-r from-[#F59E0B] via-[#FBBF24] to-[#F59E0B] text-slate-900 hover:brightness-105 active:scale-95"
+                      >
+                        Kích hoạt gói ngay
+                        <ArrowRight className="h-3.5 w-3.5 text-slate-900" />
+                      </button>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
         </div>
       )}
 
@@ -534,7 +729,7 @@ export default function LandlordSubscriptionPage() {
         {loadingHistory ? (
           <div className="h-32 flex flex-col items-center justify-center gap-2 rounded-2xl border border-white/5 bg-[#0f172a]/20 animate-pulse">
             <Compass className="h-6 w-6 text-[#F59E0B] animate-spin" />
-            <span className="text-[9px] font-black uppercase tracking-widest text-slate-550 font-body">
+            <span className="text-[9px] font-black uppercase tracking-widest text-slate-555 font-body">
               Đang tải lịch sử giao dịch...
             </span>
           </div>
@@ -569,7 +764,7 @@ export default function LandlordSubscriptionPage() {
                     <tr key={inv.id} className="hover:bg-white/5 transition-colors">
                       <td className="py-4 px-6 font-mono text-slate-500 font-bold">RM-SUB-{inv.id}</td>
                       <td className="py-4 px-6 text-slate-400 font-medium font-body">{formatDate(inv.created_at)}</td>
-                      <td className="py-4 px-6 font-extrabold text-slate-205">{planTitle}</td>
+                      <td className="py-4 px-6 font-extrabold text-slate-200">{planTitle}</td>
                       <td className="py-4 px-6 text-slate-400 font-medium">{planTime}</td>
                       <td className="py-4 px-6 text-slate-400 font-medium font-body">{formatDate(inv.time_end)}</td>
                       <td className="py-4 px-6">

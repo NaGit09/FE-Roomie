@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -7,35 +8,30 @@ import {
   ShieldCheck, 
   Check, 
   Lock, 
-  CreditCard, 
   Sparkles, 
   CheckCircle, 
-  Calendar, 
   ChevronRight, 
   Info,
-  QrCode,
   Tag,
   Loader2,
   Compass,
   AlertCircle
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useSubscriptionStore } from "@/stores/subscriptionStore";
-import formatVND from "@/utils/priceUtils";
 import { toast } from "sonner";
+import { OrderApi } from "@/services/api/order";
+import formatVND from "@/utils/priceUtils";
+import { Subscription } from "@/schema/user/subcription";
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { checkoutPlan, completeCheckout } = useSubscriptionStore();
-  const [mounted, setMounted] = useState(false);
+  const searchParams = useSearchParams();
+  const paramSubId = searchParams.get("subscription_id");
 
-  // Form States
-  const [paymentMethod, setPaymentMethod] = useState<"card" | "momo" | "bank">("card");
-  const [cardNumber, setCardNumber] = useState("");
-  const [cardName, setCardName] = useState("");
-  const [cardExpiry, setCardExpiry] = useState("");
-  const [cardCvv, setCardCvv] = useState("");
-  const [isCardFlipped, setIsCardFlipped] = useState(false);
+  const { checkoutPlan, completeCheckout, setCheckoutPlan } = useSubscriptionStore();
+  const [mounted, setMounted] = useState(false);
+  const [loadingPlan, setLoadingPlan] = useState(false);
 
   // Coupon States
   const [couponCode, setCouponCode] = useState("");
@@ -50,7 +46,45 @@ export default function CheckoutPage() {
     setMounted(true);
   }, []);
 
-  if (!mounted) {
+  useEffect(() => {
+    if (!mounted || !paramSubId) return;
+
+    const loadPlan = async () => {
+      setLoadingPlan(true);
+      try {
+        const SubscriptionApi = (await import("@/services/api/subcription")).SubscriptionApi;
+        let plans: Subscription[] = [];
+        
+        // Load landlord plans
+        const landlordRes = await SubscriptionApi.get_all_landlord_subscriptions();
+        if (landlordRes && landlordRes.code === 200 && Array.isArray(landlordRes.data)) {
+          plans = [...plans, ...landlordRes.data];
+        }
+        
+        // Load renter plans
+        const renterRes = await SubscriptionApi.get_all_renter_subscriptions();
+        if (renterRes && renterRes.code === 200 && Array.isArray(renterRes.data)) {
+          plans = [...plans, ...renterRes.data];
+        }
+
+        const matched = plans.find(p => String(p.id) === String(paramSubId));
+        if (matched) {
+          setCheckoutPlan(matched);
+        } else {
+          toast.error("Không tìm thấy gói hội viên tương ứng.");
+        }
+      } catch (error) {
+        console.error("Failed to load subscription plan:", error);
+        toast.error("Lỗi khi tải thông tin gói cước.");
+      } finally {
+        setLoadingPlan(false);
+      }
+    };
+
+    loadPlan();
+  }, [mounted, paramSubId]);
+
+  if (!mounted || loadingPlan) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <Compass className="h-10 w-10 text-primary animate-spin" />
@@ -116,27 +150,50 @@ export default function CheckoutPage() {
   const finalPrice = originalPrice - discountAmount;
 
   // Checkout submission
-  const handleCheckout = (e: React.FormEvent) => {
+  const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (paymentMethod === "card") {
-      if (cardNumber.length < 16 || cardName.trim().length === 0 || cardExpiry.length < 4 || cardCvv.length < 3) {
-        toast.warning("Vui lòng điền đầy đủ thông tin thẻ tín dụng!");
-        return;
-      }
+    if (!checkoutPlan) {
+      toast.error("Không tìm thấy gói hội viên!");
+      return;
     }
 
     setIsProcessing(true);
 
-    // Simulate 2s validation spinner
-    setTimeout(() => {
-      completeCheckout(
-        paymentMethod === "card" ? "Thẻ tín dụng" : paymentMethod === "momo" ? "Ví MoMo" : "Chuyển khoản Ngân hàng"
-      );
+    try {
+      const orderPayload = {
+        item_type: "SUBSCRIPTION",
+        item_id: String(checkoutPlan.id) as any,
+        total_amount: finalPrice,
+      };
+
+      const response = await OrderApi.create_order(orderPayload);
+      if (response && response.code === 200) {
+        const order = Array.isArray(response.data) ? response.data[0] : response.data;
+        const orderId = order.id;
+
+        const paymentRes = await OrderApi.create_payment(orderId as any, {
+          payment_method: "PAYOS",
+          metadata: {}
+        });
+
+        if (paymentRes && paymentRes.code === 200 && paymentRes.data?.checkout_url) {
+          toast.success("Đang chuyển hướng sang cổng thanh toán payOS...");
+          completeCheckout("Cổng payOS");
+          window.location.href = paymentRes.data.checkout_url;
+        } else {
+          toast.error(paymentRes?.message || "Không thể tạo liên kết thanh toán payOS.");
+          setIsProcessing(false);
+        }
+      } else {
+        toast.error(response?.message || "Không thể tạo đơn hàng. Vui lòng thử lại!");
+        setIsProcessing(false);
+      }
+    } catch (err: any) {
+      console.error("Checkout failed:", err);
+      toast.error(err?.response?.data?.message || "Lỗi khi tạo đơn hàng thanh toán. Vui lòng thử lại!");
       setIsProcessing(false);
-      setIsSuccess(true);
-      toast.success("Thanh toán đơn hàng thành công!");
-    }, 2500);
+    }
   };
 
   return (
@@ -221,7 +278,7 @@ export default function CheckoutPage() {
                 </div>
                 <div className="flex justify-between items-center text-xs">
                   <span className="text-slate-400 font-bold uppercase tracking-wider">Hình thức</span>
-                  <span className="font-extrabold text-slate-800">{paymentMethod === "card" ? "Thẻ tín dụng" : paymentMethod === "momo" ? "Ví MoMo" : "Chuyển khoản"}</span>
+                  <span className="font-extrabold text-slate-800">Cổng payOS</span>
                 </div>
                 <div className="flex justify-between items-center text-xs border-t border-dashed border-slate-200 pt-3">
                   <span className="text-slate-400 font-bold uppercase tracking-wider">Tổng thanh toán</span>
@@ -266,319 +323,26 @@ export default function CheckoutPage() {
 
                 {/* Form Wrapper */}
                 <form onSubmit={handleCheckout} className="space-y-6">
-                  {/* Payment method selection cards */}
-                  <div className="grid grid-cols-3 gap-3">
-                    {/* Method 1: Credit Card */}
-                    <div
-                      onClick={() => setPaymentMethod("card")}
-                      className={`rounded-2xl border p-4 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all ${
-                        paymentMethod === "card"
-                          ? "border-primary bg-primary/5 ring-1 ring-primary"
-                          : "border-slate-200 bg-white hover:bg-slate-50"
-                      }`}
-                    >
-                      <CreditCard className={`h-6 w-6 ${paymentMethod === "card" ? "text-primary" : "text-slate-400"}`} />
-                      <span className="text-[10px] font-black uppercase tracking-wider text-slate-700">
-                        Thẻ tín dụng
-                      </span>
-                    </div>
-
-                    {/* Method 2: MoMo */}
-                    <div
-                      onClick={() => setPaymentMethod("momo")}
-                      className={`rounded-2xl border p-4 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all ${
-                        paymentMethod === "momo"
-                          ? "border-primary bg-primary/5 ring-1 ring-primary"
-                          : "border-slate-200 bg-white hover:bg-slate-50"
-                      }`}
-                    >
-                      <div className={`h-6 w-6 rounded-lg font-black text-[9px] flex items-center justify-center border text-white ${
-                        paymentMethod === "momo" ? "bg-[#A50064] border-[#A50064]" : "bg-slate-400 border-slate-400"
-                      }`}>
-                        MOMO
-                      </div>
-                      <span className="text-[10px] font-black uppercase tracking-wider text-slate-700">
-                        Ví MoMo
-                      </span>
-                    </div>
-
-                    {/* Method 3: Bank Transfer */}
-                    <div
-                      onClick={() => setPaymentMethod("bank")}
-                      className={`rounded-2xl border p-4 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all ${
-                        paymentMethod === "bank"
-                          ? "border-primary bg-primary/5 ring-1 ring-primary"
-                          : "border-slate-200 bg-white hover:bg-slate-50"
-                      }`}
-                    >
-                      <QrCode className={`h-6 w-6 ${paymentMethod === "bank" ? "text-primary" : "text-slate-400"}`} />
-                      <span className="text-[10px] font-black uppercase tracking-wider text-slate-700">
-                        Ngân hàng QR
-                      </span>
-                    </div>
-                  </div>
-
                   {/* Method Panel details */}
                   <div className="rounded-3xl border border-slate-200/60 bg-white p-6 sm:p-8 shadow-sm">
-                    {paymentMethod === "card" && (
-                      /* CREDIT CARD FORM & CARD INTERACTIVE DISPLAY */
-                      <div className="space-y-8">
-                        {/* Interactive Card Graphic preview */}
-                        <div className="flex justify-center">
-                          <motion.div
-                            initial={false}
-                            animate={{ rotateY: isCardFlipped ? 180 : 0 }}
-                            transition={{ duration: 0.6, ease: "easeOut" }}
-                            className="w-full max-w-[340px] h-[190px] rounded-2xl bg-gradient-to-tr from-slate-900 via-slate-800 to-indigo-950 text-white p-6 shadow-xl flex flex-col justify-between relative"
-                            style={{ transformStyle: "preserve-3d" }}
-                          >
-                            {/* Card Front face */}
-                            <div
-                              className="absolute inset-0 p-6 flex flex-col justify-between"
-                              style={{ backfaceVisibility: "hidden" }}
-                            >
-                              <div className="flex justify-between items-start">
-                                <span className="text-[10px] font-bold tracking-widest text-slate-300 uppercase">
-                                  ROOMIE GOLD CARD
-                                </span>
-                                <div className="h-8 w-12 bg-white/10 rounded-lg flex items-center justify-center text-xs font-bold italic">
-                                  VISA
-                                </div>
-                              </div>
-                              <div className="space-y-4">
-                                {/* Card Number display */}
-                                <div className="text-xl font-bold tracking-[0.2em] font-mono h-6">
-                                  {cardNumber.padEnd(16, "•").replace(/(.{4})/g, "$1 ")}
-                                </div>
-                                <div className="flex justify-between items-end">
-                                  <div className="space-y-0.5">
-                                    <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">
-                                      Card Holder
-                                    </span>
-                                    <div className="text-[11px] font-bold tracking-wider uppercase truncate max-w-[180px]">
-                                      {cardName || "TEN CHU THE"}
-                                    </div>
-                                  </div>
-                                  <div className="space-y-0.5 text-right">
-                                    <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">
-                                      Expires
-                                    </span>
-                                    <div className="text-[11px] font-bold tracking-wider">
-                                      {cardExpiry ? `${cardExpiry.slice(0, 2)}/${cardExpiry.slice(2, 4)}` : "MM/YY"}
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Card Back face */}
-                            <div
-                              className="absolute inset-0 p-6 flex flex-col justify-between rotateY-180"
-                              style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
-                            >
-                              <div className="w-full bg-slate-950 h-10 absolute left-0 top-6" />
-                              <div className="space-y-4 pt-10">
-                                <div className="flex justify-end items-center gap-2">
-                                  <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">
-                                    CVV Code
-                                  </span>
-                                  <div className="w-14 bg-white text-slate-900 font-mono text-sm px-2.5 py-1 text-center font-bold rounded">
-                                    {cardCvv || "•••"}
-                                  </div>
-                                </div>
-                                <p className="text-[7px] text-slate-400 leading-normal text-right">
-                                  Thẻ này được bảo mật thông tin và được mã hóa bởi Roomie Inc. Vui lòng bảo mật mã CVV của bạn.
-                                </p>
-                              </div>
-                            </div>
-                          </motion.div>
-                        </div>
-
-                        {/* Card Inputs Form */}
-                        <div className="space-y-4">
-                          {/* Input 1: Card Number */}
-                          <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block font-body">
-                              Số thẻ tín dụng
-                            </label>
-                            <input
-                              type="text"
-                              maxLength={16}
-                              placeholder="1234 5678 1234 5678"
-                              value={cardNumber}
-                              onChange={(e) => setCardNumber(e.target.value.replace(/\D/g, ""))}
-                              onFocus={() => setIsCardFlipped(false)}
-                              className="w-full h-11 border border-slate-200 rounded-xl px-4 text-xs font-semibold focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                              required
-                            />
-                          </div>
-
-                          {/* Input 2: Card Name */}
-                          <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block font-body">
-                              Tên in trên thẻ
-                            </label>
-                            <input
-                              type="text"
-                              placeholder="NGUYEN VAN A"
-                              value={cardName}
-                              onChange={(e) => setCardName(e.target.value.toUpperCase())}
-                              onFocus={() => setIsCardFlipped(false)}
-                              className="w-full h-11 border border-slate-200 rounded-xl px-4 text-xs font-semibold focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                              required
-                            />
-                          </div>
-
-                          {/* Dual inputs: Expiry and CVV */}
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-1.5">
-                              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block font-body">
-                                Ngày hết hạn (MMYY)
-                              </label>
-                              <input
-                                type="text"
-                                maxLength={4}
-                                placeholder="1228"
-                                value={cardExpiry}
-                                onChange={(e) => setCardExpiry(e.target.value.replace(/\D/g, ""))}
-                                onFocus={() => setIsCardFlipped(false)}
-                                className="w-full h-11 border border-slate-200 rounded-xl px-4 text-xs font-semibold focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                                required
-                              />
-                            </div>
-                            <div className="space-y-1.5">
-                              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block font-body">
-                                Mã bảo mật CVV
-                              </label>
-                              <input
-                                type="password"
-                                maxLength={3}
-                                placeholder="•••"
-                                value={cardCvv}
-                                onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, ""))}
-                                onFocus={() => setIsCardFlipped(true)}
-                                onBlur={() => setIsCardFlipped(false)}
-                                className="w-full h-11 border border-slate-200 rounded-xl px-4 text-xs font-semibold focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                                required
-                              />
-                            </div>
-                          </div>
-                        </div>
+                    {/* payOS PANEL DETAILS */}
+                    <div className="text-center space-y-6 py-6">
+                      <div className="inline-flex h-12 w-12 rounded-xl bg-blue-600 text-white items-center justify-center font-bold text-sm shadow-md">
+                        payOS
                       </div>
-                    )}
-
-                    {paymentMethod === "momo" && (
-                      /* MOMO SCAN SIMULATOR */
-                      <div className="text-center space-y-6">
-                        <div className="inline-flex h-12 w-12 rounded-xl bg-[#A50064] text-white items-center justify-center font-bold text-sm shadow-md">
-                          Momo
-                        </div>
-                        <div className="space-y-2">
-                          <h3 className="font-heading text-lg font-bold text-slate-900">
-                            Thanh toán nhanh qua ví MoMo
-                          </h3>
-                          <p className="text-xs text-slate-500 leading-relaxed max-w-sm mx-auto">
-                            Hệ thống sẽ tạo mã QR tự động. Hãy mở ứng dụng MoMo trên điện thoại và quét mã QR bên dưới để thanh toán.
-                          </p>
-                        </div>
-
-                        {/* QR Code Container */}
-                        <div className="p-6 rounded-2xl bg-white border border-slate-100 shadow-inner inline-block mx-auto relative group">
-                          {/* Custom Simulated QR Code SVG */}
-                          <svg className="h-44 w-44 text-slate-900 mx-auto" viewBox="0 0 100 100">
-                            <rect width="100" height="100" fill="#f8fafc" />
-                            {/* Anchor corners */}
-                            <rect x="5" y="5" width="25" height="25" fill="#A50064" />
-                            <rect x="8" y="8" width="19" height="19" fill="#f8fafc" />
-                            <rect x="11" y="11" width="13" height="13" fill="#A50064" />
-
-                            <rect x="70" y="5" width="25" height="25" fill="#A50064" />
-                            <rect x="73" y="8" width="19" height="19" fill="#f8fafc" />
-                            <rect x="76" y="11" width="13" height="13" fill="#A50064" />
-
-                            <rect x="5" y="70" width="25" height="25" fill="#A50064" />
-                            <rect x="8" y="73" width="19" height="19" fill="#f8fafc" />
-                            <rect x="11" y="76" width="13" height="13" fill="#A50064" />
-                            {/* Decorative random dots to look like QR */}
-                            <path d="M35 10h5v5h-5z M45 5h10v5H45z M60 10h5v10h-5z M35 25h15v5H35z M55 25h10v5H55z M40 35h5v10h-5z M50 35h15v5H50z M10 40h10v5H10z M25 45h5v15h-5z M5 55h15v5H5z M35 55h10v5H35z M50 50h5v10h-5z M60 55h15v5H60z M80 35h15v5H80z M85 45h10v10H85z M35 70h5v15h-5z M45 80h15v5H45z M65 70h10v10H65z M80 70h15v5H80z M85 80h10v10H85z" fill="#1e293b" />
-                          </svg>
-                          <div className="absolute inset-0 bg-[#A50064]/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-2xl pointer-events-none">
-                            <span className="bg-white/95 px-3 py-1.5 rounded-full text-[9px] font-black uppercase text-[#A50064] tracking-wider shadow border border-slate-100">
-                              Quét Ngay
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest flex items-center justify-center gap-1.5">
-                          <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
-                          Đang chờ tín hiệu thanh toán...
-                        </div>
+                      <div className="space-y-2">
+                        <h3 className="font-heading text-lg font-bold text-slate-900">
+                          Thanh toán an toàn qua cổng payOS
+                        </h3>
+                        <p className="text-xs text-slate-500 leading-relaxed max-w-sm mx-auto font-body">
+                          Hệ thống sẽ chuyển hướng bạn đến giao diện thanh toán an toàn của cổng payOS để quét mã VietQR hoặc sử dụng thẻ ngân hàng của bạn.
+                        </p>
                       </div>
-                    )}
-
-                    {paymentMethod === "bank" && (
-                      /* BANK TRANSFER QR CODE AND ACCOUNT INFO */
-                      <div className="space-y-6">
-                        <div className="text-center space-y-2">
-                          <h3 className="font-heading text-lg font-bold text-slate-900">
-                            Chuyển khoản Ngân hàng (QR Code)
-                          </h3>
-                          <p className="text-xs text-slate-500 leading-relaxed max-w-sm mx-auto">
-                            Vui lòng quét mã VietQR bằng ứng dụng Mobile Banking ngân hàng của bạn, thông tin tài khoản và số tiền sẽ được tự động điền.
-                          </p>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                          {/* VietQR code */}
-                          <div className="border border-slate-100 rounded-2xl bg-white p-4 text-center shadow-inner">
-                            <svg className="h-44 w-44 text-slate-900 mx-auto" viewBox="0 0 100 100">
-                              <rect width="100" height="100" fill="#f8fafc" />
-                              <rect x="5" y="5" width="25" height="25" fill="#004A95" />
-                              <rect x="8" y="8" width="19" height="19" fill="#f8fafc" />
-                              <rect x="11" y="11" width="13" height="13" fill="#004A95" />
-
-                              <rect x="70" y="5" width="25" height="25" fill="#004A95" />
-                              <rect x="73" y="8" width="19" height="19" fill="#f8fafc" />
-                              <rect x="76" y="11" width="13" height="13" fill="#004A95" />
-
-                              <rect x="5" y="70" width="25" height="25" fill="#004A95" />
-                              <rect x="8" y="73" width="19" height="19" fill="#f8fafc" />
-                              <rect x="11" y="76" width="13" height="13" fill="#004A95" />
-                              {/* QR visual detail bank branded */}
-                              <rect x="40" y="40" width="20" height="20" fill="#E21B26" />
-                              <rect x="43" y="43" width="14" height="14" fill="#f8fafc" />
-                              <path d="M47 47h6v6h-6z" fill="#E21B26" />
-                              <path d="M35 10h5v5h-5z M45 5h10v5H45z M60 10h5v10h-5z M35 25h15v5H35z M55 25h10v5H55z M40 35h5v10h-5z M50 35h15v5H50z M10 40h10v5H10z M25 45h5v15h-5z M5 55h15v5H5z M35 55h10v5H35z M50 50h5v10h-5z M60 55h15v5H60z M80 35h15v5H80z M85 45h10v10H85z M35 70h5v15h-5z M45 80h15v5H45z M65 70h10v10H65z M80 70h15v5H80z M85 80h10v10H85z" fill="#1e293b" />
-                            </svg>
-                            <span className="text-[8px] font-black uppercase text-slate-400 tracking-wider block mt-2">
-                              VietQR Standard / NAPAS247
-                            </span>
-                          </div>
-
-                          {/* Bank details info */}
-                          <div className="space-y-4 text-xs font-body">
-                            <div className="space-y-1">
-                              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Ngân hàng</span>
-                              <span className="font-extrabold text-slate-800">MB Bank (Ngân hàng Quân Đội)</span>
-                            </div>
-                            <div className="space-y-1">
-                              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Số tài khoản</span>
-                              <span className="font-extrabold text-slate-800 tracking-wider">190010099999</span>
-                            </div>
-                            <div className="space-y-1">
-                              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Tên tài khoản</span>
-                              <span className="font-extrabold text-slate-800">CONG TY ROOMIE SMARTROOM</span>
-                            </div>
-                            <div className="space-y-1">
-                              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Nội dung chuyển khoản</span>
-                              <span className="font-extrabold text-primary select-all">
-                                RM SUB {checkoutPlan?.sub_type || ""} {Math.floor(1000 + Math.random() * 9000)}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
+                      <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest flex items-center justify-center gap-1.5">
+                        <span className="h-2 w-2 rounded-full bg-blue-500 animate-ping" />
+                        Liên kết thanh toán bảo mật 256-bit SSL
                       </div>
-                    )}
+                    </div>
                   </div>
 
                   {/* Security trust notice */}
@@ -621,7 +385,7 @@ export default function CheckoutPage() {
                       <span className="inline-flex items-center gap-1 text-[8px] font-black uppercase tracking-wider bg-amber-500/10 text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded-md border border-amber-400/20">
                         Hội viên Premium
                       </span>
-                      <h4 className="font-extrabold text-md text-slate-800">
+                      <h4 className="font-extrabold text-md text-slate-800 font-heading">
                         {checkoutPlan?.sub_title || ""}
                       </h4>
                       <p className="text-[11px] text-slate-400 font-medium font-body leading-relaxed max-w-[200px]">
@@ -647,7 +411,7 @@ export default function CheckoutPage() {
                       {appliedCoupon && (
                         <button
                           onClick={handleRemoveCoupon}
-                          className="text-[9px] font-black uppercase text-red-500 hover:underline cursor-pointer"
+                          className="text-[9px] font-black uppercase text-red-500 hover:underline cursor-pointer font-heading"
                         >
                           Gỡ bỏ
                         </button>
@@ -676,14 +440,14 @@ export default function CheckoutPage() {
 
                     <div className="bg-slate-50/70 rounded-xl p-3 border border-slate-100 flex gap-2 items-start text-[10px] font-body text-slate-400 font-medium">
                       <Info className="h-4 w-4 text-slate-400 shrink-0 mt-0.5" />
-                      <span>Nhập mã <strong className="text-slate-600">ROOMIE50</strong> để được giảm ngay 50% tổng giá trị hóa đơn trải nghiệm Premium!</span>
+                      <span>Nhập mã <strong className="text-slate-600 font-heading">ROOMIE50</strong> để được giảm ngay 50% tổng giá trị hóa đơn trải nghiệm Premium!</span>
                     </div>
                   </div>
 
                   <hr className="border-slate-100" />
 
                   {/* Pricing Breakdown Invoice details */}
-                  <div className="space-y-3.5 text-xs">
+                  <div className="space-y-3.5 text-xs font-body">
                     <div className="flex justify-between items-center text-slate-500 font-semibold">
                       <span>Tạm tính</span>
                       <span className="font-bold text-slate-800">{formatVND(originalPrice)}</span>
@@ -706,7 +470,7 @@ export default function CheckoutPage() {
                     </div>
 
                     <div className="flex justify-between items-center text-slate-500 font-semibold">
-                      <span>Thuế VAT (10%)</span>
+                      <span>Thuếu VAT (10%)</span>
                       <span className="font-bold text-slate-400 line-through">Đã giảm thuế</span>
                     </div>
 
