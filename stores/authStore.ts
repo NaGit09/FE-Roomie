@@ -34,6 +34,10 @@ export const useAuthStore = create<AuthState>()(
 
         setCookie("role", data.role);
 
+        if (data.refresh_token) {
+          setCookie("refresh_token", data.refresh_token, 7);
+        }
+
         set({ accessToken: data.access_token, isAuthenticated: true });
       },
 
@@ -44,6 +48,8 @@ export const useAuthStore = create<AuthState>()(
       clearAuth: () => {
         removeCookie("jwt");
         removeCookie("user_id");
+        removeCookie("role");
+        removeCookie("refresh_token");
         set({ user: null, accessToken: null, isAuthenticated: false });
       },
     }),

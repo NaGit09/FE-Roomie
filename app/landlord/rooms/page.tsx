@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -22,18 +23,8 @@ import {
 import { useAuthStore } from "@/stores/authStore";
 import formatVND from "@/utils/priceUtils";
 import { toast } from "sonner";
-
-interface RoomItem {
-  id: number;
-  name: string;
-  district: string;
-  address: string;
-  price: number;
-  capacity: number;
-  occupied: number;
-  status: "VACANT" | "OCCUPIED" | "MAINTENANCE";
-  features: string[];
-}
+import { PostApi } from "@/services/api/room";
+import { RoomDetail } from "@/schema/room/room";
 
 export default function LandlordRoomsPage() {
   const { user } = useAuthStore();
@@ -41,6 +32,7 @@ export default function LandlordRoomsPage() {
   const [filter, setFilter] = useState<"ALL" | "VACANT" | "OCCUPIED">("ALL");
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Form States
   const [newRoomName, setNewRoomName] = useState("");
@@ -48,67 +40,40 @@ export default function LandlordRoomsPage() {
   const [newRoomAddress, setNewRoomAddress] = useState("");
   const [newRoomPrice, setNewRoomPrice] = useState(4500000);
   const [newRoomCapacity, setNewRoomCapacity] = useState(2);
-
-  // Mock initial rooms list
-  const [rooms, setRooms] = useState<RoomItem[]>([
-    {
-      id: 1,
-      name: "Phòng 101 - Căn hộ Studio Ban Công",
-      district: "Quận 1",
-      address: "15/4 Nguyễn Thị Minh Khai, Đa Kao",
-      price: 6500000,
-      capacity: 2,
-      occupied: 2,
-      status: "OCCUPIED",
-      features: ["Wifi", "Máy lạnh", "Ban công", "Bếp riêng", "Tủ lạnh"],
-    },
-    {
-      id: 2,
-      name: "Phòng 102 - Phòng Ngủ Ấm Cúng",
-      district: "Bình Thạnh",
-      address: "240/12 Điện Biên Phủ, Phường 22",
-      price: 4800000,
-      capacity: 2,
-      occupied: 1,
-      status: "VACANT",
-      features: ["Wifi", "Máy lạnh", "Cửa sổ lớn", "Tủ quần áo"],
-    },
-    {
-      id: 3,
-      name: "Phòng 201 - Phòng Duplex Cao Cấp",
-      district: "Quận 10",
-      address: "452 Cách Mạng Tháng Tám, Phường 11",
-      price: 7200000,
-      capacity: 3,
-      occupied: 0,
-      status: "VACANT",
-      features: ["Wifi", "Máy lạnh", "Gác lửng", "Tủ lạnh", "Máy giặt riêng"],
-    },
-    {
-      id: 4,
-      name: "Phòng 202 - Phòng Ghép Giá Rẻ",
-      district: "Thủ Đức",
-      address: "12 Võ Văn Ngân, Trường Thọ",
-      price: 3200000,
-      capacity: 4,
-      occupied: 4,
-      status: "OCCUPIED",
-      features: ["Wifi", "Máy lạnh", "Giường tầng", "Khu giặt chung"],
-    },
-    {
-      id: 5,
-      name: "Phòng 301 - Phòng Studio Gác Lửng",
-      district: "Quận 7",
-      address: "84 Đường số 15, Tân Kiểng",
-      price: 5500000,
-      capacity: 2,
-      occupied: 1,
-      status: "VACANT",
-      features: ["Wifi", "Máy lạnh", "Gác lửng", "Khu đỗ xe miễn phí"],
-    },
+  const [newRoomDescription, setNewRoomDescription] = useState("");
+  const [newRoomArea, setNewRoomArea] = useState(25);
+  const [newRoomDeposit, setNewRoomDeposit] = useState(2000000);
+  const [newRoomWard, setNewRoomWard] = useState("Phường Đa Kao");
+  const [newRoomCity, setNewRoomCity] = useState("Hồ Chí Minh");
+  const [selectedAmenities, setSelectedAmenities] = useState<string[]>([
+    "Wifi",
+    "Máy lạnh",
+    "Tủ lạnh"
   ]);
+
+  // Rooms list state
+  const [rooms, setRooms] = useState<RoomDetail[]>([]);
+
+  const fetchRooms = async () => {
+    setIsLoading(true);
+    try {
+      const response = await PostApi.getAllRooms();
+      if (response && response.data && Array.isArray(response.data.items)) {
+        setRooms(response.data.items);
+      } else {
+        setRooms([]);
+      }
+    } catch (error: any) {
+      console.error("Error fetching rooms:", error);
+      toast.error("Không thể tải danh sách phòng. Vui lòng thử lại!");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     setMounted(true);
+    fetchRooms();
   }, []);
 
   if (!mounted) return null;
@@ -119,7 +84,49 @@ export default function LandlordRoomsPage() {
     role: "LANDLORD"
   };
 
-  const handleAddRoomSubmit = (e: React.FormEvent) => {
+  // Safe accessor utilities for room properties to support both schemas
+  const getRoomFeatures = (room: any) => {
+    return room.amenities || room.features || [];
+  };
+
+  const getRoomCapacity = (room: any) => {
+    if (room.capacity !== undefined) return room.capacity;
+    const attr = room.attributes?.find((a: string) => a.startsWith("capacity:"));
+    return attr ? parseInt(attr.split(":")[1]) : 2;
+  };
+
+  const getRoomOccupied = (room: any) => {
+    if (room.occupied !== undefined) return room.occupied;
+    const attr = room.attributes?.find((a: string) => a.startsWith("occupied:"));
+    return attr ? parseInt(attr.split(":")[1]) : 0;
+  };
+
+  const getRoomFullAddress = (room: any) => {
+    if (typeof room.address === "string") return room.address;
+    if (room.address && typeof room.address === "object") {
+      return room.address.full_text || `${room.address.street}, ${room.address.ward || ""}, ${room.address.district || ""}, ${room.address.city || ""}`.replace(/,\s*,/g, ",").trim();
+    }
+    return "";
+  };
+
+  const getRoomDistrict = (room: any) => {
+    if (typeof room.address === "string") return room.district || "";
+    return room.address?.district || "";
+  };
+
+  const isRoomOccupied = (status?: string) => {
+    if (!status) return false;
+    const s = status.toUpperCase();
+    return s === "OCCUPIED" || s === "RENTED";
+  };
+
+  const isRoomVacant = (status?: string) => {
+    if (!status) return true;
+    const s = status.toUpperCase();
+    return s === "VACANT" || s === "AVAILABLE";
+  };
+
+  const handleAddRoomSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (newRoomName.trim() === "" || newRoomAddress.trim() === "") {
@@ -127,40 +134,69 @@ export default function LandlordRoomsPage() {
       return;
     }
 
-    const newRoom: RoomItem = {
-      id: rooms.length + 1,
+    const newRoomPayload: RoomDetail = {
       name: newRoomName,
-      district: newRoomDistrict,
-      address: newRoomAddress,
+      description: newRoomDescription || "Không có mô tả chi tiết cho phòng này.",
       price: newRoomPrice,
-      capacity: newRoomCapacity,
-      occupied: 0,
+      area: newRoomArea,
+      deposit: newRoomDeposit,
       status: "VACANT",
-      features: ["Wifi", "Máy lạnh", "Đầy đủ nội thất"],
+      amenities: selectedAmenities,
+      attributes: [`capacity:${newRoomCapacity}`, `occupied:0`],
+      images: ["https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80"],
+      address: {
+        street: newRoomAddress,
+        ward: newRoomWard,
+        district: newRoomDistrict,
+        city: newRoomCity,
+        country: "Vietnam",
+        latitude: 10.762622,
+        longitude: 106.660172,
+        full_text: `${newRoomAddress}, ${newRoomWard}, ${newRoomDistrict}, ${newRoomCity}`
+      }
     };
 
-    setRooms([newRoom, ...rooms]);
-    setIsAddOpen(false);
-    toast.success(`Đã thêm phòng "${newRoomName}" thành công!`);
-
-    // Reset Form
-    setNewRoomName("");
-    setNewRoomAddress("");
-    setNewRoomPrice(4500000);
-    setNewRoomCapacity(2);
+    try {
+      const response = await PostApi.createNewRoom(newRoomPayload);
+      if (response && (response.code === 200 || response.code === 201)) {
+        toast.success(`Đã thêm phòng "${newRoomName}" thành công!`);
+        setIsAddOpen(false);
+        // Refresh list
+        fetchRooms();
+        
+        // Reset Form
+        setNewRoomName("");
+        setNewRoomDescription("");
+        setNewRoomAddress("");
+        setNewRoomWard("Phường Đa Kao");
+        setNewRoomDistrict("Quận 1");
+        setNewRoomPrice(4500000);
+        setNewRoomArea(25);
+        setNewRoomDeposit(2000000);
+        setSelectedAmenities(["Wifi", "Máy lạnh", "Tủ lạnh"]);
+      } else {
+        toast.error(response?.message || "Đã xảy ra lỗi khi tạo phòng.");
+      }
+    } catch (error: any) {
+      console.error("Error creating room:", error);
+      toast.error(error?.response?.data?.message || "Không thể tạo phòng mới. Vui lòng thử lại!");
+    }
   };
 
   // Filtered rooms listing
   const filteredRooms = rooms.filter((room) => {
     const matchesFilter =
       filter === "ALL" ||
-      (filter === "VACANT" && room.status === "VACANT") ||
-      (filter === "OCCUPIED" && room.status === "OCCUPIED");
+      (filter === "VACANT" && isRoomVacant(room.status)) ||
+      (filter === "OCCUPIED" && isRoomOccupied(room.status));
     
+    const addressStr = getRoomFullAddress(room);
+    const districtStr = getRoomDistrict(room);
+
     const matchesSearch =
       room.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      room.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      room.district.toLowerCase().includes(searchQuery.toLowerCase());
+      addressStr.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      districtStr.toLowerCase().includes(searchQuery.toLowerCase());
 
     return matchesFilter && matchesSearch;
   });
@@ -231,7 +267,39 @@ export default function LandlordRoomsPage() {
       </div>
 
       {/* Rooms Cards Grid */}
-      {filteredRooms.length === 0 ? (
+      {isLoading ? (
+        /* Loading skeleton state */
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3].map((idx) => (
+            <div
+              key={idx}
+              className="rounded-3xl border border-white/5 bg-[#0f172a]/40 p-6 space-y-6 animate-pulse"
+            >
+              <div className="flex justify-between items-center">
+                <div className="h-5 w-20 bg-white/10 rounded-full" />
+                <div className="h-4 w-12 bg-white/10 rounded-md" />
+              </div>
+              <div className="space-y-3">
+                <div className="h-6 w-3/4 bg-white/10 rounded-md" />
+                <div className="h-4 w-1/2 bg-white/10 rounded-md" />
+              </div>
+              <hr className="border-white/5" />
+              <div className="flex gap-2">
+                <div className="h-5 w-12 bg-white/10 rounded-md" />
+                <div className="h-5 w-16 bg-white/10 rounded-md" />
+                <div className="h-5 w-14 bg-white/10 rounded-md" />
+              </div>
+              <div className="pt-4 border-t border-dashed border-white/5 flex justify-between items-center">
+                <div className="space-y-2">
+                  <div className="h-3 w-16 bg-white/10 rounded-md" />
+                  <div className="h-5 w-28 bg-white/10 rounded-md" />
+                </div>
+                <div className="h-8 w-8 bg-white/10 rounded-lg" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : filteredRooms.length === 0 ? (
         /* Empty results state */
         <div className="rounded-[2rem] border border-white/5 bg-[#0f172a]/30 p-12 text-center space-y-4 max-w-md mx-auto">
           <Compass className="h-10 w-10 text-slate-500 animate-pulse mx-auto" />
@@ -242,9 +310,9 @@ export default function LandlordRoomsPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredRooms.map((room) => (
+          {filteredRooms.map((room, idx) => (
             <motion.div
-              key={room.id}
+              key={room.id || idx}
               layout
               initial={{ opacity: 0, scale: 0.96 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -255,15 +323,15 @@ export default function LandlordRoomsPage() {
                 {/* Header status block */}
                 <div className="flex justify-between items-start gap-4">
                   <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[8px] font-black uppercase tracking-widest border ${
-                    room.status === "OCCUPIED"
+                    isRoomOccupied(room.status)
                       ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
                       : "bg-amber-500/10 border-amber-500/30 text-amber-400"
                   }`}>
-                    {room.status === "OCCUPIED" ? "Đã lấp đầy" : "Còn trống"}
+                    {isRoomOccupied(room.status) ? "Đã lấp đầy" : "Còn trống"}
                   </span>
                   
                   <span className="text-[10px] font-extrabold text-slate-400 font-body">
-                    Renter: {room.occupied} / {room.capacity}
+                    Renter: {getRoomOccupied(room)} / {getRoomCapacity(room)}
                   </span>
                 </div>
 
@@ -274,7 +342,7 @@ export default function LandlordRoomsPage() {
                   </h3>
                   <p className="text-[10px] text-slate-400 font-medium font-body leading-relaxed flex items-start gap-1">
                     <MapPin className="h-3.5 w-3.5 text-red-500 shrink-0 mt-0.5" />
-                    {room.address}
+                    {getRoomFullAddress(room)}
                   </p>
                 </div>
 
@@ -282,7 +350,7 @@ export default function LandlordRoomsPage() {
 
                 {/* Features listing */}
                 <div className="flex flex-wrap gap-1">
-                  {room.features.map((feat, fIdx) => (
+                  {getRoomFeatures(room).map((feat: string, fIdx: number) => (
                     <span
                       key={fIdx}
                       className="inline-flex text-[9px] font-bold text-slate-400 bg-white/5 border border-white/5 px-2 py-0.5 rounded-md"
@@ -333,7 +401,7 @@ export default function LandlordRoomsPage() {
               initial={{ opacity: 0, scale: 0.96, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.96, y: 10 }}
-              className="relative w-full max-w-md rounded-[2.5rem] border border-white/10 bg-[#0f172a]/95 backdrop-blur-2xl shadow-2xl p-6 sm:p-8 z-10 text-left text-[#F8FAFC]"
+              className="relative w-full max-w-2xl rounded-[2.5rem] border border-white/10 bg-[#0f172a]/95 backdrop-blur-2xl shadow-2xl p-6 sm:p-8 z-10 text-left text-[#F8FAFC]"
             >
               {/* Close button */}
               <button
@@ -348,63 +416,121 @@ export default function LandlordRoomsPage() {
                   Add New Apartment Room
                 </span>
                 <h3 className="text-xl font-black text-slate-100">Khai báo phòng thuê mới</h3>
-                <p className="text-[10px] text-slate-450 leading-relaxed">
-                  Điền các thông tin vị trí, giá tiền và sức chứa để đưa phòng vào danh sách quản lý.
+                <p className="text-[10px] text-slate-400 leading-relaxed">
+                  Điền các thông tin vị trí, giá tiền, sức chứa và các tiện nghi phòng để đồng bộ trực tiếp lên hệ thống Roomie.
                 </p>
               </div>
 
-              <form onSubmit={handleAddRoomSubmit} className="space-y-4 font-body">
+              <form onSubmit={handleAddRoomSubmit} className="space-y-5 font-body">
                 {/* Input 1: Room name */}
                 <div className="space-y-1">
                   <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block font-body">Tên phòng hoặc căn hộ</label>
                   <input
                     type="text"
-                    placeholder="Ví dụ: Phòng 302 - Căn Hộ Penthouse"
+                    placeholder="Ví dụ: Phòng 302 - Căn Hộ Penthouse Ban Công"
                     value={newRoomName}
                     onChange={(e) => setNewRoomName(e.target.value)}
-                    className="w-full h-11 bg-white/5 border border-white/10 rounded-xl px-4 text-xs font-semibold text-slate-200 placeholder-slate-600 focus:outline-none focus:border-[#F59E0B]"
+                    className="w-full h-11 bg-white/5 border border-white/10 rounded-xl px-4 text-xs font-semibold text-slate-200 placeholder-slate-655 focus:outline-none focus:border-[#F59E0B]"
                     required
                   />
                 </div>
 
-                {/* Input 2: District */}
+                {/* Input 2: Description */}
                 <div className="space-y-1">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block font-body">Khu vực quận/huyện</label>
-                  <select
-                    value={newRoomDistrict}
-                    onChange={(e) => setNewRoomDistrict(e.target.value)}
-                    className="w-full h-11 bg-[#0f172a] border border-white/10 rounded-xl px-4 text-xs font-semibold text-slate-200 focus:outline-none focus:border-[#F59E0B]"
-                  >
-                    <option value="Quận 1">Quận 1</option>
-                    <option value="Quận 3">Quận 3</option>
-                    <option value="Quận 10">Quận 10</option>
-                    <option value="Bình Thạnh">Bình Thạnh</option>
-                    <option value="Quận 7">Quận 7</option>
-                    <option value="Thủ Đức">Thủ Đức</option>
-                  </select>
+                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block font-body">Mô tả chi tiết phòng</label>
+                  <textarea
+                    placeholder="Nhập thông tin mô tả chi tiết về phòng, giờ giấc tự do, điện nước, vv..."
+                    value={newRoomDescription}
+                    onChange={(e) => setNewRoomDescription(e.target.value)}
+                    rows={2}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-xs font-semibold text-slate-200 placeholder-slate-655 focus:outline-none focus:border-[#F59E0B] resize-none"
+                    required
+                  />
                 </div>
 
-                {/* Input 3: Address */}
+                {/* Input 3: Detailed Street Address */}
                 <div className="space-y-1">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block font-body">Địa chỉ chi tiết</label>
+                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block font-body">Địa chỉ chi tiết (Số nhà, tên đường)</label>
                   <input
                     type="text"
-                    placeholder="Ví dụ: 15/4 Nguyễn Thị Minh Khai, Đa Kao"
+                    placeholder="Ví dụ: 15/4 Nguyễn Thị Minh Khai"
                     value={newRoomAddress}
                     onChange={(e) => setNewRoomAddress(e.target.value)}
-                    className="w-full h-11 bg-white/5 border border-white/10 rounded-xl px-4 text-xs font-semibold text-slate-200 placeholder-slate-600 focus:outline-none focus:border-[#F59E0B]"
+                    className="w-full h-11 bg-white/5 border border-white/10 rounded-xl px-4 text-xs font-semibold text-slate-200 placeholder-slate-655 focus:outline-none focus:border-[#F59E0B]"
                     required
                   />
                 </div>
 
-                {/* Dual Inputs: Price and Capacity */}
-                <div className="grid grid-cols-2 gap-4">
+                {/* Address details: Ward, District, City */}
+                <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-1">
-                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block font-body">Biểu phí (VNĐ)</label>
+                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block font-body">Phường/Xã</label>
+                    <input
+                      type="text"
+                      placeholder="Ví dụ: Đa Kao"
+                      value={newRoomWard}
+                      onChange={(e) => setNewRoomWard(e.target.value)}
+                      className="w-full h-11 bg-white/5 border border-white/10 rounded-xl px-4 text-xs font-semibold text-slate-200 focus:outline-none focus:border-[#F59E0B]"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block font-body">Quận/Huyện</label>
+                    <select
+                      value={newRoomDistrict}
+                      onChange={(e) => setNewRoomDistrict(e.target.value)}
+                      className="w-full h-11 bg-[#0f172a] border border-white/10 rounded-xl px-4 text-xs font-semibold text-slate-200 focus:outline-none focus:border-[#F59E0B]"
+                    >
+                      <option value="Quận 1">Quận 1</option>
+                      <option value="Quận 3">Quận 3</option>
+                      <option value="Quận 10">Quận 10</option>
+                      <option value="Bình Thạnh">Bình Thạnh</option>
+                      <option value="Quận 7">Quận 7</option>
+                      <option value="Thủ Đức">Thủ Đức</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block font-body">Thành phố</label>
+                    <input
+                      type="text"
+                      placeholder="Hồ Chí Minh"
+                      value={newRoomCity}
+                      onChange={(e) => setNewRoomCity(e.target.value)}
+                      className="w-full h-11 bg-white/5 border border-white/10 rounded-xl px-4 text-xs font-semibold text-slate-200 focus:outline-none focus:border-[#F59E0B]"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Price, Deposit, Area, Capacity */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block font-body">Giá thuê (VNĐ)</label>
                     <input
                       type="number"
                       value={newRoomPrice}
                       onChange={(e) => setNewRoomPrice(Number(e.target.value))}
+                      className="w-full h-11 bg-white/5 border border-white/10 rounded-xl px-4 text-xs font-semibold text-slate-200 focus:outline-none focus:border-[#F59E0B]"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block font-body">Tiền cọc (VNĐ)</label>
+                    <input
+                      type="number"
+                      value={newRoomDeposit}
+                      onChange={(e) => setNewRoomDeposit(Number(e.target.value))}
+                      className="w-full h-11 bg-white/5 border border-white/10 rounded-xl px-4 text-xs font-semibold text-slate-200 focus:outline-none focus:border-[#F59E0B]"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block font-body">Diện tích (m²)</label>
+                    <input
+                      type="number"
+                      min={5}
+                      value={newRoomArea}
+                      onChange={(e) => setNewRoomArea(Number(e.target.value))}
                       className="w-full h-11 bg-white/5 border border-white/10 rounded-xl px-4 text-xs font-semibold text-slate-200 focus:outline-none focus:border-[#F59E0B]"
                       required
                     />
@@ -423,6 +549,37 @@ export default function LandlordRoomsPage() {
                   </div>
                 </div>
 
+                {/* Amenities checklist grid */}
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block font-body">Tiện nghi có sẵn</label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {["Wifi", "Máy lạnh", "Ban công", "Bếp riêng", "Tủ lạnh", "Máy giặt", "Khu để xe", "Cửa sổ lớn", "Tủ quần áo"].map((amenity) => {
+                      const isSelected = selectedAmenities.includes(amenity);
+                      return (
+                        <button
+                          key={amenity}
+                          type="button"
+                          onClick={() => {
+                            if (isSelected) {
+                              setSelectedAmenities(selectedAmenities.filter(a => a !== amenity));
+                            } else {
+                              setSelectedAmenities([...selectedAmenities, amenity]);
+                            }
+                          }}
+                          className={`h-9 rounded-xl border text-[10px] font-black uppercase tracking-wider px-3 transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                            isSelected
+                              ? "bg-[#F59E0B]/10 border-[#F59E0B]/40 text-[#F59E0B] shadow"
+                              : "bg-white/5 border-white/10 text-slate-400 hover:text-slate-200 hover:border-white/20"
+                          }`}
+                        >
+                          {isSelected && <CheckCircle className="h-3.5 w-3.5 text-[#F59E0B]" />}
+                          {amenity}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
                 {/* Actions */}
                 <div className="pt-4 border-t border-white/5 flex justify-end gap-3.5">
                   <button
@@ -436,7 +593,7 @@ export default function LandlordRoomsPage() {
                     type="submit"
                     className="h-11 px-6 rounded-xl bg-[#F59E0B] hover:bg-[#FBBF24] text-slate-900 text-xs font-black uppercase tracking-wider cursor-pointer transition-all shadow-md shadow-[#F59E0B]/10"
                   >
-                    Thêm ngay
+                    Đăng phòng ngay
                   </button>
                 </div>
               </form>

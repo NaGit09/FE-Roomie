@@ -5,6 +5,7 @@ export const addressSchema = z.object({
     ward: z.string(),
     district: z.string(),
     city: z.string(),
+    country : z.string(),
     latitude: z.number(),
     longitude: z.number(),
     full_text: z.string(),

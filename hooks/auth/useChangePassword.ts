@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { authApi } from "@/services/api/auth";
+import { AuthApi } from "@/services/api/auth";
 import type { ChangePasswordSchema } from "@/schema/auth/change-password";
 
 export function useChangePassword() {
@@ -11,7 +11,7 @@ export function useChangePassword() {
         setLoading(true);
         setError(null);
         try {
-            await authApi.changePassword(data);
+            await AuthApi.changePassword(data);
             setDone(true);
         } catch (err: unknown) {
             const message =

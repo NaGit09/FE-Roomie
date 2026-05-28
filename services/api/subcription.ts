@@ -9,6 +9,7 @@ import {
 const BASE_URL = "/subscription";
 
 export const SubscriptionApi = {
+  
   check_subscription: async () => {
     const response = await axiosInstance.get<ApiResponse<boolean>>(
       `${BASE_URL}/check`,

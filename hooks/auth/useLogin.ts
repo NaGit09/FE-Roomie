@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useAuthStore } from "@/stores/authStore";
 import { useRouter } from "next/navigation";
-import { authApi } from "@/services/api/auth";
+import { AuthApi } from "@/services/api/auth";
 import { toast } from "sonner";
 import type { LoginReqSchema } from "@/schema/auth/login";
 
@@ -16,7 +16,7 @@ export function useLogin() {
     setError(null);
 
     try {
-      const res = await authApi.login(data);
+      const res = await AuthApi.login(data);
 
       if (res && res.data.access_token) {
         setAuth(res.data);

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { create } from "zustand";
-import { roomApi } from "@/services/api/room";
+import { PostApi } from "@/services/api/post";
 import { GetPostsQueryType, PostCardType, PostDetailType } from "@/schema/room/post";
 
 interface RoomState {
@@ -35,7 +35,7 @@ export const useRoomStore = create<RoomState>((set) => ({
   fetchLatestRooms: async () => {
     set({ isLoading: true, error: null });
     try {
-      const response = await roomApi.getRooms();
+      const response = await PostApi.getPosts();
 
       if (response) {
         set({ latestRooms: response.data, isLoading: false });
@@ -56,7 +56,7 @@ export const useRoomStore = create<RoomState>((set) => ({
     set({ isLoading: true, error: null });
 
     try {
-      const response = await roomApi.getPostDetail(postId);
+      const response = await PostApi.getPostDetail(postId);
 
       if (response) {
         set({ currentRoomDetail: response.data, isLoading: false });
@@ -75,7 +75,7 @@ export const useRoomStore = create<RoomState>((set) => ({
   fetchRoomPagination: async (query: GetPostsQueryType) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await roomApi.getPostPagination(query);
+      const response = await PostApi.getPostPagination(query);
       const data = response.data;
       if (data) {
         set({

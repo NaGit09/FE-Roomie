@@ -1,9 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Mail, Lock, User, Loader2 } from "lucide-react";
+import { Mail, Lock, User, Loader2, Key } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,13 +16,18 @@ import {
 } from "@/schema/auth/register";
 
 export function RegisterForm() {
-  const { register: registerUser, loading, error } = useRegister();
+  const { registerAccount, loading, error } = useRegister();
+  const [role, setRole] = useState<"RENTER" | "LANDLORD">("RENTER");
 
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<RegisterReqSchema>({ resolver: zodResolver(registerReqSchema) });
+
+  const onSubmit = (data: RegisterReqSchema) => {
+    registerAccount(data, role === "LANDLORD");
+  };
 
   return (
     <div className="w-full space-y-6">
@@ -62,7 +68,54 @@ export function RegisterForm() {
         </div>
       </div>
 
-      <form className="space-y-4" onSubmit={handleSubmit(registerUser)}>
+      <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+        {/* Role Selector Card Group */}
+        <div className="space-y-2">
+          <Label className="text-sm font-medium text-foreground">I want to register as a</Label>
+          <div className="grid grid-cols-2 gap-4">
+            <button
+              type="button"
+              onClick={() => setRole("RENTER")}
+              className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-300 gap-2 cursor-pointer text-center relative overflow-hidden ${
+                role === "RENTER"
+                  ? "border-primary bg-primary/5 text-primary shadow-sm"
+                  : "border-muted bg-card hover:bg-muted/10 text-muted-foreground"
+              }`}
+            >
+              <div className={`p-2.5 rounded-full ${role === "RENTER" ? "bg-primary/10" : "bg-muted"}`}>
+                <User className="h-5 w-5" />
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <span className="font-semibold text-sm">Renter</span>
+                <span className="text-[11px] opacity-80 leading-snug">Find rooms & roommates</span>
+              </div>
+              {role === "RENTER" && (
+                <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary animate-pulse" />
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setRole("LANDLORD")}
+              className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-300 gap-2 cursor-pointer text-center relative overflow-hidden ${
+                role === "LANDLORD"
+                  ? "border-primary bg-primary/5 text-primary shadow-sm"
+                  : "border-muted bg-card hover:bg-muted/10 text-muted-foreground"
+              }`}
+            >
+              <div className={`p-2.5 rounded-full ${role === "LANDLORD" ? "bg-primary/10" : "bg-muted"}`}>
+                <Key className="h-5 w-5" />
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <span className="font-semibold text-sm">Landlord</span>
+                <span className="text-[11px] opacity-80 leading-snug">List & manage properties</span>
+              </div>
+              {role === "LANDLORD" && (
+                <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary animate-pulse" />
+              )}
+            </button>
+          </div>
+        </div>
         <div className="grid grid-cols-1 gap-3">
           <div className="space-y-1.5">
             <Label htmlFor="full_name" className="text-sm font-medium">

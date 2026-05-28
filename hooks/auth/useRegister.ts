@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { authApi } from "@/services/api/auth";
+import { AuthApi } from "@/services/api/auth";
 import { useRouter } from "next/navigation";
 import type { RegisterReqSchema } from "@/schema/auth/register";
 
@@ -9,12 +9,16 @@ export function useRegister() {
     const [error, setError] = useState<string | null>(null);
     const router = useRouter();
 
-    const register = async (data: RegisterReqSchema) => {
+    const registerAccount = async (data: RegisterReqSchema, isLandlord: boolean) => {
         setLoading(true);
         setError(null);
 
         try {
-            await authApi.register(data);
+            if (isLandlord) {
+                await AuthApi.register_landlord(data);
+            } else {
+                await AuthApi.register(data);
+            }
             router.push("/auth/login");
         } catch (err: unknown) {
             const message =
@@ -25,5 +29,5 @@ export function useRegister() {
         }
     };
 
-    return { register, loading, error };
+    return { registerAccount, loading, error };
 }

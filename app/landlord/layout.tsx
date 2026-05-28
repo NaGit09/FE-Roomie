@@ -20,11 +20,13 @@ import {
   Wallet,
   Lock,
   ChevronRight,
-  Sparkles
+  Sparkles,
+  Menu
 } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { toast } from "sonner";
 import Link from "next/link";
+import { UserApi } from "@/services/api/user";
 
 export default function LandlordLayout({
   children,
@@ -33,26 +35,61 @@ export default function LandlordLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, isAuthenticated, clearAuth } = useAuthStore();
+  const { user, isAuthenticated, clearAuth, setUser } = useAuthStore();
   
   // Mounted state for SSR safety
   const [mounted, setMounted] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [settingsTab, setSettingsTab] = useState<"profile" | "payout" | "config">("profile");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Mock Settings state
-  const [businessName, setBusinessName] = useState("Căn Hộ Roomie SG");
+  // Settings state (initialized dynamically from authenticated user)
+  const [businessName, setBusinessName] = useState("");
   const [taxCode, setTaxCode] = useState("0315482930");
-  const [phone, setPhone] = useState("0909 123 456");
-  const [bankAccount, setBankAccount] = useState("NGUYEN VAN LANDLORD");
+  const [phone, setPhone] = useState("");
+  const [bankAccount, setBankAccount] = useState("");
   const [bankNumber, setBankNumber] = useState("19001008888");
   const [bankName, setBankName] = useState("MB BANK");
   const [autoApprove, setAutoApprove] = useState(true);
   const [notifyNewRenter, setNotifyNewRenter] = useState(true);
 
   useEffect(() => {
+    if (user) {
+      setBusinessName(`Căn Hộ ${user.full_name}`);
+      setPhone(user.landlord_profile?.phonenumber || "0909 123 456");
+      setBankAccount(user.full_name.toUpperCase());
+    }
+  }, [user]);
+
+  const initials = user?.full_name
+    ? user.full_name
+        .split(" ")
+        .map((n: string) => n[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase()
+    : "LL";
+
+  useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Fetch profile if authenticated but user is null (resolves deadlock)
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (isAuthenticated && !user) {
+        try {
+          const res = await UserApi.getMe();
+          setUser(res.data);
+        } catch (error) {
+          console.error("Failed to fetch user profile in layout:", error);
+          clearAuth();
+          toast.error("Không thể tải thông tin tài khoản. Vui lòng đăng nhập lại!");
+        }
+      }
+    };
+    fetchProfile();
+  }, [isAuthenticated, user, setUser, clearAuth]);
 
   // Secure Route Guard
   useEffect(() => {
@@ -64,7 +101,7 @@ export default function LandlordLayout({
     }
   }, [mounted, isAuthenticated, user, router]);
 
-  if (!mounted || !isAuthenticated) {
+  if (!mounted || !isAuthenticated || !user) {
     return (
       <div className="min-h-screen bg-[#0F172A] flex items-center justify-center font-sans text-slate-100">
         <div className="flex flex-col items-center gap-3">
@@ -92,7 +129,7 @@ export default function LandlordLayout({
   // Sidebar Menu Items
   const menuItems = [
     {
-      href: "/landlord/dashboard",
+      href: "/landlord",
       label: "Bảng tổng quan",
       icon: LayoutDashboard,
     },
@@ -119,16 +156,163 @@ export default function LandlordLayout({
   ];
 
   return (
-    <div className="bg-[#0b0f19] text-[#F8FAFC] min-h-screen md:h-screen font-sans antialiased overflow-x-hidden md:overflow-hidden relative flex">
+    <div className="bg-[#0b0f19] text-[#F8FAFC] min-h-screen md:h-screen font-sans antialiased overflow-x-hidden md:overflow-hidden relative flex flex-col md:flex-row">
       {/* Background radial glowing effects */}
       <div className="absolute top-0 left-0 w-[50vw] h-[50vw] rounded-full bg-[#F59E0B]/5 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-0 right-0 w-[40vw] h-[40vw] rounded-full bg-[#8B5CF6]/5 blur-[100px] pointer-events-none" />
 
-      {/* Grid Layout: 1 Row, 2 Columns */}
-      <div className="w-full grid grid-cols-1 md:grid-cols-[280px_1fr] relative z-10 min-h-screen md:h-screen md:overflow-hidden">
+      {/* Mobile Top Bar */}
+      <div className="md:hidden h-16 border-b border-white/5 bg-[#0f172a]/60 backdrop-blur-xl px-6 flex items-center justify-between sticky top-0 z-40 w-full">
+        <div className="flex items-center gap-3">
+          <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-[#F59E0B] to-[#FBBF24] flex items-center justify-center shadow-lg shadow-[#F59E0B]/20">
+            <Building className="h-4.5 w-4.5 text-slate-900 stroke-[2.5]" />
+          </div>
+          <div>
+            <span className="font-extrabold text-xs uppercase tracking-widest text-[#F59E0B] block leading-none">
+              ROOMIE
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <button className="relative p-2 rounded-xl border border-white/5 bg-[#0f172a]/40 text-slate-400 hover:text-white transition-all">
+            <Bell className="h-4 w-4" />
+            <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-[#F59E0B]" />
+          </button>
+          <button
+            onClick={() => setIsMobileMenuOpen(true)}
+            className="p-2 rounded-xl border border-white/5 bg-[#0f172a]/40 text-slate-400 hover:text-white transition-all cursor-pointer"
+          >
+            <Menu className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Navigation Drawer */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="fixed inset-0 z-40 bg-black/70 backdrop-blur-xs md:hidden"
+            />
+
+            {/* Sidebar drawer content */}
+            <motion.aside
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", bounce: 0, duration: 0.3 }}
+              className="fixed inset-y-0 left-0 z-50 w-[280px] border-r border-white/5 bg-[#0f172a]/95 backdrop-blur-2xl p-6 flex flex-col justify-between overflow-y-auto md:hidden"
+            >
+              {/* Header inside drawer */}
+              <div className="space-y-8">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-[#F59E0B] to-[#FBBF24] flex items-center justify-center shadow-lg shadow-[#F59E0B]/20">
+                      <Building className="h-5 w-5 text-slate-900 stroke-[2.5]" />
+                    </div>
+                    <div>
+                      <span className="font-extrabold text-sm uppercase tracking-widest text-[#F59E0B] block leading-none">
+                        ROOMIE
+                      </span>
+                      <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider block mt-1">
+                        Landlord Hub
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="p-2 rounded-xl border border-white/5 bg-white/5 text-slate-400 hover:text-white transition-all cursor-pointer"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+
+                {/* Profile Card */}
+                <div className="flex items-center gap-3 border-b border-white/5 pb-6 px-2">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-[#8B5CF6]/20 to-[#8B5CF6]/5 border border-[#8B5CF6]/30 text-[#8B5CF6] text-xs font-black shadow-inner">
+                    {initials}
+                  </div>
+                  <div className="flex flex-col space-y-0.5 overflow-hidden">
+                    <span className="text-sm font-black text-slate-100 truncate">
+                      {user.full_name}
+                    </span>
+                    <span className="text-[10px] font-semibold text-slate-400 truncate block">
+                      {user.email}
+                    </span>
+                    <span className="mt-1 inline-flex w-fit items-center rounded-full bg-[#F59E0B]/10 border border-[#F59E0B]/30 px-2 py-0.5 text-[8px] font-black uppercase tracking-widest text-[#F59E0B]">
+                      Chủ nhà Pro
+                    </span>
+                  </div>
+                </div>
+
+                {/* Navigation links */}
+                <nav className="space-y-1">
+                  {menuItems.map((item) => {
+                    const Icon = item.icon;
+                    const active = item.href === "/landlord"
+                      ? pathname === "/landlord"
+                      : pathname === item.href || pathname.startsWith(item.href + "/");
+
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className={`w-full flex items-center justify-between gap-3 rounded-2xl px-4 py-3.5 text-xs font-black uppercase tracking-wider transition-all duration-200 cursor-pointer ${
+                          active
+                            ? "bg-gradient-to-r from-[#F59E0B]/15 to-[#F59E0B]/5 border border-[#F59E0B]/30 text-[#F59E0B] shadow-lg shadow-[#F59E0B]/5"
+                            : "text-slate-400 hover:bg-white/5 hover:text-slate-200 border border-transparent"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <Icon className={`h-4.5 w-4.5 shrink-0 ${active ? "text-[#F59E0B]" : "text-slate-500"}`} />
+                          <span>{item.label}</span>
+                        </div>
+                        {active && (
+                          <div className="h-1.5 w-1.5 rounded-full bg-[#F59E0B]" />
+                        )}
+                      </Link>
+                    );
+                  })}
+                </nav>
+              </div>
+
+              {/* Bottom Actions inside drawer */}
+              <div className="border-t border-white/5 pt-6 space-y-1">
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    setIsSettingsOpen(true);
+                  }}
+                  className="w-full flex items-center gap-3 rounded-2xl px-4 py-3.5 text-xs font-black uppercase tracking-wider text-slate-400 hover:bg-white/5 hover:text-slate-200 transition-all cursor-pointer border border-transparent"
+                >
+                  <Settings className="h-4.5 w-4.5 text-slate-500" />
+                  <span>Cài đặt hệ thống</span>
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-3 rounded-2xl px-4 py-3.5 text-xs font-black uppercase tracking-wider text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all cursor-pointer border border-transparent"
+                >
+                  <LogOut className="h-4.5 w-4.5 text-red-500/60" />
+                  <span>Đăng xuất</span>
+                </button>
+              </div>
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Desktop Sidebar Layout */}
+      <div className="w-full relative z-10 min-h-screen md:h-screen md:overflow-hidden flex flex-col md:flex-row">
         
-        {/* COLUMN 1: Sidebar Nav Menu */}
-        <aside className="border-r border-white/5 bg-[#0f172a]/60 backdrop-blur-xl p-6 flex flex-col justify-between h-fit md:h-full md:sticky md:top-0 overflow-y-auto shrink-0">
+        {/* COLUMN 1: Sidebar Nav Menu (Desktop) */}
+        <aside className="hidden md:flex border-r border-white/5 bg-[#0f172a]/60 backdrop-blur-xl p-6 flex-col justify-between w-[280px] h-full shrink-0 overflow-y-auto">
           
           {/* Top Branding & Profile Summary */}
           <div className="space-y-8">
@@ -148,7 +332,7 @@ export default function LandlordLayout({
             </div>
 
             {/* Profile card summary */}
-            {/* <div className="flex items-center gap-3 border-b border-white/5 pb-6 px-2">
+            <div className="flex items-center gap-3 border-b border-white/5 pb-6 px-2">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-[#8B5CF6]/20 to-[#8B5CF6]/5 border border-[#8B5CF6]/30 text-[#8B5CF6] text-xs font-black shadow-inner">
                 {initials}
               </div>
@@ -163,13 +347,15 @@ export default function LandlordLayout({
                   Chủ nhà Pro
                 </span>
               </div>
-            </div> */}
+            </div>
 
             {/* Navigation links */}
             <nav className="space-y-1">
               {menuItems.map((item) => {
                 const Icon = item.icon;
-                const active = pathname === item.href || pathname.startsWith(item.href + "/");
+                const active = item.href === "/landlord"
+                  ? pathname === "/landlord"
+                  : pathname === item.href || pathname.startsWith(item.href + "/");
 
                 return (
                   <Link
@@ -221,7 +407,7 @@ export default function LandlordLayout({
         </aside>
 
         {/* COLUMN 2: Content pane */}
-        <main className="min-w-0 p-8 sm:p-12 flex flex-col justify-start md:overflow-y-auto md:h-screen">
+        <main className="flex-1 min-w-0 p-8 sm:p-12 flex flex-col justify-start overflow-y-auto md:h-screen">
           {children}
         </main>
       </div>

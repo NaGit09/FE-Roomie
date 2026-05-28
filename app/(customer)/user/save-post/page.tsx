@@ -2,8 +2,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { saveApi } from "@/services/api/save";
-import { roomApi } from "@/services/api/room";
+import { SaveApi } from "@/services/api/save";
+import { PostApi } from "@/services/api/post";
 import { mapPostToRoom } from "@/utils/mapper";
 import RoomCard, { Room } from "@/components/custom/customer/home/RoomCard";
 import { Heart, ArrowRight } from "lucide-react";
@@ -18,7 +18,7 @@ export default function SavePostPage() {
 
   const fetchSavedPosts = async () => {
     try {
-      const response = await saveApi.getListSavePost();
+      const response = await SaveApi.getListSavePost();
       const list = Array.isArray(response)
         ? response
         : Array.isArray(response?.data)
@@ -31,7 +31,7 @@ export default function SavePostPage() {
             const postId = item.post_id;
             if (!postId) return null;
 
-            const detailResponse = await roomApi.getPostDetail(postId);
+            const detailResponse = await PostApi.getPostDetail(postId);
             const detail = detailResponse.data;
             if (!detail || !detail.room) return null;
 

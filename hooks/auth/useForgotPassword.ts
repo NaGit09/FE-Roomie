@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { authApi } from "@/services/api/auth";
+import { AuthApi } from "@/services/api/auth";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -18,7 +18,7 @@ export function useForgotPassword() {
         setError(null);
 
         try {
-            await authApi.forgotPassword({ email });
+            await AuthApi.forgotPassword({ email });
 
             setSent(true);
             

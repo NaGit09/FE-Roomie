@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
-import { saveApi } from "@/services/api/save";
+import { SaveApi } from "@/services/api/save";
 import { toast } from "sonner";
 
 export interface Room {
@@ -39,7 +39,7 @@ const fetchSavedIds = async (isAuthenticated: boolean): Promise<string[]> => {
 
   savedIdsPromise = (async () => {
     try {
-      const response = await saveApi.getListSavePost();
+      const response = await SaveApi.getListSavePost();
       // Handle both raw list array and nested envelopes
       const list = Array.isArray(response)
         ? response
@@ -103,7 +103,7 @@ const RoomCard = memo(({ room }: { room: Room }) => {
 
       try {
         if (isSaved) {
-          await saveApi.unSavePost(room.id);
+          await SaveApi.unSavePost(room.id);
           setIsSaved(false);
           // Update cache locally
           if (savedIdsCache) {
@@ -111,7 +111,7 @@ const RoomCard = memo(({ room }: { room: Room }) => {
           }
           toast.success("Đã bỏ lưu tin đăng!");
         } else {
-          await saveApi.savePost(room.id);
+          await SaveApi.savePost(room.id);
           setIsSaved(true);
           // Update cache locally
           if (savedIdsCache && !savedIdsCache.includes(room.id)) {

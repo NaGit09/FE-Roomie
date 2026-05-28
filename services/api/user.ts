@@ -4,7 +4,7 @@ import { UserProfile } from "@/schema/user/profile";
 
 const BASE_URL = "/users";
 
-export const userApi = {
+export const UserApi = {
   
   getMe: async () => {
     const response = await axiosInstance.get<ApiResponse<UserProfile>>(

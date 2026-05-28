@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
 import { Heart, ShieldCheck, MapPin, Clock } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
-import { saveApi } from "@/services/api/save";
+import { SaveApi } from "@/services/api/save";
 import { toast } from "sonner";
 
 export interface CompactRoom {
@@ -29,7 +30,7 @@ const fetchSavedIds = async (isAuthenticated: boolean): Promise<string[]> => {
 
   savedIdsPromise = (async () => {
     try {
-      const response = await saveApi.getListSavePost();
+      const response = await SaveApi.getListSavePost();
       // Handle both raw list array and nested envelopes
       const list = Array.isArray(response)
         ? response
@@ -93,7 +94,7 @@ export default function RoomCardCompact({ room }: { room: CompactRoom }) {
 
       try {
         if (isSaved) {
-          await saveApi.unSavePost(room.id);
+          await SaveApi.unSavePost(room.id);
           setIsSaved(false);
           // Update cache locally
           if (savedIdsCache) {
@@ -101,7 +102,7 @@ export default function RoomCardCompact({ room }: { room: CompactRoom }) {
           }
           toast.success("Đã bỏ lưu tin đăng!");
         } else {
-          await saveApi.savePost(room.id);
+          await SaveApi.savePost(room.id);
           setIsSaved(true);
           // Update cache locally
           if (savedIdsCache && !savedIdsCache.includes(room.id)) {

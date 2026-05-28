@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { addressApi } from "@/services/api/adress";
+import { AddressApi } from "@/services/api/adress";
 import { useAuthStore } from "@/stores/authStore";
 import { useMatchingStore } from "@/stores/matchingStore";
 import {
@@ -134,7 +134,7 @@ export function useUserPreferenceForm() {
     async function loadProvinces() {
       setLoadingProvinces(true);
       try {
-        const data = await addressApi.getProvinces();
+        const data = await AddressApi.getProvinces();
         const mapped = data.map((item: any) => ({
           code: item.code,
           name: item.name,
@@ -160,7 +160,7 @@ export function useUserPreferenceForm() {
     async function loadDistricts() {
       setLoadingDistricts(true);
       try {
-        const data = await addressApi.getDistricts(Number(selectedProvinceCode));
+        const data = await AddressApi.getDistricts(Number(selectedProvinceCode));
         const mapped = data.map((item: any) => ({
           code: item.code,
           name: item.name,

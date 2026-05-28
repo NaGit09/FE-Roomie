@@ -41,13 +41,3 @@ export const GetPostsQuerySchema = z.object({
 })
 
 export type GetPostsQueryType = z.infer<typeof GetPostsQuerySchema>;
-
-export const RoomPaginationSchema = z.object({
-    items: z.array(PostCardSchema),
-    total: z.number(),
-    page: z.number(),
-    size: z.number(),
-    total_pages: z.number(),
-});
-
-export type RoomPaginationType = z.infer<typeof RoomPaginationSchema>;

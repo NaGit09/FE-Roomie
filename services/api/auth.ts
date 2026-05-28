@@ -40,14 +40,14 @@ export const AuthApi = {
     await axiosInstance.post(`${BASE_URL}/change-password`, data);
   },
 
-  refreshToken: async (): Promise<ApiResponse<LoginResSchema>> => {
+  refreshToken: async () => {
     const res = await axiosInstance.post<ApiResponse<LoginResSchema>>(
       `${BASE_URL}/refresh-token`,
     );
     return res.data;
   },
 
-  logout: async (): Promise<void> => {
+  logout: async () => {
     await axiosInstance.post(`${BASE_URL}/logout`);
   },
 };

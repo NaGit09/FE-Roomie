@@ -4,7 +4,7 @@ import { SavePost } from "@/schema/user/SavePost";
 
 const BASE_URL = "/users";
 
-export const saveApi = {
+export const SaveApi = {
 
   savePost: async (post_id: string) => {
     const response = await axiosInstance.post(`${BASE_URL}/saved-posts`, {

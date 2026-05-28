@@ -22,7 +22,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuthStore } from "@/stores/authStore";
-import { userApi } from "@/services/api/user";
+import { UserApi } from "@/services/api/user";
 
 const NAV_LINKS = [
   { href: "/", label: "Trang chủ" },
@@ -60,7 +60,7 @@ export default function CustomerHeader() {
       if (isAuthenticated && !user) {
         try {
 
-          const userData = await userApi.getMe();
+          const userData = await UserApi.getMe();
 
           setUser(userData.data);
         } catch (error) {

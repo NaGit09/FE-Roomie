@@ -11,8 +11,8 @@ export const roomCardSchema = z.object({
 export type RoomCard = z.infer<typeof roomCardSchema>
 
 export const roomDetailSchema = z.object({
-    id: z.number(),
-    owner_id: z.string(),
+    id: z.number().optional(),
+    owner_id: z.string().optional(),
     name: z.string(),
     description: z.string(),
     price: z.number(),

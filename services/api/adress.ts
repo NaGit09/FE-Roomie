@@ -2,7 +2,7 @@ import axios from "axios";
 
 const BASE_URL = "https://provinces.open-api.vn/api/";
 
-export const addressApi = {
+export const AddressApi = {
   getProvinces: async () => {
     const res = await axios(`${BASE_URL}p/`);
 

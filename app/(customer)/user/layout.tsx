@@ -90,7 +90,7 @@ export default function UserDashboardLayout({
     },
     {
       href: "/user/history-subscription",
-      label: "Lịch sử nạp xu",
+      label: "Lịch sử gói đăng ký",
       icon: Coins,
     },
   ];

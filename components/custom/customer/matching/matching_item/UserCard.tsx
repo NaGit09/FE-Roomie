@@ -95,28 +95,29 @@ const mapUserMatchingToCandidate = (item: UserMatching, index: number): Roommate
     "from-pink-500 to-rose-500",
   ];
   
-  const districts = ["Quận 1", "Quận 3", "Quận 10", "Bình Thạnh", "Quận 7", "Gò Vấp"];
-  const bios = [
-    "Mình là nhân viên văn phòng, thích sự yên tĩnh sau giờ làm việc. Rất ngăn nắp và tôn trọng không gian riêng tư của bạn cùng phòng.",
-    "Yêu động vật và thích nấu ăn. Mình đang tìm một người bạn ở ghép vui vẻ, sạch sẽ và có thể cùng chia sẻ các bữa tối cuối tuần.",
-    "Freelancer thiết kế đồ họa, làm việc tại nhà nên cần không gian cách âm tốt. Lối sống lành mạnh, không hút thuốc và ngủ sớm.",
-    "Sinh viên năm cuối ngành CNTT, hòa đồng và dễ tính. Thích chơi thể thao và có thói quen dọn dẹp phòng mỗi cuối tuần.",
-    "Lập trình viên nhiệt tình, đam mê công nghệ và sách. Lối sống ngăn nắp, thích yên tĩnh và mong muốn tìm bạn cùng phòng có gu tương đồng.",
-    "Thích trang trí nhà cửa, yêu cây xanh và lối sống tối giản. Rất chú trọng vệ sinh chung và mong muốn tìm roommate ngăn nắp.",
-  ];
-
   const scorePct = item.score <= 1 ? Math.round(item.score * 100) : Math.round(item.score);
-  const cleanlinessLevel = 3 + (index % 3);
+  
+  // Extract real lifestyle preferences from API matching payload
+  const pref = item.preference;
+  
+  const cleanlinessLevel = pref?.cleanliness_level ?? 3;
   const cleanlinessText = cleanlinessLevel === 5 ? "Rất ngăn nắp" : cleanlinessLevel === 4 ? "Sạch sẽ" : "Bình thường";
-  const sleepHour = (22 + (index % 4)) % 24;
+  
+  const sleepHour = pref?.sleep_time ?? 23;
   const sleepTime = `~ ${sleepHour}:00`;
-  const noiseLevel = 2 + (index % 3);
-  const budgetVal = 3000000 + (index * 700000) % 4000000;
-  const areaVal = 20 + (index * 5) % 25;
-  const isSmoking = index % 5 === 0;
-  const isPet = index % 3 === 0;
-
+  
+  const noiseLevel = pref?.noise_tolerance ?? 3;
+  const budgetVal = pref?.budget_max ?? 3000000;
+  const areaVal = pref?.area ?? 25;
+  const isSmoking = pref?.smoking ?? false;
+  const isPet = pref?.pet_friendly ?? false;
+  const districtName = pref?.district || "Bất kỳ";
+  
   const roleText = item.user.role === "LANDLORD" ? "Chủ nhà" : "Khách thuê";
+  
+  // Build a highly dynamic and premium lifestyle-based description
+  const description = `Mình là ${roleText.toLowerCase()} đang tìm kiếm bạn đồng hành phù hợp tại khu vực ${districtName}. Lối sống của mình khá ${cleanlinessText.toLowerCase()} (độ sạch sẽ ${cleanlinessLevel}/5), thường đi ngủ lúc ${sleepTime} và có độ chịu ồn tối đa ở mức ${noiseLevel}/5. ${isSmoking ? "Mình có hút thuốc" : "Mình hoàn toàn không hút thuốc"} và ${isPet ? "rất yêu thích động vật (cho nuôi pet)" : "không nuôi thú cưng"}.`;
+
   const badges = [
     roleText,
     isSmoking ? "Có hút thuốc" : "Không hút thuốc",
@@ -131,7 +132,7 @@ const mapUserMatchingToCandidate = (item: UserMatching, index: number): Roommate
     matchPercentage: scorePct,
     avatarGradient: gradients[index % gradients.length],
     badges,
-    description: bios[index % bios.length],
+    description,
     budget: budgetVal,
     cleanlinessLevelRaw: cleanlinessLevel,
     cleanliness: cleanlinessText,
@@ -140,7 +141,7 @@ const mapUserMatchingToCandidate = (item: UserMatching, index: number): Roommate
     area: areaVal,
     smokingRaw: isSmoking,
     petFriendlyRaw: isPet,
-    district: districts[index % districts.length],
+    district: districtName,
   };
 };
 

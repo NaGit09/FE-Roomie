@@ -3,7 +3,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useAuthStore } from "@/stores/authStore";
-import { userApi } from "@/services/api/user";
+import { UserApi } from "@/services/api/user";
 import { toast } from "sonner";
 import {
   User as UserIcon,
@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 
 export default function ProfilePage() {
+
   const { user, setUser } = useAuthStore();
 
   // Form edit states
@@ -27,11 +28,10 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(false);
   const [syncing, setSyncing] = useState(true);
 
-  // Sync latest user details from backend on mount
   useEffect(() => {
     const fetchLatestProfile = async () => {
       try {
-        const updated = await userApi.getMe();
+        const updated = await UserApi.getMe();
         setUser(updated.data as any);
         setFullName(updated.data.full_name || "");
       } catch (err) {
@@ -44,7 +44,7 @@ export default function ProfilePage() {
       }
     };
     fetchLatestProfile();
-  }, [setUser]);
+  }, [user,setUser]);
 
   if (syncing && !user) {
     return (
@@ -79,7 +79,7 @@ export default function ProfilePage() {
 
     setLoading(true);
     try {
-      const updatedUser = await userApi.updateMe(fullName.trim());
+      const updatedUser = await UserApi.updateMe(fullName.trim());
       setUser(updatedUser.data as any);
       toast.success("Cập nhật thông tin cá nhân thành công!");
       setIsEditing(false);

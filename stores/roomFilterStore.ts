@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { create } from "zustand";
-import { addressApi } from "@/services/api/adress";
+import { AddressApi } from "@/services/api/adress";
 
 export interface LocationItem {
   code: number;
@@ -86,7 +86,7 @@ export const useRoomFilterStore = create<RoomFilterState>((set, get) => ({
 
     set({ loadingDistricts: true });
     try {
-      const data = await addressApi.getDistricts(Number(selectedProvinceCode));
+      const data = await AddressApi.getDistricts(Number(selectedProvinceCode));
       const mapped = data.map((item: any) => ({
         code: item.code,
         name: item.name,
@@ -148,7 +148,7 @@ export const useRoomFilterStore = create<RoomFilterState>((set, get) => ({
 
     set({ loadingProvinces: true });
     try {
-      const data = await addressApi.getProvinces();
+      const data = await AddressApi.getProvinces();
       const mapped = data.map((item: any) => ({
         code: item.code,
         name: item.name,
