@@ -6,6 +6,7 @@ import { RoomDetail } from "@/schema/room/room";
 const BASE_URL = "/rooms";
 
 export const PostApi = {
+  
   getAllRooms: async () => {
     const res = await axiosInstance.get<ApiResponse<Pagination<RoomDetail>>>(
       `${BASE_URL}`,
@@ -15,7 +16,7 @@ export const PostApi = {
   },
 
   getMyRoom: async () => {
-    const res = await axiosInstance.get<ApiResponse<RoomDetail[]>>(
+    const res = await axiosInstance.get<ApiResponse<Pagination<RoomDetail>>>(
       `${BASE_URL}/me`,
     );
     return res.data;
@@ -28,4 +29,19 @@ export const PostApi = {
     );
     return res.data;
   },
+
+  updateRoom : async (room_id : number,update : RoomDetail) => {
+    const res = await axiosInstance.put<ApiResponse<RoomDetail>>(
+      `${BASE_URL}/${room_id}/request-update`,
+      update,
+    );
+    return res.data;
+  },
+
+  deleteRoom : async (room_id : number) => {
+        const res = await axiosInstance.post<ApiResponse<RoomDetail>>(
+      `${BASE_URL}/${room_id}/request-delete`,
+    );
+    return res.data;
+  }
 };

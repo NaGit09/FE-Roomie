@@ -43,7 +43,7 @@ export const GetPostsQuerySchema = z.object({
 export type GetPostsQueryType = z.infer<typeof GetPostsQuerySchema>;
 
 export const CreatePostSchema = z.object({
-  room_id: z.uuid(),
+  room_id: z.uuid().optional(),
   title: z.string(),
   content: z.string(),
   image_url: z.string(),

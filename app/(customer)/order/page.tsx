@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState, useEffect } from "react";
+export const dynamic = "force-dynamic";
+
+import React, { useState, useEffect, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   ArrowLeft, 
@@ -23,8 +25,9 @@ import { toast } from "sonner";
 import { OrderApi } from "@/services/api/order";
 import formatVND from "@/utils/priceUtils";
 import { Subscription } from "@/schema/user/subcription";
+import { SubscriptionApi } from "@/services/api/subcription";
 
-export default function CheckoutPage() {
+function CheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const paramSubId = searchParams.get("subscription_id");
@@ -52,7 +55,6 @@ export default function CheckoutPage() {
     const loadPlan = async () => {
       setLoadingPlan(true);
       try {
-        const SubscriptionApi = (await import("@/services/api/subcription")).SubscriptionApi;
         let plans: Subscription[] = [];
         
         // Load landlord plans
@@ -515,5 +517,19 @@ export default function CheckoutPage() {
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+          <Compass className="h-10 w-10 text-primary animate-spin" />
+        </div>
+      }
+    >
+      <CheckoutContent />
+    </Suspense>
   );
 }

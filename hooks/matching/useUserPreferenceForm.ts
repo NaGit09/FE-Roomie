@@ -113,7 +113,7 @@ export function useUserPreferenceForm() {
   const watchArea = form.watch("area");
 
   useEffect(() => {
-    if (watchArea !== undefined && watchArea !== null && watchArea !== "" && !isNaN(Number(watchArea))) {
+    if (watchArea !== undefined && watchArea !== null && (watchArea as any) !== "" && !isNaN(Number(watchArea))) {
       const numericArea = Number(watchArea);
       if (store.area !== numericArea) {
         store.setArea(numericArea);

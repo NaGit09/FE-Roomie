@@ -14,7 +14,10 @@ import {
   Zap,
   ChevronRight,
   X,
-  Check
+  Check,
+  Crown,
+  Info,
+  Compass
 } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import formatVND from "@/utils/priceUtils";

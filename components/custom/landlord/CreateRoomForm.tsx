@@ -3,22 +3,25 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, CheckCircle } from "lucide-react";
+import { X, CheckCircle, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { AddressApi } from "@/services/api/adress";
 import { PostApi } from "@/services/api/room";
+import { UploadApi } from "@/services/api/upload";
 import { RoomDetail } from "@/schema/room/room";
 
 interface CreateRoomFormProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  editingRoom?: RoomDetail | null;
 }
 
 export const CreateRoomForm: React.FC<CreateRoomFormProps> = ({
   isOpen,
   onClose,
   onSuccess,
+  editingRoom = null,
 }) => {
   // Form States
   const [newRoomName, setNewRoomName] = useState("");
@@ -52,24 +55,86 @@ export const CreateRoomForm: React.FC<CreateRoomFormProps> = ({
     "Tủ lạnh"
   ]);
 
-  // Load provinces on mount
+  // Image Upload States
+  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+
+  // Load provinces and pre-fill form data if editing
   useEffect(() => {
     if (!isOpen) return;
 
-    const fetchProvinces = async () => {
+    const fetchProvincesAndPrefill = async () => {
       setLoadingProvinces(true);
       try {
-        const data = await AddressApi.getProvinces();
-        setProvinces(data);
+        const provs = await AddressApi.getProvinces();
+        setProvinces(provs);
+
+        if (editingRoom) {
+          setNewRoomName(editingRoom.name);
+          setNewRoomDescription(editingRoom.description);
+          setNewRoomAddress(editingRoom.address.street);
+          setNewRoomPrice(editingRoom.price);
+          setNewRoomArea(editingRoom.area);
+          setNewRoomDeposit(editingRoom.deposit);
+          setSelectedAmenities(editingRoom.amenities);
+          setUploadedImages(editingRoom.images || []);
+
+          const capacityAttr = editingRoom.attributes?.find((a: string) => a.startsWith("capacity:"));
+          if (capacityAttr) {
+            setNewRoomCapacity(parseInt(capacityAttr.split(":")[1]) || 2);
+          }
+
+          setNewRoomCity(editingRoom.address.city);
+          setNewRoomDistrict(editingRoom.address.district);
+          setNewRoomWard(editingRoom.address.ward);
+
+          // Resolve Address Codes
+          const matchedProv = provs.find((p: any) => p.name.toLowerCase() === editingRoom.address.city.toLowerCase());
+          if (matchedProv) {
+            setSelectedProvinceCode(matchedProv.code);
+            const dists = await AddressApi.getDistricts(matchedProv.code);
+            setDistricts(dists);
+            
+            const matchedDist = dists.find((d: any) => d.name.toLowerCase() === editingRoom.address.district.toLowerCase());
+            if (matchedDist) {
+              setSelectedDistrictCode(matchedDist.code);
+              const wds = await AddressApi.getWards(matchedDist.code);
+              setWards(wds);
+              
+              const matchedWard = wds.find((w: any) => w.name.toLowerCase() === editingRoom.address.ward.toLowerCase());
+              if (matchedWard) {
+                setSelectedWardCode(matchedWard.code);
+              }
+            }
+          }
+        } else {
+          // Reset for Creation Mode
+          setNewRoomName("");
+          setNewRoomDescription("");
+          setNewRoomAddress("");
+          setSelectedProvinceCode("");
+          setSelectedDistrictCode("");
+          setSelectedWardCode("");
+          setNewRoomCity("");
+          setNewRoomDistrict("");
+          setNewRoomWard("");
+          setNewRoomPrice(4500000);
+          setNewRoomArea(25);
+          setNewRoomDeposit(2000000);
+          setNewRoomCapacity(2);
+          setSelectedAmenities(["Wifi", "Máy lạnh", "Tủ lạnh"]);
+          setUploadedImages([]);
+        }
       } catch (error) {
-        console.error("Failed to load provinces:", error);
-        toast.error("Không thể tải danh sách tỉnh/thành phố.");
+        console.error("Failed to load provinces or pre-fill room:", error);
+        toast.error("Không thể tải thông tin tỉnh/thành phố.");
       } finally {
         setLoadingProvinces(false);
       }
     };
-    fetchProvinces();
-  }, [isOpen]);
+
+    fetchProvincesAndPrefill();
+  }, [isOpen, editingRoom]);
 
   const handleProvinceChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
     const code = e.target.value ? Number(e.target.value) : "";
@@ -133,6 +198,43 @@ export const CreateRoomForm: React.FC<CreateRoomFormProps> = ({
     setNewRoomWard(wardName);
   };
 
+  const handleImageUpload = async (files: FileList) => {
+    setIsUploading(true);
+    const uploadedUrls: string[] = [...uploadedImages];
+    const refId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (!file.type.startsWith("image/")) {
+          toast.warning(`Tập tin "${file.name}" không phải là ảnh!`);
+          continue;
+        }
+        
+        const response = await UploadApi.uploadFile({
+          file,
+          reference_id: refId,
+          context: "ROOM",
+          is_primary: uploadedUrls.length === 0
+        });
+
+        if (response && response.data && response.data.file_url) {
+          uploadedUrls.push(response.data.file_url);
+        }
+      }
+      setUploadedImages(uploadedUrls);
+      toast.success("Tải hình ảnh lên thành công!");
+    } catch (error) {
+      console.error("Error uploading images:", error);
+      toast.error("Không thể tải hình ảnh lên. Vui lòng thử lại!");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const handleAddRoomSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -146,16 +248,21 @@ export const CreateRoomForm: React.FC<CreateRoomFormProps> = ({
       return;
     }
 
+    if (uploadedImages.length === 0) {
+      toast.warning("Vui lòng tải lên ít nhất 1 hình ảnh cho phòng!");
+      return;
+    }
+
     const newRoomPayload: RoomDetail = {
       name: newRoomName,
       description: newRoomDescription || "Không có mô tả chi tiết cho phòng này.",
       price: newRoomPrice,
       area: newRoomArea,
       deposit: newRoomDeposit,
-      status: "VACANT",
+      status: editingRoom ? editingRoom.status : "VACANT",
       amenities: selectedAmenities,
       attributes: [`capacity:${newRoomCapacity}`, `occupied:0`],
-      images: ["https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80"],
+      images: uploadedImages,
       address: {
         street: newRoomAddress,
         ward: newRoomWard,
@@ -169,32 +276,29 @@ export const CreateRoomForm: React.FC<CreateRoomFormProps> = ({
     };
 
     try {
-      const response = await PostApi.createNewRoom(newRoomPayload);
-      if (response && (response.code === 200 || response.code === 201)) {
-        toast.success(`Đã thêm phòng "${newRoomName}" thành công!`);
-        onSuccess();
-        
-        // Reset Form
-        setNewRoomName("");
-        setNewRoomDescription("");
-        setNewRoomAddress("");
-        setSelectedProvinceCode("");
-        setSelectedDistrictCode("");
-        setSelectedWardCode("");
-        setNewRoomCity("");
-        setNewRoomDistrict("");
-        setNewRoomWard("");
-        setNewRoomPrice(4500000);
-        setNewRoomArea(25);
-        setNewRoomDeposit(2000000);
-        setNewRoomCapacity(2);
-        setSelectedAmenities(["Wifi", "Máy lạnh", "Tủ lạnh"]);
+      let response;
+      if (editingRoom && editingRoom.id) {
+        response = await PostApi.updateRoom(editingRoom.id, newRoomPayload);
+        if (response && (response.code === 200 || response.code === 201)) {
+          toast.success(`Đã cập nhật phòng "${newRoomName}" thành công!`);
+          onSuccess();
+          onClose();
+        } else {
+          toast.error(response?.message || "Đã xảy ra lỗi khi cập nhật phòng.");
+        }
       } else {
-        toast.error(response?.message || "Đã xảy ra lỗi khi tạo phòng.");
+        response = await PostApi.createNewRoom(newRoomPayload);
+        if (response && (response.code === 200 || response.code === 201)) {
+          toast.success(`Đã thêm phòng "${newRoomName}" thành công!`);
+          onSuccess();
+          onClose();
+        } else {
+          toast.error(response?.message || "Đã xảy ra lỗi khi tạo phòng.");
+        }
       }
     } catch (error: any) {
-      console.error("Error creating room:", error);
-      toast.error(error?.response?.data?.message || "Không thể tạo phòng mới. Vui lòng thử lại!");
+      console.error("Error saving room:", error);
+      toast.error(error?.response?.data?.message || "Không thể lưu thông tin phòng. Vui lòng thử lại!");
     }
   };
 
@@ -383,6 +487,87 @@ export const CreateRoomForm: React.FC<CreateRoomFormProps> = ({
                 </div>
               </div>
 
+              {/* Image upload section */}
+              <div className="space-y-2">
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block font-body">
+                  Hình ảnh căn hộ ({uploadedImages.length} ảnh)
+                </label>
+                
+                {/* Drag and Drop Zone */}
+                <div 
+                  className="border border-dashed border-white/10 hover:border-[#F59E0B]/50 rounded-2xl p-6 bg-white/5 transition-all text-center cursor-pointer relative group flex flex-col items-center justify-center min-h-[120px]"
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={async (e) => {
+                    e.preventDefault();
+                    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                      await handleImageUpload(e.dataTransfer.files);
+                    }
+                  }}
+                  onClick={() => document.getElementById("room-image-input")?.click()}
+                >
+                  <input
+                    id="room-image-input"
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    className="hidden"
+                    onChange={async (e) => {
+                      if (e.target.files && e.target.files.length > 0) {
+                        await handleImageUpload(e.target.files);
+                      }
+                    }}
+                  />
+                  
+                  {isUploading ? (
+                    <div className="space-y-2">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#F59E0B] mx-auto" />
+                      <span className="text-[10px] text-slate-400 font-bold block">Đang tải ảnh lên hệ thống...</span>
+                    </div>
+                  ) : (
+                    <div className="space-y-1">
+                      <Plus className="h-6 w-6 text-slate-400 group-hover:text-[#F59E0B] mx-auto transition-colors" />
+                      <p className="text-[11px] font-bold text-slate-200 group-hover:text-white transition-colors">
+                        Kéo thả ảnh hoặc click để chọn ảnh
+                      </p>
+                      <p className="text-[9px] text-slate-500 font-body">
+                        Định dạng JPEG, PNG. Tối đa 5MB/ảnh.
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Previews */}
+                {uploadedImages.length > 0 && (
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 pt-2">
+                    {uploadedImages.map((imgUrl, index) => (
+                      <div key={index} className="relative aspect-video rounded-xl overflow-hidden border border-white/10 group bg-slate-800">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img 
+                          src={imgUrl} 
+                          alt={`Preview ${index}`} 
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform" 
+                        />
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setUploadedImages(uploadedImages.filter((_, i) => i !== index));
+                          }}
+                          className="absolute top-1 right-1 h-5 w-5 bg-black/60 rounded-full flex items-center justify-center hover:bg-red-500/80 text-white cursor-pointer transition-all border border-white/15"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                        {index === 0 && (
+                          <span className="absolute bottom-1 left-1 px-1.5 py-0.5 bg-[#F59E0B] text-slate-950 text-[7px] font-black uppercase rounded shadow">
+                            Ảnh chính
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               {/* Amenities checklist grid */}
               <div className="space-y-2">
                 <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block font-body">Tiện nghi có sẵn</label>
@@ -427,7 +612,7 @@ export const CreateRoomForm: React.FC<CreateRoomFormProps> = ({
                   type="submit"
                   className="h-11 px-6 rounded-xl bg-[#F59E0B] hover:bg-[#FBBF24] text-slate-900 text-xs font-black uppercase tracking-wider cursor-pointer transition-all shadow-md shadow-[#F59E0B]/10"
                 >
-                  Đăng phòng ngay
+                  {editingRoom ? "Cập nhật phòng" : "Đăng phòng ngay"}
                 </button>
               </div>
             </form>

@@ -8,7 +8,10 @@ import {
   Plus, 
   MapPin,
   Compass,
-  ChevronRight
+  ChevronRight,
+  Eye,
+  Edit2,
+  Trash2
 } from "lucide-react";
 import formatVND from "@/utils/priceUtils";
 import { toast } from "sonner";
@@ -22,6 +25,7 @@ export default function LandlordRoomsPage() {
   const [filter, setFilter] = useState<"ALL" | "VACANT" | "OCCUPIED">("ALL");
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [editingRoom, setEditingRoom] = useState<RoomDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // Rooms list state
@@ -31,8 +35,11 @@ export default function LandlordRoomsPage() {
     setIsLoading(true);
     try {
       const response = await PostApi.getMyRoom();
-      if (response && response.data && Array.isArray(response.data)) {
-        setRooms(response.data);
+      if (response && response.data) {
+        const roomsList = Array.isArray(response.data)
+          ? response.data
+          : (response.data as any).items || [];
+        setRooms(roomsList);
       } else {
         setRooms([]);
       }
@@ -41,6 +48,23 @@ export default function LandlordRoomsPage() {
       toast.error("Không thể tải danh sách phòng. Vui lòng thử lại!");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleDeleteRoom = async (roomId: number, name: string) => {
+    if (confirm(`Bạn có chắc chắn muốn xóa phòng "${name}" không?`)) {
+      try {
+        const response = await PostApi.deleteRoom(roomId);
+        if (response && (response.code === 200 || response.code === 201)) {
+          toast.success(`Đã xóa phòng "${name}" thành công!`);
+          fetchRooms();
+        } else {
+          toast.error(response?.message || "Không thể xóa phòng.");
+        }
+      } catch (error: any) {
+        console.error("Error deleting room:", error);
+        toast.error("Không thể xóa phòng. Vui lòng thử lại!");
+      }
     }
   };
 
@@ -131,7 +155,7 @@ export default function LandlordRoomsPage() {
 
         {/* Add Room Trigger button */}
         <button
-          onClick={() => setIsAddOpen(true)}
+          onClick={() => { setEditingRoom(null); setIsAddOpen(true); }}
           className="h-12 px-6 rounded-xl bg-[#F59E0B] hover:bg-[#FBBF24] text-slate-900 text-xs font-black uppercase tracking-wider cursor-pointer transition-all flex items-center gap-2 shadow-md shadow-[#F59E0B]/10 shrink-0 self-start sm:self-center"
         >
           <Plus className="h-4.5 w-4.5 stroke-[2.5]" />
@@ -252,12 +276,29 @@ export default function LandlordRoomsPage() {
                   </span>
                 </div>
                 
-                <button
-                  onClick={() => toast.success(`Đang tải chi tiết cho "${room.name}"`)}
-                  className="h-8 w-8 rounded-lg bg-white/5 border border-white/10 hover:bg-[#F59E0B] hover:text-slate-900 text-slate-400 flex items-center justify-center cursor-pointer transition-all active:scale-90"
-                >
-                  <ChevronRight className="h-4.5 w-4.5" />
-                </button>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); toast.success(`Xem chi tiết phòng "${room.name}"`); }}
+                    className="h-8 w-8 rounded-lg bg-white/5 border border-white/10 hover:bg-[#3b82f6]/20 hover:text-[#3b82f6] hover:border-[#3b82f6]/30 text-slate-400 flex items-center justify-center cursor-pointer transition-all active:scale-90"
+                    title="Xem chi tiết"
+                  >
+                    <Eye className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setEditingRoom(room); setIsAddOpen(true); }}
+                    className="h-8 w-8 rounded-lg bg-white/5 border border-white/10 hover:bg-[#F59E0B]/20 hover:text-[#F59E0B] hover:border-[#F59E0B]/30 text-slate-400 flex items-center justify-center cursor-pointer transition-all active:scale-90"
+                    title="Cập nhật"
+                  >
+                    <Edit2 className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); if (room.id) handleDeleteRoom(room.id, room.name); }}
+                    className="h-8 w-8 rounded-lg bg-white/5 border border-white/10 hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/30 text-slate-400 flex items-center justify-center cursor-pointer transition-all active:scale-90"
+                    title="Xóa"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
             </motion.div>
           ))}
@@ -267,9 +308,14 @@ export default function LandlordRoomsPage() {
       {/* ADD ROOM MODAL PANEL */}
       <CreateRoomForm
         isOpen={isAddOpen}
-        onClose={() => setIsAddOpen(false)}
+        editingRoom={editingRoom}
+        onClose={() => {
+          setIsAddOpen(false);
+          setEditingRoom(null);
+        }}
         onSuccess={() => {
           setIsAddOpen(false);
+          setEditingRoom(null);
           fetchRooms();
         }}
       />

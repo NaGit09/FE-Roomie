@@ -7,8 +7,9 @@ import { CreatePayment, PaymentRes } from "@/schema/user/payment";
 const BASE_URL = "/users/orders";
 
 export const OrderApi = {
-  get_my_order: async () => {
-    const response = await axiosInstance.get(`${BASE_URL}/users/me/orders`);
+  
+  get_my_order: async (user_id: string | number) => {
+    const response = await axiosInstance.get(`/users/${user_id}/orders`);
     return response.data;
   },
   
@@ -27,7 +28,7 @@ export const OrderApi = {
     return response.data;
   },
 
-  create_payment: async (targetOrderId: number, payment: CreatePayment) => {
+  create_payment: async (targetOrderId: string | number, payment: CreatePayment) => {
     const response = await axiosInstance.post<ApiResponse<PaymentRes>>(
       `${BASE_URL}/${targetOrderId}/payment`,
       payment,
@@ -35,9 +36,9 @@ export const OrderApi = {
     return response.data;
   },
 
-  confirm_payment: async (targetOrderId: number) => {
+  confirm_payment: async (targetOrderId: string | number) => {
     const response = await axiosInstance.post<ApiResponse<PaymentRes>>(
-      `${BASE_URL}/${targetOrderId}/payment`,
+      `${BASE_URL}/payment/confirm/${targetOrderId}`,
     );
     return response.data;
   },
@@ -45,7 +46,7 @@ export const OrderApi = {
   // For admin
   payos_webhook: async () => {},
 
-  update_order: async (targetOrderId: number, status: string) => {
+  update_order: async (targetOrderId: string | number, status: string) => {
     const response = await axiosInstance.patch<ApiResponse<Order>>(
       `${BASE_URL}/${targetOrderId}/payment`,
       { status },

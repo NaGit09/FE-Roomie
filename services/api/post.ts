@@ -59,10 +59,31 @@ export const PostApi = {
     return response.data;
   },
 
-  createpPost: async (createPost: CreatePost) => {
+  createPost: async (createPost: CreatePost) => {
     const response = await axiosInstance.post<ApiResponse<PostDetailType>>(
       `${BASE_URL}`,
       createPost,
+    );
+
+    return response.data;
+  },
+
+  createpPost: async (createPost: CreatePost) => {
+    return PostApi.createPost(createPost);
+  },
+
+  updatePost: async (post_id: number, createPost: CreatePost) => {
+    const response = await axiosInstance.put<ApiResponse<PostDetailType>>(
+      `${BASE_URL}/${post_id}`,
+      createPost,
+    );
+
+    return response.data;
+  },
+  
+  deletePost: async (post_id: number) => {
+    const response = await axiosInstance.delete<ApiResponse<PostDetailType>>(
+      `${BASE_URL}/${post_id}`,
     );
 
     return response.data;
