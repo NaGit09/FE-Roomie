@@ -50,6 +50,9 @@ function PaymentStatusContent() {
   const [orderDetails, setOrderDetails] = useState<any>(null);
   const [matchedPlanDetails, setMatchedPlanDetails] = useState<Subscription | null>(null);
 
+  // Ref to track whether subscription has already been created/activated to prevent duplicates
+  const subscriptionCreatedRef = React.useRef(false);
+
   const handleGoBack = () => {
     if (user?.role === "LANDLORD") {
       router.push("/landlord/");
@@ -116,11 +119,59 @@ function PaymentStatusContent() {
                   if (foundPlan) {
                     setMatchedPlanDetails(foundPlan);
                   }
+
+                  // Activate subscription if it hasn't been created yet
+                  if (matchedOrder.item_type === "SUBSCRIPTION" && matchedOrder.item_id) {
+                    const subId = Number(matchedOrder.item_id);
+                    if (!subscriptionCreatedRef.current) {
+                      subscriptionCreatedRef.current = true;
+                      try {
+                        const subscribeRes = await SubscriptionApi.subscribe(subId);
+                        if (subscribeRes) {
+                          toast.success("Kích hoạt gói hội viên thành công!");
+                        }
+                      } catch (subErr) {
+                        subscriptionCreatedRef.current = false; // Reset on failure so it can retry if user re-triggers/refreshes
+                        console.error("Failed to register subscription from matchedOrder:", subErr);
+                        toast.error("Giao dịch thành công nhưng gặp lỗi khi kích hoạt gói. Vui lòng liên hệ hỗ trợ!");
+                      }
+                    }
+                  }
+                }
+              }
+            } else if (checkoutPlan?.id) {
+              // Fallback if user.id is not available yet, but checkoutPlan exists
+              const subId = Number(checkoutPlan.id);
+              if (!subscriptionCreatedRef.current) {
+                subscriptionCreatedRef.current = true;
+                try {
+                  const subscribeRes = await SubscriptionApi.subscribe(subId);
+                  if (subscribeRes) {
+                    toast.success("Kích hoạt gói hội viên thành công!");
+                  }
+                } catch (subErr) {
+                  subscriptionCreatedRef.current = false;
+                  console.error("Failed to register subscription from checkoutPlan:", subErr);
+                  toast.error("Giao dịch thành công nhưng gặp lỗi khi kích hoạt gói. Vui lòng liên hệ hỗ trợ!");
                 }
               }
             }
           } catch (fetchErr) {
             console.error("Error loading order or plan details for success page:", fetchErr);
+            // Final fallback to checkoutPlan if loading my orders failed
+            if (checkoutPlan?.id && !subscriptionCreatedRef.current) {
+              const subId = Number(checkoutPlan.id);
+              subscriptionCreatedRef.current = true;
+              try {
+                const subscribeRes = await SubscriptionApi.subscribe(subId);
+                if (subscribeRes) {
+                  toast.success("Kích hoạt gói hội viên thành công!");
+                }
+              } catch (subErr) {
+                subscriptionCreatedRef.current = false;
+                console.error("Failed to register subscription from checkoutPlan fallback:", subErr);
+              }
+            }
           }
         } else {
           setIsSuccess(false);

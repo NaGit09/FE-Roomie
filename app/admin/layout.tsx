@@ -25,12 +25,13 @@ import {
   Briefcase
 } from "lucide-react";
 import { toast } from "sonner";
+import { UserApi } from "@/services/api/user";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   
-  const { user, isAuthenticated, clearAuth } = useAuthStore();
+  const { user, isAuthenticated, clearAuth, setUser } = useAuthStore();
   const [hydrated, setHydrated] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -39,6 +40,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     useAuthStore.persist.rehydrate();
     setHydrated(true);
   }, []);
+
+  // Fetch profile if authenticated but user is null (resolves deadlock)
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (isAuthenticated && !user) {
+        try {
+          const res = await UserApi.getMe();
+          setUser(res.data);
+        } catch (error) {
+          console.error("Failed to fetch user profile in admin layout:", error);
+          clearAuth();
+          toast.error("Không thể tải thông tin tài khoản admin. Vui lòng đăng nhập lại!");
+        }
+      }
+    };
+    fetchProfile();
+  }, [isAuthenticated, user, setUser, clearAuth]);
 
   const handleLogout = () => {
     toast.promise(
@@ -67,8 +85,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { name: "Báo cáo", href: "/admin/report", icon: AlertTriangle },
   ];
 
-  // While checking hydration, render a premium dashboard load indicator
-  if (!hydrated) {
+  // While checking hydration or fetching user details, render a premium dashboard load indicator
+  if (!hydrated || (isAuthenticated && !user)) {
     return (
       <div className="min-h-screen bg-[#020617] text-slate-100 flex flex-col items-center justify-center font-sans">
         <Compass className="h-10 w-10 text-emerald-500 animate-spin mb-4" />

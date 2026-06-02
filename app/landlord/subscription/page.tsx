@@ -696,32 +696,6 @@ export default function LandlordSubscriptionPage() {
         </div>
       )}
 
-      {/* 3. Premium Features list */}
-      <div className="space-y-4 relative z-10">
-        <h3 className="font-heading text-md font-bold text-slate-200 flex items-center gap-1.5 text-left">
-          <Sparkles className="h-4.5 w-4.5 text-[#F59E0B] animate-pulse" />
-          Đặc quyền Chủ nhà Pro đang sở hữu
-        </h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-body leading-relaxed text-left">
-          {[
-            "Đẩy tin đăng phòng tự động lên đầu bảng tin tìm kiếm hàng tuần.",
-            "Xác thực uy tín căn hộ (Tăng 200% lượt tin cậy của khách thuê).",
-            "Mở khóa không giới hạn số lượng phòng hoạt động đăng ký tin.",
-            "Nhận đề xuất 1-1 ghép đôi Renter tương thích cao (>90%) từ hệ thống AI.",
-            "Bộ công cụ thống kê doanh thu và báo cáo xuất file tài chính chuyên nghiệp.",
-            "Đường dây nóng hỗ trợ kỹ thuật và CSKH VIP 24/7."
-          ].map((feat, idx) => (
-            <div key={idx} className="flex gap-3 items-start bg-[#0f172a]/30 border border-white/5 rounded-2xl p-4 hover:border-white/10 transition-colors">
-              <div className="h-5 w-5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0 mt-0.5 shadow-inner">
-                <CheckCircle className="h-3.5 w-3.5" />
-              </div>
-              <span className="text-slate-350 font-medium">{feat}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* 4. Invoices Logs Table List */}
       <div className="space-y-4 relative z-10">
         <h3 className="font-heading text-md font-bold text-slate-200 text-left">Lịch sử hóa đơn giao dịch</h3>
