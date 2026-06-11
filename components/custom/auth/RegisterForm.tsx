@@ -29,6 +29,23 @@ export function RegisterForm() {
     registerAccount(data, role === "LANDLORD");
   };
 
+  const handleGoogleLogin = () => {
+    const authUrl =
+      process.env.NEXT_PUBLIC_KEYCLOAK_AUTH_URL ||
+      "http://localhost:8088/realms/roomie/protocol/openid-connect/auth";
+    const clientId = process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID || "frontend-app";
+    const redirectUri =
+      process.env.NEXT_PUBLIC_KEYCLOAK_REDIRECT_URI || "http://localhost:3000/";
+    
+    const targetUrl = `${authUrl}?client_id=${encodeURIComponent(
+      clientId
+    )}&response_type=code&scope=openid&redirect_uri=${encodeURIComponent(
+      redirectUri
+    )}`;
+    
+    window.location.href = targetUrl;
+  };
+
   return (
     <div className="w-full space-y-6">
       <div className="space-y-1.5">
@@ -44,6 +61,7 @@ export function RegisterForm() {
         variant="outline"
         type="button"
         className="w-full h-10 gap-2.5 font-medium text-sm"
+        onClick={handleGoogleLogin}
       >
         <svg
           className="h-4 w-4 shrink-0"

@@ -21,10 +21,12 @@ export function useLogin() {
       if (res && res.data.access_token) {
         setAuth(res.data);
 
-        if (res.data.role === "ADMIN") {
+        const normalizedRole = res.data.role?.toUpperCase();
+
+        if (normalizedRole === "ADMIN") {
           router.push("/admin/");
 
-        } else if (res.data.role === "LANDLORD") {
+        } else if (normalizedRole === "LANDLORD") {
           router.push("/landlord/");
 
         } else {

@@ -11,6 +11,7 @@ import {
   Settings,
   LogOut,
   ShieldCheck,
+  Flag,
 } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { toast } from "sonner";
@@ -92,6 +93,11 @@ export default function UserDashboardLayout({
       href: "/user/history-subscription",
       label: "Lịch sử gói đăng ký",
       icon: Coins,
+    },
+    {
+      href: "/user/report",
+      label: "Báo cáo & Hỗ trợ",
+      icon: Flag,
     },
   ];
 

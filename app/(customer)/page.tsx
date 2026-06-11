@@ -8,6 +8,7 @@ import { ArrowRight, Map as MapIcon } from "lucide-react";
 import NewRoom from "@/components/custom/customer/home/NewRoom";
 import { SectionHeader } from "@/components/custom/customer/layout/SectionHeader";
 import StateContainer from "@/components/custom/common/StateContainer";
+import { KeycloakCallback } from "@/components/custom/auth/KeycloakCallback";
 
 // ─────────────────────────────────────────────
 // Dynamic Imports
@@ -33,6 +34,7 @@ export default function CustomerHomePage() {
 
   return (
     <main className="flex flex-col min-h-screen bg-white">
+      <KeycloakCallback />
       {/* 1. HERO SECTION */}
       <section className="relative">
         <HomeSearch />

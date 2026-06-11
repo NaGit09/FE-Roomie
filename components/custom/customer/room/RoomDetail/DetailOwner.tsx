@@ -10,13 +10,16 @@ import {
   Star, 
   Clock, 
   Building,
-  CheckCircle2
+  CheckCircle2,
+  AlertOctagon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import ReportModal from "@/components/custom/common/ReportModal";
 
 export default function DetailOwner() {
   const { currentRoomDetail } = useRoomStore();
   const [viewingRequested, setViewingRequested] = useState<boolean>(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState<boolean>(false);
 
   if (!currentRoomDetail) return null;
 
@@ -167,6 +170,22 @@ export default function DetailOwner() {
         <p className="font-extrabold text-amber-900 uppercase tracking-wider">Lưu ý an toàn giao dịch:</p>
         <p>Không chuyển khoản tiền cọc trước khi đến tận nơi xem phòng thực tế và xác nhận ký hợp đồng hợp lệ với chủ nhà.</p>
       </div>
+
+      {/* Report Listing CTA */}
+      <button
+        onClick={() => setIsReportModalOpen(true)}
+        className="w-full h-10 border border-red-200 text-red-500 hover:bg-red-50 hover:text-red-600 rounded-full font-bold text-xs uppercase tracking-wider transition-all duration-300 active:scale-95 flex items-center justify-center gap-2 cursor-pointer mt-2"
+      >
+        <AlertOctagon className="h-4 w-4" />
+        Báo cáo tin đăng này
+      </button>
+
+      <ReportModal
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        targetType="ROOM"
+        targetId={String(currentRoomDetail.room?.id || currentRoomDetail.post_id || "")}
+      />
 
     </div>
   );

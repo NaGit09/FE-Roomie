@@ -88,4 +88,36 @@ export const PostApi = {
 
     return response.data;
   },
+
+  getVerificationRequests: async (skip: number = 0, limit: number = 10) => {
+    const res = await axiosInstance.get<ApiResponse<{ items: PostCardType[]; total: number; page: number; size: number; total_pages: number }>>(
+      `/admin/posts/verification-requests`,
+      {
+        params: { skip, limit }
+      }
+    );
+    return res.data;
+  },
+
+  verifyPost: async (postId: number, approved: boolean) => {
+    const res = await axiosInstance.post<ApiResponse<PostDetailType>>(
+      `/admin/posts/${postId}/verify`,
+      null,
+      {
+        params: { approved }
+      }
+    );
+    return res.data;
+  },
+
+  approveDeletePost: async (postId: number, approved: boolean) => {
+    const res = await axiosInstance.post<ApiResponse<PostDetailType>>(
+      `/admin/posts/${postId}/approve-delete`,
+      null,
+      {
+        params: { approved }
+      }
+    );
+    return res.data;
+  },
 };

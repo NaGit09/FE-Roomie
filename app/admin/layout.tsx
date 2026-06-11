@@ -6,13 +6,8 @@ import { useAuthStore } from "@/stores/authStore";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
-  Users,
   Home,
-  FileText,
-  Coins,
-  Zap,
   AlertTriangle,
-  Settings,
   LogOut,
   Menu,
   X,
@@ -22,7 +17,10 @@ import {
   Lock,
   Compass,
   ArrowLeft,
-  Briefcase
+  Users,
+  FileText,
+  Package,
+  Coins
 } from "lucide-react";
 import { toast } from "sonner";
 import { UserApi } from "@/services/api/user";
@@ -77,12 +75,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const navItems = [
     { name: "Tổng quan", href: "/admin", icon: LayoutDashboard },
-    { name: "Người dùng", href: "/admin/user", icon: Users },
-    { name: "Phòng trọ", href: "/admin/room", icon: Home },
+    { name: "Thành viên", href: "/admin/user", icon: Users },
     { name: "Tin đăng", href: "/admin/post", icon: FileText },
-    { name: "Đơn hàng", href: "/admin/order", icon: Coins },
-    { name: "Gói cước", href: "/admin/subscription", icon: Zap },
+    { name: "Phòng trọ", href: "/admin/room", icon: Home },
     { name: "Báo cáo", href: "/admin/report", icon: AlertTriangle },
+    { name: "Gói dịch vụ", href: "/admin/subscription", icon: Package },
+    { name: "Giao dịch", href: "/admin/order", icon: Coins },
   ];
 
   // While checking hydration or fetching user details, render a premium dashboard load indicator
@@ -98,7 +96,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   // Auth Guard check: If not authenticated or not ADMIN role
-  const isUserAdmin = isAuthenticated && user?.role === "ADMIN";
+  const isUserAdmin = isAuthenticated && user?.role?.toUpperCase() === "ADMIN";
 
   if (!isUserAdmin) {
     return (
@@ -204,17 +202,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         {/* Sidebar Settings & Logout Bottom Footer */}
         <div className="p-4 border-t border-white/5 bg-[#050912]/50 space-y-1.5 shrink-0">
-          <button
-            onClick={() => router.push("/admin/setting")}
-            className={`w-full h-11 px-4 rounded-xl text-left text-xs font-bold transition-all flex items-center gap-3 group cursor-pointer ${
-              pathname === "/admin/setting"
-                ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-400"
-                : "text-slate-400 hover:bg-white/5 hover:text-slate-200"
-            }`}
-          >
-            <Settings className="h-4.5 w-4.5 text-slate-400 group-hover:text-slate-200" />
-            <span>Cài đặt hệ thống</span>
-          </button>
           
           <button
             onClick={handleLogout}
@@ -293,20 +280,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </div>
 
               <div className="p-4 border-t border-white/5 bg-[#050912]/50 space-y-1.5">
-                <button
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    router.push("/admin/setting");
-                  }}
-                  className={`w-full h-11 px-4 rounded-xl text-left text-xs font-bold transition-all flex items-center gap-3 group cursor-pointer ${
-                    pathname === "/admin/setting"
-                      ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-400"
-                      : "text-slate-400 hover:bg-white/5 hover:text-slate-200"
-                  }`}
-                >
-                  <Settings className="h-4.5 w-4.5 text-slate-400" />
-                  <span>Cài đặt hệ thống</span>
-                </button>
                 
                 <button
                   onClick={handleLogout}

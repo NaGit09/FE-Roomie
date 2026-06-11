@@ -34,9 +34,7 @@ export const SubscriptionApi = {
   
   // For customer , landlord cancel subscription
   cancel_subscription: async (user_subscription_id: number) => {
-    const response = await axiosInstance.put(`${BASE_URL}/user/cancel`, {
-      user_subscription_id,
-    });
+    const response = await axiosInstance.put(`${BASE_URL}/user/cancel/${user_subscription_id}`);
     return response.data;
   },
 
