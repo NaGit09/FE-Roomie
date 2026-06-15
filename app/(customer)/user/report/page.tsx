@@ -36,54 +36,16 @@ export default function CustomerReportsPage() {
       if (response && response.code === 200 && response.data) {
         setReports(response.data.items);
       } else {
-        // Mock data fallback if API is not fully running locally
-        setReports(getMockReports());
+        setReports([]);
+        toast.error("Không thể tải danh sách báo cáo.");
       }
     } catch (err) {
       console.error("Error fetching customer reports:", err);
-      setReports(getMockReports());
+      setReports([]);
+      toast.error("Có lỗi xảy ra khi tải báo cáo.");
     } finally {
       setLoading(false);
     }
-  };
-
-  const getMockReports = (): ReportListResponse[] => {
-    return [
-      {
-        id: 101,
-        report_code: "REP-23091",
-        target_type: "ROOM",
-        target_id: "2",
-        reason: "Hình ảnh phòng hoàn toàn giả mạo, phòng thực tế rất xập xệ khác xa quảng cáo.",
-        report_type: "Hình ảnh giả mạo/Không thực tế",
-        reporter_id: user?.id || "1",
-        reporter_name: user?.full_name || "Khách Hàng",
-        reporter_avatar: null,
-        priority: "MEDIUM",
-        status: "RESOLVED",
-        admin_id: "admin",
-        admin_name: "Ban Quản Trị Roomie",
-        admin_avatar: null,
-        created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-      },
-      {
-        id: 102,
-        report_code: "REP-23095",
-        target_type: "ROOM",
-        target_id: "5",
-        reason: "Yêu cầu chuyển cọc giữ chân 2 triệu đồng sau đó ngắt liên lạc hoàn toàn.",
-        report_type: "Có dấu hiệu lừa đảo/Yêu cầu chuyển cọc trước",
-        reporter_id: user?.id || "1",
-        reporter_name: user?.full_name || "Khách Hàng",
-        reporter_avatar: null,
-        priority: "HIGH",
-        status: "PENDING",
-        admin_id: null,
-        admin_name: null,
-        admin_avatar: null,
-        created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-      },
-    ];
   };
 
   useEffect(() => {
@@ -105,38 +67,13 @@ export default function CustomerReportsPage() {
         if (res && res.code === 200 && res.data) {
           setDetailedReports((prev) => ({ ...prev, [reportId]: res.data! }));
         } else {
-          // Fallback detail matching parent
-          const parent = reports.find((r) => r.id === reportId);
-          if (parent) {
-            setDetailedReports((prev) => ({
-              ...prev,
-              [reportId]: {
-                ...parent,
-                attachments: parent.target_type === "ROOM" ? [
-                  "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=600&q=80"
-                ] : null,
-                admin_notes: parent.status === "RESOLVED"
-                  ? "Cảm ơn bạn đã phản hồi. Chúng tôi đã tiến hành cảnh cáo chủ nhà và tạm khóa bài viết để yêu cầu cập nhật lại thông tin."
-                  : null,
-                updated_at: parent.created_at,
-              } as ReportResponse,
-            }));
-          }
+          toast.error("Không thể lấy chi tiết báo cáo.");
+          setExpandedId(null);
         }
       } catch (err) {
         console.error("Error fetching report detail:", err);
-        const parent = reports.find((r) => r.id === reportId);
-        if (parent) {
-          setDetailedReports((prev) => ({
-            ...prev,
-            [reportId]: {
-              ...parent,
-              attachments: null,
-              admin_notes: parent.status === "RESOLVED" ? "Đã xử lý." : null,
-              updated_at: parent.created_at,
-            } as ReportResponse,
-          }));
-        }
+        toast.error("Không thể lấy chi tiết báo cáo.");
+        setExpandedId(null);
       }
     }
   };

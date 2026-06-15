@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -13,7 +14,8 @@ import {
   ArrowRight,
   TrendingDown,
   LineChart,
-  Compass
+  Compass,
+  Loader2
 } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import formatVND from "@/utils/priceUtils";
@@ -33,16 +35,64 @@ import {
   Cell 
 } from "recharts";
 import { toast } from "sonner";
+import { PostApi as PostService } from "@/services/api/post";
+import { PostApi as RoomService } from "@/services/api/room";
+import { PostCardType } from "@/schema/room/post";
+import { RoomDetail } from "@/schema/room/room";
 
 export default function LandlordStatisticPage() {
   const { user } = useAuthStore();
   const [mounted, setMounted] = useState(false);
   const [timeRange, setTimeRange] = useState<"30" | "90" | "365">("90");
+  const [loading, setLoading] = useState(true);
+  const [rooms, setRooms] = useState<RoomDetail[]>([]);
+  const [posts, setPosts] = useState<PostCardType[]>([]);
+  const [revenueData, setRevenueData] = useState<{ month: string; revenue: number }[]>([]);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const [roomsRes, postsRes] = await Promise.all([
+        RoomService.getMyRoom(),
+        PostService.getMyPost(0, 100),
+      ]);
+      if (roomsRes && roomsRes.data) {
+        const roomsList = Array.isArray(roomsRes.data)
+          ? roomsRes.data
+          : (roomsRes.data as any).items || [];
+        setRooms(roomsList);
+      }
+      if (postsRes && postsRes.data) {
+        const postsList = Array.isArray(postsRes.data)
+          ? postsRes.data
+          : (postsRes.data as any).items || [];
+        setPosts(postsList);
+      }
+    } catch (err) {
+      console.error("Error fetching landlord statistics:", err);
+      toast.error("Không thể tải dữ liệu thống kê.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     setMounted(true);
+    fetchData();
   }, []);
+
   if (!mounted) return null;
+
+  if (loading) {
+    return (
+      <div className="h-96 flex flex-col items-center justify-center gap-3 text-slate-400">
+        <Loader2 className="h-9 w-9 text-[#F59E0B] animate-spin" />
+        <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+          Đang tải báo cáo thống kê...
+        </span>
+      </div>
+    );
+  }
 
   const currentUser = user || {
     full_name: "Nguyễn Văn Landlord",
@@ -50,28 +100,22 @@ export default function LandlordStatisticPage() {
     role: "LANDLORD"
   };
 
-  // Mock data for charts
-  const revenueData = [
-    { month: "Tháng 12", revenue: 19000000 },
-    { month: "Tháng 01", revenue: 21500000 },
-    { month: "Tháng 02", revenue: 22000000 },
-    { month: "Tháng 03", revenue: 25000000 },
-    { month: "Tháng 04", revenue: 27800000 },
-    { month: "Tháng 05", revenue: 28500000 },
-  ];
-
-  const postTrafficData = [
-    { name: "Tin Quận 1", views: 1850, connects: 120 },
-    { name: "Tin Quận 3", views: 1200, connects: 75 },
-    { name: "Tin Quận 10", views: 950, connects: 68 },
-    { name: "Tin Bình Thạnh", views: 2400, connects: 190 },
-    { name: "Tin Thủ Đức", views: 800, connects: 42 },
-  ];
+  const occupiedCount = rooms.filter((r) => {
+    const status = r.status?.toUpperCase() || "";
+    return status === "OCCUPIED" || status === "RENTED";
+  }).length;
+  const vacantCount = rooms.length - occupiedCount;
 
   const roomStatusData = [
-    { name: "Đã có khách ở", value: 12, color: "#10B981" },
-    { name: "Phòng trống", value: 3, color: "#F59E0B" },
+    { name: "Đã có khách ở", value: occupiedCount, color: "#10B981" },
+    { name: "Phòng trống", value: vacantCount, color: "#F59E0B" },
   ];
+
+  const postTrafficData = posts.map((p) => ({
+    name: p.title.length > 15 ? p.title.substring(0, 15) + "..." : p.title,
+    views: (p as any).views || 0,
+    connects: 0,
+  }));
 
   const RADIAN = Math.PI / 180;
   const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
@@ -81,7 +125,7 @@ export default function LandlordStatisticPage() {
 
     return (
       <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" className="text-[10px] font-black">
-        {`${(percent * 100).toFixed(0)}%`}
+        {percent > 0 ? `${(percent * 100).toFixed(0)}%` : ""}
       </text>
     );
   };
@@ -173,53 +217,61 @@ export default function LandlordStatisticPage() {
               </span>
               <h3 className="text-lg font-bold text-slate-100">Dòng tiền doanh thu</h3>
             </div>
-            <div className="flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 text-[10px] font-bold text-emerald-400">
-              <ChevronUp className="h-3.5 w-3.5" />
-              +50% Tăng trưởng
-            </div>
+            {revenueData.length > 0 && (
+              <div className="flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 text-[10px] font-bold text-emerald-400">
+                <ChevronUp className="h-3.5 w-3.5" />
+                +50% Tăng trưởng
+              </div>
+            )}
           </div>
 
-          <div className="h-[280px] w-full text-xs font-semibold">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={revenueData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.25} />
-                    <stop offset="95%" stopColor="#F59E0B" stopOpacity={0.0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
-                <XAxis 
-                  dataKey="month" 
-                  stroke="rgba(255,255,255,0.3)" 
-                  tickLine={false} 
-                  axisLine={false}
-                  dy={10}
-                />
-                <YAxis 
-                  stroke="rgba(255,255,255,0.3)" 
-                  tickLine={false} 
-                  axisLine={false}
-                  tickFormatter={(v) => `${v / 1000000}M`}
-                  dx={-10}
-                />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: "#0f172a", borderColor: "rgba(255,255,255,0.1)", borderRadius: "1rem" }}
-                  labelStyle={{ color: "rgba(255,255,255,0.4)", fontWeight: "bold", fontSize: "10px" }}
-                  itemStyle={{ color: "#F59E0B", fontWeight: "bold" }}
-                  formatter={(value: any) => [formatVND(value), "Doanh thu"]}
-                />
-                <Area 
-                  type="monotone" 
-                  dataKey="revenue" 
-                  stroke="#F59E0B" 
-                  strokeWidth={3}
-                  fillOpacity={1} 
-                  fill="url(#colorRevenue)" 
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
+          {revenueData.length === 0 ? (
+            <div className="h-[280px] flex items-center justify-center text-slate-500 border border-dashed border-white/5 rounded-2xl text-xs font-semibold">
+              Chưa có dữ liệu doanh thu thực tế
+            </div>
+          ) : (
+            <div className="h-[280px] w-full text-xs font-semibold">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={revenueData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.25} />
+                      <stop offset="95%" stopColor="#F59E0B" stopOpacity={0.0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
+                  <XAxis 
+                    dataKey="month" 
+                    stroke="rgba(255,255,255,0.3)" 
+                    tickLine={false} 
+                    axisLine={false}
+                    dy={10}
+                  />
+                  <YAxis 
+                    stroke="rgba(255,255,255,0.3)" 
+                    tickLine={false} 
+                    axisLine={false}
+                    tickFormatter={(v) => `${v / 1000000}M`}
+                    dx={-10}
+                  />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: "#0f172a", borderColor: "rgba(255,255,255,0.1)", borderRadius: "1rem" }}
+                    labelStyle={{ color: "rgba(255,255,255,0.4)", fontWeight: "bold", fontSize: "10px" }}
+                    itemStyle={{ color: "#F59E0B", fontWeight: "bold" }}
+                    formatter={(value: any) => [formatVND(value), "Doanh thu"]}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="revenue" 
+                    stroke="#F59E0B" 
+                    strokeWidth={3}
+                    fillOpacity={1} 
+                    fill="url(#colorRevenue)" 
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          )}
         </div>
 
         {/* CHART 2: PieChart Lấp đầy phòng (4 Columns) */}
@@ -256,7 +308,7 @@ export default function LandlordStatisticPage() {
             </ResponsiveContainer>
             {/* Center Absolute indicator */}
             <div className="absolute text-center select-none pointer-events-none">
-              <span className="text-2xl font-black text-slate-100">15</span>
+              <span className="text-2xl font-black text-slate-100">{rooms.length}</span>
               <span className="text-[8px] font-bold text-slate-450 block uppercase tracking-widest">Tổng số phòng</span>
             </div>
           </div>
@@ -267,7 +319,7 @@ export default function LandlordStatisticPage() {
               <div key={idx} className="flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2 font-medium">
                   <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
-                  <span className="text-slate-350">{item.name}</span>
+                  <span className="text-slate-355 text-slate-400">{item.name}</span>
                 </div>
                 <span className="font-extrabold text-slate-100">{item.value} Phòng</span>
               </div>
@@ -294,22 +346,28 @@ export default function LandlordStatisticPage() {
             </div>
           </div>
 
-          <div className="h-[280px] w-full text-xs font-semibold">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={postTrafficData} margin={{ top: 20, right: 10, left: 10, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
-                <XAxis dataKey="name" stroke="rgba(255,255,255,0.3)" tickLine={false} axisLine={false} dy={5} />
-                <YAxis stroke="rgba(255,255,255,0.3)" tickLine={false} axisLine={false} dx={-5} />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: "#0f172a", borderColor: "rgba(255,255,255,0.1)", borderRadius: "1rem" }}
-                  labelStyle={{ color: "rgba(255,255,255,0.4)", fontWeight: "bold", fontSize: "10px" }}
-                />
-                <Legend verticalAlign="top" height={36} content={() => null} />
-                <Bar dataKey="views" name="Lượt xem tin" fill="#8B5CF6" radius={[6, 6, 0, 0]} maxBarSize={28} />
-                <Bar dataKey="connects" name="Kết nối thành công" fill="#F59E0B" radius={[6, 6, 0, 0]} maxBarSize={28} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+          {postTrafficData.length === 0 ? (
+            <div className="h-[280px] flex items-center justify-center text-slate-500 border border-dashed border-white/5 rounded-2xl text-xs font-semibold">
+              Chưa có dữ liệu tin đăng ghép phòng
+            </div>
+          ) : (
+            <div className="h-[280px] w-full text-xs font-semibold">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={postTrafficData} margin={{ top: 20, right: 10, left: 10, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
+                  <XAxis dataKey="name" stroke="rgba(255,255,255,0.3)" tickLine={false} axisLine={false} dy={5} />
+                  <YAxis stroke="rgba(255,255,255,0.3)" tickLine={false} axisLine={false} dx={-5} />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: "#0f172a", borderColor: "rgba(255,255,255,0.1)", borderRadius: "1rem" }}
+                    labelStyle={{ color: "rgba(255,255,255,0.4)", fontWeight: "bold", fontSize: "10px" }}
+                  />
+                  <Legend verticalAlign="top" height={36} content={() => null} />
+                  <Bar dataKey="views" name="Lượt xem tin" fill="#8B5CF6" radius={[6, 6, 0, 0]} maxBarSize={28} />
+                  <Bar dataKey="connects" name="Kết nối thành công" fill="#F59E0B" radius={[6, 6, 0, 0]} maxBarSize={28} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
         </div>
 
       </div>

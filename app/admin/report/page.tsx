@@ -56,70 +56,16 @@ export default function AdminReportsPage() {
       if (response && response.code === 200 && response.data) {
         setReports(response.data.items);
       } else {
-        setReports(getMockReports());
+        setReports([]);
+        toast.error("Không thể lấy danh sách báo cáo.");
       }
     } catch (err: any) {
       console.error("Error loading all reports for admin:", err);
-      setReports(getMockReports());
+      setReports([]);
+      toast.error("Có lỗi xảy ra khi tải dữ liệu báo cáo.");
     } finally {
       setLoading(false);
     }
-  };
-
-  const getMockReports = (): ReportListResponse[] => {
-    return [
-      {
-        id: 101,
-        report_code: "REP-23091",
-        target_type: "ROOM",
-        target_id: "2",
-        reason: "Hình ảnh phòng hoàn toàn giả mạo, phòng thực tế rất xập xệ khác xa quảng cáo.",
-        report_type: "Hình ảnh giả mạo/Không thực tế",
-        reporter_id: "usr_123",
-        reporter_name: "Đỗ Anh Hào",
-        reporter_avatar: null,
-        priority: "MEDIUM",
-        status: "RESOLVED",
-        admin_id: "admin_1",
-        admin_name: "Lê Nguyễn Anh",
-        admin_avatar: null,
-        created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-      },
-      {
-        id: 102,
-        report_code: "REP-23095",
-        target_type: "ROOM",
-        target_id: "5",
-        reason: "Yêu cầu chuyển cọc giữ chân 2 triệu đồng sau đó ngắt liên lạc hoàn toàn.",
-        report_type: "Có dấu hiệu lừa đảo/Yêu cầu chuyển cọc trước",
-        reporter_id: "usr_456",
-        reporter_name: "Nguyễn Văn Hùng",
-        reporter_avatar: null,
-        priority: "HIGH",
-        status: "PENDING",
-        admin_id: null,
-        admin_name: null,
-        admin_avatar: null,
-        created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-      },
-      {
-        id: 103,
-        report_code: "REP-23099",
-        target_type: "USER",
-        target_id: "usr_999",
-        reason: "Chủ nhà xúc phạm và đe dọa renter khi renter hỏi trả lại cọc hợp đồng.",
-        report_type: "Ngôn từ thô tục/Quấy rối khi nhắn tin",
-        reporter_id: "usr_789",
-        reporter_name: "Trần Thị Lan",
-        reporter_avatar: null,
-        priority: "URGENT",
-        status: "IN_REVIEW",
-        admin_id: "admin_1",
-        admin_name: "Lê Nguyễn Anh",
-        admin_avatar: null,
-        created_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-      },
-    ];
   };
 
   useEffect(() => {
@@ -163,25 +109,13 @@ export default function AdminReportsPage() {
         setSelectedReport(res.data);
         setAdminNotes(res.data.admin_notes || "");
       } else {
-        setSelectedReport({
-          ...report,
-          attachments: report.target_type === "ROOM" ? [
-            "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=600&q=80"
-          ] : null,
-          admin_notes: report.status === "RESOLVED" ? "Đã xử lý." : null,
-          updated_at: report.created_at,
-          deadline: null,
-        } as ReportResponse);
+        toast.error("Không thể tải chi tiết báo cáo.");
+        setIsDetailOpen(false);
       }
     } catch (err) {
       console.error("Error loading report detail:", err);
-      setSelectedReport({
-        ...report,
-        attachments: null,
-        admin_notes: null,
-        updated_at: report.created_at,
-        deadline: null,
-      } as ReportResponse);
+      toast.error("Không thể tải chi tiết báo cáo.");
+      setIsDetailOpen(false);
     }
     setIsDetailOpen(true);
   };
@@ -208,19 +142,7 @@ export default function AdminReportsPage() {
       }
     } catch (err) {
       console.error("Error accepting report:", err);
-      // Mock update local state
-      const updated: ReportResponse = {
-        ...selectedReport,
-        status: "IN_REVIEW",
-        priority: priority,
-        deadline: deadline ? new Date(deadline).toISOString() : null,
-        admin_id: "admin_1",
-        admin_name: "Admin Roomie",
-        updated_at: new Date().toISOString(),
-      };
-      setSelectedReport(updated);
-      setReports((prev) => prev.map((r) => (r.id === selectedReport.id ? { ...r, status: "IN_REVIEW" } : r)));
-      toast.success("Đã tiếp nhận xử lý báo cáo (Simulated)!");
+      toast.error("Không thể tiếp nhận xử lý báo cáo.");
     } finally {
       setActionLoading(false);
     }
@@ -252,17 +174,7 @@ export default function AdminReportsPage() {
       }
     } catch (err) {
       console.error("Error assigning report:", err);
-      const updated: ReportResponse = {
-        ...selectedReport,
-        priority: priority,
-        deadline: deadline ? new Date(deadline).toISOString() : null,
-        admin_id: assigneeId,
-        admin_name: `Admin (${assigneeId})`,
-        updated_at: new Date().toISOString(),
-      };
-      setSelectedReport(updated);
-      setReports((prev) => prev.map((r) => (r.id === selectedReport.id ? { ...r, admin_id: assigneeId } : r)));
-      toast.success(`Đã phân công báo cáo cho Admin ID ${assigneeId} (Simulated)!`);
+      toast.error("Không thể phân công báo cáo vi phạm.");
     } finally {
       setActionLoading(false);
     }
@@ -289,15 +201,7 @@ export default function AdminReportsPage() {
       }
     } catch (err) {
       console.error("Error updating status:", err);
-      const updated: ReportResponse = {
-        ...selectedReport,
-        status: newStatus,
-        admin_notes: adminNotes.trim() || null,
-        updated_at: new Date().toISOString(),
-      };
-      setSelectedReport(updated);
-      setReports((prev) => prev.map((r) => (r.id === selectedReport.id ? { ...r, status: newStatus } : r)));
-      toast.success("Cập nhật trạng thái báo cáo thành công (Simulated)!");
+      toast.error("Không thể cập nhật trạng thái báo cáo.");
     } finally {
       setActionLoading(false);
     }

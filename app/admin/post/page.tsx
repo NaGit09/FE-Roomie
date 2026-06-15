@@ -48,120 +48,25 @@ export default function AdminPostsPage() {
         if (response && response.code === 200 && response.data && Array.isArray((response.data as any).items)) {
           setPosts((response.data as any).items);
         } else {
-          setPosts(getMockPendingPosts());
+          setPosts([]);
+          toast.error("Không thể lấy danh sách tin chờ duyệt.");
         }
       } else {
         const response = await PostApi.getPostPagination({ skip: 0, limit: 100, sort_by: "created_at", order: "desc" });
         if (response && response.code === 200 && response.data && Array.isArray(response.data.items)) {
           setPosts(response.data.items);
         } else {
-          setPosts(getMockAllPosts());
+          setPosts([]);
+          toast.error("Không thể lấy danh sách tin đăng.");
         }
       }
     } catch (err: any) {
       console.error("Error loading posts for admin:", err);
-      setPosts(activeTab === "PENDING" ? getMockPendingPosts() : getMockAllPosts());
+      setPosts([]);
+      toast.error("Có lỗi xảy ra khi tải dữ liệu tin bài.");
     } finally {
       setLoading(false);
     }
-  };
-
-  const getMockAllPosts = (): PostCardType[] => {
-    return [
-      {
-        post_id: 1,
-        title: "Căn hộ mini ban công rộng thoáng quận Bình Thạnh",
-        is_verified: true,
-        created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-        image_url: "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=600&q=80",
-        room: {
-          id: "rm_1",
-          name: "Phòng Bình Thạnh 302",
-          price: 4500000,
-          area: 30,
-          status: "VACANT",
-          amenities: ["Wifi", "Điều hòa", "WC riêng"],
-          address: {
-            street: "15 Xô Viết Nghệ Tĩnh",
-            ward: "Phường 17",
-            district: "Quận Bình Thạnh",
-            city: "Hồ Chí Minh",
-            full_text: "15 Xô Viết Nghệ Tĩnh, Phường 17, Quận Bình Thạnh, Hồ Chí Minh"
-          }
-        } as any
-      },
-      {
-        post_id: 2,
-        title: "Phòng trọ giá rẻ cho sinh viên gần đại học Bách Khoa Q10",
-        is_verified: false,
-        created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-        image_url: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=600&q=80",
-        room: {
-          id: "rm_2",
-          name: "Phòng trọ Q10 BK",
-          price: 2800000,
-          area: 20,
-          status: "PENDING",
-          amenities: ["Wifi", "Chỗ để xe"],
-          address: {
-            street: "450 Lý Thường Kiệt",
-            ward: "Phường 14",
-            district: "Quận 10",
-            city: "Hồ Chí Minh",
-            full_text: "450 Lý Thường Kiệt, Phường 14, Quận 10, Hồ Chí Minh"
-          }
-        } as any
-      },
-      {
-        post_id: 3,
-        title: "Căn hộ dịch vụ cao cấp, đầy đủ nội thất sang trọng Quận 1",
-        is_verified: true,
-        created_at: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
-        image_url: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=600&q=80",
-        room: {
-          id: "rm_3",
-          name: "Studio Room Q1",
-          price: 12000000,
-          area: 45,
-          status: "VACANT",
-          amenities: ["Wifi", "Điều hòa", "Tủ lạnh", "Nội thất", "Bảo vệ 24/7"],
-          address: {
-            street: "80 Nguyễn Huệ",
-            ward: "Phường Bến Nghé",
-            district: "Quận 1",
-            city: "Hồ Chí Minh",
-            full_text: "80 Nguyễn Huệ, Phường Bến Nghé, Quận 1, Hồ Chí Minh"
-          }
-        } as any
-      }
-    ];
-  };
-
-  const getMockPendingPosts = (): PostCardType[] => {
-    return [
-      {
-        post_id: 2,
-        title: "Phòng trọ giá rẻ cho sinh viên gần đại học Bách Khoa Q10",
-        is_verified: false,
-        created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-        image_url: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=600&q=80",
-        room: {
-          id: "rm_2",
-          name: "Phòng trọ Q10 BK",
-          price: 2800000,
-          area: 20,
-          status: "PENDING",
-          amenities: ["Wifi", "Chỗ để xe"],
-          address: {
-            street: "450 Lý Thường Kiệt",
-            ward: "Phường 14",
-            district: "Quận 10",
-            city: "Hồ Chí Minh",
-            full_text: "450 Lý Thường Kiệt, Phường 14, Quận 10, Hồ Chí Minh"
-          }
-        } as any
-      }
-    ];
   };
 
   useEffect(() => {
@@ -191,33 +96,13 @@ export default function AdminPostsPage() {
       if (res && res.code === 200 && res.data) {
         setSelectedPost(res.data);
       } else {
-        setSelectedPost({
-          post_id: p.post_id,
-          title: p.title,
-          content: "Thông tin mô tả phòng trọ chi tiết và các thỏa thuận thuê. Phòng trọ có vị trí đắc địa, giao thông thuận tiện qua các quận trung tâm. Phù hợp cho hộ gia đình trẻ hoặc nhóm sinh viên từ 2-3 người sinh hoạt thoải mái.",
-          image_url: p.image_url,
-          created_by: "usr_haodoan123",
-          is_verified: p.is_verified,
-          views: 145,
-          created_at: p.created_at,
-          room: p.room as any,
-          feedbacks: []
-        });
+        toast.error("Không thể tải thông tin chi tiết tin đăng.");
+        setIsDetailOpen(false);
       }
     } catch (err) {
       console.error("Error loading post detail:", err);
-      setSelectedPost({
-        post_id: p.post_id,
-        title: p.title,
-        content: "Thông tin mô tả phòng trọ chi tiết và các thỏa thuận thuê. Phòng trọ có vị trí đắc địa, giao thông thuận tiện qua các quận trung tâm. Phù hợp cho hộ gia đình trẻ hoặc nhóm sinh viên từ 2-3 người sinh hoạt thoải mái.",
-        image_url: p.image_url,
-        created_by: "usr_haodoan123",
-        is_verified: p.is_verified,
-        views: 145,
-        created_at: p.created_at,
-        room: p.room as any,
-        feedbacks: []
-      });
+      toast.error("Không thể tải thông tin chi tiết tin đăng.");
+      setIsDetailOpen(false);
     } finally {
       setDetailLoading(false);
     }
@@ -232,16 +117,7 @@ export default function AdminPostsPage() {
       setIsDetailOpen(false);
     } catch (err: any) {
       console.error("Error verifying post:", err);
-      // Local state simulation
-      const updatedList = posts.map((item) => {
-        if (item.post_id === postId) {
-          return { ...item, is_verified: approved };
-        }
-        return item;
-      });
-      setPosts(updatedList);
-      toast.success(approved ? "Đã phê duyệt tin đăng hoạt động (Simulated)!" : "Đã từ chối kiểm duyệt tin đăng (Simulated).");
-      setIsDetailOpen(false);
+      toast.error("Không thể thực hiện phê duyệt tin đăng.");
     } finally {
       setActionLoading(false);
     }
@@ -256,12 +132,7 @@ export default function AdminPostsPage() {
       setIsDetailOpen(false);
     } catch (err: any) {
       console.error("Error approving post delete:", err);
-      // Local state simulation
-      if (approved) {
-        setPosts(posts.filter((item) => item.post_id !== postId));
-      }
-      toast.success(approved ? "Đã duyệt yêu cầu gỡ tin đăng (Simulated)!" : "Đã từ chối gỡ tin đăng (Simulated).");
-      setIsDetailOpen(false);
+      toast.error("Không thể xử lý yêu cầu gỡ tin đăng.");
     } finally {
       setActionLoading(false);
     }
@@ -277,9 +148,7 @@ export default function AdminPostsPage() {
       setIsDetailOpen(false);
     } catch (err) {
       console.error("Error deleting post:", err);
-      setPosts(posts.filter((item) => item.post_id !== postId));
-      toast.success("Xóa tin đăng thành công (Simulated)!");
-      setIsDetailOpen(false);
+      toast.error("Không thể xóa tin đăng.");
     } finally {
       setActionLoading(false);
     }

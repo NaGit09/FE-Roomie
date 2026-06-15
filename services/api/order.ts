@@ -15,7 +15,7 @@ export const OrderApi = {
   
   get_all_order: async () => {
     const response = await axiosInstance.get<ApiResponse<Order[]>>(
-      `${BASE_URL}`,
+      `${BASE_URL}/all`,
     );
     return response.data;
   },

@@ -49,72 +49,16 @@ export default function AdminUsersPage() {
       } else if (response && response.code === 200 && Array.isArray(response.data)) {
         setUsers(response.data as any);
       } else {
-        setUsers(getMockUsers());
+        setUsers([]);
+        toast.error("Không thể lấy danh sách thành viên.");
       }
     } catch (err: any) {
       console.error("Error loading users for admin:", err);
-      setUsers(getMockUsers());
+      setUsers([]);
+      toast.error("Có lỗi xảy ra khi tải dữ liệu thành viên.");
     } finally {
       setLoading(false);
     }
-  };
-
-  const getMockUsers = (): UserProfile[] => {
-    return [
-      {
-        id: "a4fbc87a-b9c1-4b2a-886f-5b128526a451",
-        profile_id: "d8c9735d-0044-42f0-9b39-86cbf5287f32",
-        email: "admin.roomie@gmail.com",
-        full_name: "Lê Nguyễn Anh",
-        role: "ADMIN",
-        status: "ACTIVE",
-        free_usage_count: 999,
-        created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1005).toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-      {
-        id: "3bbf916a-85d1-4475-b6d8-1c4b18cbf5e7",
-        profile_id: "e3f8902c-47bc-4993-9d41-3e4b7890a214",
-        email: "haodoan.owner@gmail.com",
-        full_name: "Đỗ Anh Hào",
-        role: "LANDLORD",
-        status: "ACTIVE",
-        free_usage_count: 5,
-        created_at: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
-        updated_at: new Date().toISOString(),
-        landlord_profile: {
-          id: "3bbf916a-85d1-4475-b6d8-1c4b18cbf5e7",
-          user_id: "3bbf916a-85d1-4475-b6d8-1c4b18cbf5e7",
-          phonenumber: "0912345678",
-          facebook: "https://facebook.com/haodoan.owner",
-          gmail: "haodoan.owner@gmail.com",
-          created_at: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
-          updated_at: new Date().toISOString(),
-        }
-      },
-      {
-        id: "f49a202c-8ab6-4c28-971c-e7e29cb128f6",
-        profile_id: "5c8a91f3-df42-4f6c-8511-b47ad6109930",
-        email: "hungnguyen.renter@gmail.com",
-        full_name: "Nguyễn Văn Hùng",
-        role: "RENTER",
-        status: "ACTIVE",
-        free_usage_count: 10,
-        created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-      {
-        id: "7b9c9f28-091a-4d2a-9e1b-851d02c77df2",
-        profile_id: "0a1b2c3d-4e5f-6a7b-8c9d-0e1f2a3b4c5d",
-        email: "spam.user@gmail.com",
-        full_name: "Tài khoản Spam",
-        role: "RENTER",
-        status: "INACTIVE",
-        free_usage_count: 0,
-        created_at: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString(),
-        updated_at: new Date().toISOString(),
-      }
-    ];
   };
 
   useEffect(() => {
@@ -175,21 +119,7 @@ export default function AdminUsersPage() {
       setIsDetailOpen(false);
     } catch (err: any) {
       console.error("Error updating user status/role:", err);
-      // Simulate update locally for validation and convenience
-      const updatedList = users.map((u) => {
-        if (u.id === selectedUser.id) {
-          return {
-            ...u,
-            status: newStatus,
-            role: newRole,
-            updated_at: new Date().toISOString()
-          };
-        }
-        return u;
-      });
-      setUsers(updatedList);
-      toast.success("Cập nhật thông tin thành viên thành công (Simulated)!");
-      setIsDetailOpen(false);
+      toast.error("Không thể cập nhật thông tin thành viên.");
     } finally {
       setActionLoading(false);
     }

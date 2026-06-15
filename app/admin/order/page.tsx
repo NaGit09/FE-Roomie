@@ -47,65 +47,16 @@ export default function AdminOrdersPage() {
       if (response && response.code === 200 && Array.isArray(response.data)) {
         setOrders(response.data);
       } else {
-        setOrders(getMockOrders());
+        setOrders([]);
+        toast.error("Không thể lấy danh sách hóa đơn.");
       }
     } catch (err) {
       console.error("Error loading orders for admin:", err);
-      setOrders(getMockOrders());
+      setOrders([]);
+      toast.error("Có lỗi xảy ra khi tải dữ liệu hóa đơn.");
     } finally {
       setLoading(false);
     }
-  };
-
-  const getMockOrders = (): Order[] => {
-    return [
-      {
-        id: "o1a2b3c4-d5e6-7f8a-9b0c-1d2e3f4a5b6c",
-        order_code: "ORDR-9812",
-        user_id: "3bbf916a-85d1-4475-b6d8-1c4b18cbf5e7",
-        item_type: "SUBSCRIPTION",
-        item_id: 4, // Landlord VIP
-        total_amount: 199000,
-        status: "COMPLETED",
-        paid_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() as any,
-        created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() as any,
-        updated_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() as any
-      },
-      {
-        id: "o2b3c4d5-e6f7-8a9b-0c1d-2e3f4a5b6c7d",
-        order_code: "ORDR-9821",
-        user_id: "f49a202c-8ab6-4c28-971c-e7e29cb128f6",
-        item_type: "SUBSCRIPTION",
-        item_id: 2, // Renter VIP
-        total_amount: 49000,
-        status: "COMPLETED",
-        paid_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString() as any,
-        created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString() as any,
-        updated_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString() as any
-      },
-      {
-        id: "o3c4d5e6-f7a8-9b0c-1d2e-3f4a5b6c7d8e",
-        order_code: "ORDR-9825",
-        user_id: "7b9c9f28-091a-4d2a-9e1b-851d02c77df2",
-        item_type: "SUBSCRIPTION",
-        item_id: 3, // Landlord Premium
-        total_amount: 99000,
-        status: "PENDING",
-        created_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString() as any,
-        updated_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString() as any
-      },
-      {
-        id: "o4d5e6f7-a8b9-0c1d-2e3f-4a5b6c7d8e9f",
-        order_code: "ORDR-9801",
-        user_id: "f49a202c-8ab6-4c28-971c-e7e29cb128f6",
-        item_type: "SUBSCRIPTION",
-        item_id: 4, // Landlord VIP
-        total_amount: 199000,
-        status: "CANCELLED",
-        created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString() as any,
-        updated_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString() as any
-      }
-    ];
   };
 
   useEffect(() => {
@@ -117,10 +68,15 @@ export default function AdminOrdersPage() {
 
   // Filters
   const filteredOrders = orders.filter((o) => {
+    const orderCodeStr = o.order_code ? String(o.order_code).toLowerCase() : "";
+    const userIdStr = o.user_id ? String(o.user_id).toLowerCase() : "";
+    const idStr = o.id ? String(o.id).toLowerCase() : "";
+    const query = searchQuery.toLowerCase();
+
     const matchesSearch =
-      o.order_code.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      o.user_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      o.id.toLowerCase().includes(searchQuery.toLowerCase());
+      orderCodeStr.includes(query) ||
+      userIdStr.includes(query) ||
+      idStr.includes(query);
 
     const matchesStatus =
       statusFilter === "ALL" || o.status === statusFilter;
@@ -154,21 +110,7 @@ export default function AdminOrdersPage() {
       setIsDetailOpen(false);
     } catch (err: any) {
       console.error("Error updating order status:", err);
-      // Simulate state update locally
-      const updatedList = orders.map((o) => {
-        if (o.id === selectedOrder.id) {
-          return {
-            ...o,
-            status: newStatus,
-            paid_at: newStatus === "COMPLETED" ? new Date().toISOString() as any : o.paid_at,
-            updated_at: new Date().toISOString() as any
-          };
-        }
-        return o;
-      });
-      setOrders(updatedList);
-      toast.success("Cập nhật trạng thái giao dịch thành công (Simulated)!");
-      setIsDetailOpen(false);
+      toast.error("Không thể cập nhật trạng thái giao dịch.");
     } finally {
       setActionLoading(false);
     }

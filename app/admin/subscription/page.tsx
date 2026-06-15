@@ -49,55 +49,16 @@ export default function AdminSubscriptionsPage() {
       if (response && response.code === 200 && Array.isArray(response.data)) {
         setPackages(response.data);
       } else {
-        setPackages(getMockPackages());
+        setPackages([]);
+        toast.error("Không thể lấy danh sách gói dịch vụ.");
       }
     } catch (err) {
       console.error("Error loading subscriptions for admin:", err);
-      setPackages(getMockPackages());
+      setPackages([]);
+      toast.error("Có lỗi xảy ra khi tải dữ liệu gói dịch vụ.");
     } finally {
       setLoading(false);
     }
-  };
-
-  const getMockPackages = (): Subscription[] => {
-    return [
-      {
-        id: 1,
-        sub_title: "Gói Renter Basic",
-        sub_description: "Phù hợp cho khách tìm kiếm phòng cơ bản, xem tối đa 10 phòng.",
-        sub_type: "RENTER_BASIC",
-        sub_time: "30 days",
-        sub_price: 0,
-        sub_exception: "free_rooms_limit:10"
-      },
-      {
-        id: 2,
-        sub_title: "Gói Renter VIP",
-        sub_description: "Không giới hạn số lượt xem phòng, hiển thị thông tin liên lạc trực tiếp.",
-        sub_type: "RENTER_VIP",
-        sub_time: "30 days",
-        sub_price: 49000,
-        sub_exception: "free_rooms_limit:unlimited"
-      },
-      {
-        id: 3,
-        sub_title: "Gói Landlord Premium",
-        sub_description: "Đăng tối đa 5 tin phòng trọ, đẩy tin tự động mỗi ngày.",
-        sub_type: "LANDLORD_PREMIUM",
-        sub_time: "30 days",
-        sub_price: 99000,
-        sub_exception: "posts_limit:5"
-      },
-      {
-        id: 4,
-        sub_title: "Gói Landlord VIP",
-        sub_description: "Đăng tin không giới hạn, ghim tin ưu tiên lên đầu trang chủ, hỗ trợ tư vấn 24/7.",
-        sub_type: "LANDLORD_VIP",
-        sub_time: "30 days",
-        sub_price: 199000,
-        sub_exception: "posts_limit:unlimited,featured:true"
-      }
-    ];
   };
 
   useEffect(() => {
@@ -160,22 +121,7 @@ export default function AdminSubscriptionsPage() {
       fetchPackages();
     } catch (err: any) {
       console.error("Failed to save subscription package:", err);
-      // Local state simulation
-      if (formMode === "CREATE") {
-        const newPkg = { ...payload, id: Date.now() };
-        setPackages([...packages, newPkg]);
-        toast.success(`Tạo mới gói "${formTitle}" thành công (Simulated)!`);
-      } else if (formMode === "EDIT" && selectedPackage?.id) {
-        const updatedList = packages.map((pkg) => {
-          if (pkg.id === selectedPackage.id) {
-            return { ...payload, id: selectedPackage.id };
-          }
-          return pkg;
-        });
-        setPackages(updatedList);
-        toast.success(`Cập nhật gói "${formTitle}" thành công (Simulated)!`);
-      }
-      setIsFormOpen(false);
+      toast.error("Không thể lưu thông tin gói dịch vụ.");
     } finally {
       setSaving(false);
     }
@@ -194,9 +140,7 @@ export default function AdminSubscriptionsPage() {
           fetchPackages();
           resolve(true);
         } catch (err) {
-          // Simulate locally
-          setPackages(packages.filter((p) => p.id !== pkg.id));
-          resolve(true);
+          reject(err);
         }
       }),
       {
@@ -247,7 +191,7 @@ export default function AdminSubscriptionsPage() {
           <AlertOctagon className="h-10 w-10 text-slate-600 animate-pulse mx-auto" />
           <h3 className="text-sm font-bold text-slate-200">Chưa thiết lập gói cước nào</h3>
           <p className="text-xs text-slate-500 leading-relaxed font-body">
-            Vui lòng nhấn nút "Tạo gói mới" ở góc trên để cấu hình gói cước hệ thống đầu tiên.
+            Vui lòng nhấn nút &quot;Tạo gói mới&quot; ở góc trên để cấu hình gói cước hệ thống đầu tiên.
           </p>
         </div>
       ) : (
