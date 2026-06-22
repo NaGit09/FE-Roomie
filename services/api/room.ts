@@ -7,9 +7,15 @@ const BASE_URL = "/rooms";
 
 export const PostApi = {
   
-  getAllRooms: async () => {
+  getAllRooms: async (city?: string, district?: string) => {
     const res = await axiosInstance.get<ApiResponse<Pagination<RoomDetail>>>(
       `${BASE_URL}`,
+      {
+        params: {
+          city,
+          district,
+        },
+      },
     );
     console.log(res.data)
     return res.data;

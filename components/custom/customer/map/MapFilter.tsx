@@ -24,8 +24,12 @@ export default function MapFilter() {
   const {
     keyword,
     setKeyword,
+    selectedProvince,
+    setSelectedProvince,
     selectedProvinceCode,
     setSelectedProvinceCode,
+    selectedDistrict,
+    setSelectedDistrict,
     selectedDistrictCode,
     setSelectedDistrictCode,
     priceRange,
@@ -57,6 +61,8 @@ export default function MapFilter() {
       limit: 50, // Retrieve up to 50 rooms to provide a rich dataset for local keyword/amenity filtering
       province_code: provinceNum,
       district_code: districtNum,
+      city: selectedProvince || undefined,
+      district: selectedDistrict || undefined,
       price_from: priceRange[0],
       price_to: priceRange[1],
       sort_by: sortBy === "newest" ? "created_at" : "price",
@@ -66,6 +72,8 @@ export default function MapFilter() {
   }, [
     selectedProvinceCode, 
     selectedDistrictCode, 
+    selectedProvince,
+    selectedDistrict,
     priceRange[0],
     priceRange[1],
     sortBy, 
@@ -112,7 +120,10 @@ export default function MapFilter() {
           value={selectedProvinceCode}
           onChange={(e) => {
             const val = e.target.value;
-            setSelectedProvinceCode(val ? Number(val) : "");
+            const code = val ? Number(val) : "";
+            setSelectedProvinceCode(code);
+            const found = provinces.find((p) => p.code === code);
+            setSelectedProvince(found ? found.name : "");
           }}
           className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer"
         >
@@ -135,7 +146,10 @@ export default function MapFilter() {
           value={selectedDistrictCode}
           onChange={(e) => {
             const val = e.target.value;
-            setSelectedDistrictCode(val ? Number(val) : "");
+            const code = val ? Number(val) : "";
+            setSelectedDistrictCode(code);
+            const found = districts.find((d) => d.code === code);
+            setSelectedDistrict(found ? found.name : "");
           }}
           disabled={!selectedProvinceCode}
           className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"

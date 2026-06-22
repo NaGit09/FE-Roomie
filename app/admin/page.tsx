@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Users,
@@ -14,10 +14,25 @@ import {
   UserCheck,
   CheckCircle2,
   Clock,
-  Sparkles
+  Sparkles,
+  Calendar,
+  Filter
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import formatVND from "@/utils/priceUtils";
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  PieChart,
+  Pie,
+  Cell,
+  Legend
+} from "recharts";
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -78,16 +93,109 @@ export default function AdminDashboardPage() {
     { name: "Lê Minh Khoa", email: "khoa.le@gmail.com", role: "RENTER", time: "3 giờ trước" },
   ];
 
-  // Mock weekly revenue bars
-  const weeklyRevenue = [
-    { day: "Thứ 2", value: 12000000 },
-    { day: "Thứ 3", value: 15000000 },
-    { day: "Thứ 4", value: 18000000 },
-    { day: "Thứ 5", value: 14000000 },
-    { day: "Thứ 6", value: 22000000 },
-    { day: "Thứ 7", value: 28000000 },
-    { day: "Chủ Nhật", value: 26800000 },
+  // State for chart interactivity
+  const [mounted, setMounted] = useState(false);
+  const [revenuePeriod, setRevenuePeriod] = useState<"week" | "month" | "year">("week");
+  const [pieMonth, setPieMonth] = useState<"6" | "5" | "4">("6");
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Mock revenue datasets for different periods
+  const weeklyRevenueData = [
+    { name: "Thứ 2", revenue: 12000000 },
+    { name: "Thứ 3", revenue: 15000000 },
+    { name: "Thứ 4", revenue: 18000000 },
+    { name: "Thứ 5", revenue: 14000000 },
+    { name: "Thứ 6", revenue: 22000000 },
+    { name: "Thứ 7", revenue: 28000000 },
+    { name: "Chủ Nhật", revenue: 26800000 },
   ];
+
+  const monthlyRevenueData = [
+    { name: "Tuần 1", revenue: 32000000 },
+    { name: "Tuần 2", revenue: 45000000 },
+    { name: "Tuần 3", revenue: 38000000 },
+    { name: "Tuần 4", revenue: 52000000 },
+  ];
+
+  const yearlyRevenueData = [
+    { name: "Tháng 1", revenue: 85000000 },
+    { name: "Tháng 2", revenue: 92000000 },
+    { name: "Tháng 3", revenue: 110000000 },
+    { name: "Tháng 4", revenue: 98000000 },
+    { name: "Tháng 5", revenue: 125000000 },
+    { name: "Tháng 6", revenue: 135800000 },
+    { name: "Tháng 7", revenue: 142000000 },
+    { name: "Tháng 8", revenue: 138000000 },
+    { name: "Tháng 9", revenue: 150000000 },
+    { name: "Tháng 10", revenue: 165000000 },
+    { name: "Tháng 11", revenue: 180000000 },
+    { name: "Tháng 12", revenue: 210000000 },
+  ];
+
+  // Mock product category revenue datasets
+  const categoryDataM6 = [
+    { name: "Gói Landlord VIP", value: 74690000, color: "#EC4899" },
+    { name: "Gói Landlord Premium", value: 33950000, color: "#8B5CF6" },
+    { name: "Gói Renter VIP", value: 16296000, color: "#3B82F6" },
+    { name: "Gói Renter Basic", value: 6790000, color: "#60A5FA" },
+    { name: "Đẩy tin / Highlight", value: 4074000, color: "#F59E0B" },
+  ];
+
+  const categoryDataM5 = [
+    { name: "Gói Landlord VIP", value: 60500000, color: "#EC4899" },
+    { name: "Gói Landlord Premium", value: 30250000, color: "#8B5CF6" },
+    { name: "Gói Renter VIP", value: 18150000, color: "#3B82F6" },
+    { name: "Gói Renter Basic", value: 7260000, color: "#60A5FA" },
+    { name: "Đẩy tin / Highlight", value: 4840000, color: "#F59E0B" },
+  ];
+
+  const categoryDataM4 = [
+    { name: "Gói Landlord VIP", value: 54000050, color: "#EC4899" },
+    { name: "Gói Landlord Premium", value: 27551040, color: "#8B5CF6" },
+    { name: "Gói Renter VIP", value: 16530620, color: "#3B82F6" },
+    { name: "Gói Renter Basic", value: 7714290, color: "#60A5FA" },
+    { name: "Đẩy tin / Highlight", value: 4408170, color: "#F59E0B" },
+  ];
+
+  const getBarChartData = () => {
+    switch (revenuePeriod) {
+      case "month":
+        return monthlyRevenueData;
+      case "year":
+        return yearlyRevenueData;
+      case "week":
+      default:
+        return weeklyRevenueData;
+    }
+  };
+
+  const getPieChartData = () => {
+    switch (pieMonth) {
+      case "5":
+        return categoryDataM5;
+      case "4":
+        return categoryDataM4;
+      case "6":
+      default:
+        return categoryDataM6;
+    }
+  };
+
+  const RADIAN = Math.PI / 180;
+  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+    return (
+      <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" className="text-[9px] font-black">
+        {percent > 0 ? `${(percent * 100).toFixed(0)}%` : ""}
+      </text>
+    );
+  };
 
   return (
     <div className="space-y-10 text-slate-100 font-sans">
@@ -162,57 +270,102 @@ export default function AdminDashboardPage() {
         })}
       </div>
 
-      {/* 3. Splitted Bento Panels */}
+      {/* 3. Splitted Bento Panels - Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
         
-        {/* Left Bento: Weekly Revenue mock graphic (7 Cols) */}
+        {/* Left Bento: Bar Chart for Revenue by time period (7 Cols) */}
         <div className="lg:col-span-7 rounded-[2rem] border border-white/5 bg-[#080d1a]/80 backdrop-blur-md p-6 sm:p-8 shadow-lg flex flex-col justify-between space-y-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="space-y-1 text-left">
+              <span className="text-[9px] font-black uppercase text-emerald-400 tracking-widest block">
+                Store Revenue Analytics
+              </span>
               <h3 className="font-heading text-sm font-bold text-slate-200 uppercase tracking-wide">
-                BIỂU ĐỒ DOANH THU TUẦN NÀY
+                BIỂU ĐỒ DOANH THU CỬA HÀNG
               </h3>
               <p className="text-[10px] text-slate-400 font-medium font-body leading-none">
-                Doanh số giao dịch qua PayOS và VietQR được thống kê theo ngày.
+                Doanh số giao dịch qua hệ thống Roomie theo chu kỳ thời gian.
               </p>
             </div>
-            <span className="text-xs font-black text-emerald-400 font-mono">+12.8M xu</span>
+            
+            {/* Filter buttons */}
+            <div className="flex items-center gap-1 rounded-xl bg-white/5 border border-white/5 p-1 self-start sm:self-center shrink-0">
+              <button
+                onClick={() => setRevenuePeriod("week")}
+                className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer ${
+                  revenuePeriod === "week"
+                    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                    : "text-slate-400 hover:text-slate-200 border border-transparent"
+                }`}
+              >
+                Tuần
+              </button>
+              <button
+                onClick={() => setRevenuePeriod("month")}
+                className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer ${
+                  revenuePeriod === "month"
+                    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                    : "text-slate-400 hover:text-slate-200 border border-transparent"
+                }`}
+              >
+                Tháng
+              </button>
+              <button
+                onClick={() => setRevenuePeriod("year")}
+                className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer ${
+                  revenuePeriod === "year"
+                    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                    : "text-slate-400 hover:text-slate-200 border border-transparent"
+                }`}
+              >
+                Năm
+              </button>
+            </div>
           </div>
 
-          {/* Simple custom flex charts utilizing Tailwind layout (No external package dependencies!) */}
-          <div className="h-48 flex items-end justify-between gap-2.5 pt-4 px-2">
-            {weeklyRevenue.map((item, idx) => {
-              const maxHeight = 160;
-              const maxVal = Math.max(...weeklyRevenue.map((v) => v.value));
-              const height = (item.value / maxVal) * maxHeight;
-
-              return (
-                <div key={idx} className="flex-1 flex flex-col items-center gap-3 group">
-                  <div className="w-full relative flex flex-col justify-end items-center h-[160px]">
-                    {/* Tooltip on hover */}
-                    <div className="absolute bottom-[calc(100%+8px)] bg-slate-900 border border-white/10 text-[9px] font-bold py-1 px-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-slate-200 shadow-xl pointer-events-none whitespace-nowrap z-10 font-mono">
-                      {formatVND(item.value)}
-                    </div>
-                    {/* Graph bar */}
-                    <motion.div
-                      initial={{ height: 0 }}
-                      animate={{ height: `${height}px` }}
-                      transition={{ duration: 0.6, delay: idx * 0.05, ease: "easeOut" }}
-                      className="w-full rounded-t-lg bg-linear-to-t from-emerald-600/30 via-emerald-500/80 to-emerald-400 group-hover:brightness-110 shadow-lg shadow-emerald-500/10 transition-all cursor-pointer relative overflow-hidden"
-                    >
-                      <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </motion.div>
-                  </div>
-                  <span className="text-[9px] font-bold text-slate-500 font-body leading-none">
-                    {item.day}
-                  </span>
-                </div>
-              );
-            })}
+          {/* Bar Chart Container */}
+          <div className="h-64 w-full text-xs font-semibold">
+            {mounted ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={getBarChartData()} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
+                  <XAxis 
+                    dataKey="name" 
+                    stroke="rgba(255,255,255,0.3)" 
+                    tickLine={false} 
+                    axisLine={false}
+                    dy={10}
+                  />
+                  <YAxis 
+                    stroke="rgba(255,255,255,0.3)" 
+                    tickLine={false} 
+                    axisLine={false}
+                    tickFormatter={(v) => `${(v / 1000000).toFixed(0)}M`}
+                    dx={-10}
+                  />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: "#0f172a", borderColor: "rgba(255,255,255,0.1)", borderRadius: "1rem" }}
+                    labelStyle={{ color: "rgba(255,255,255,0.4)", fontWeight: "bold", fontSize: "10px" }}
+                    itemStyle={{ color: "#10B981", fontWeight: "bold" }}
+                    formatter={(value: any) => [formatVND(value), "Doanh thu"]}
+                  />
+                  <Bar 
+                    dataKey="revenue" 
+                    fill="#10B981" 
+                    radius={[6, 6, 0, 0]} 
+                    maxBarSize={32}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-full flex items-center justify-center text-slate-500">
+                Đang tải biểu đồ doanh thu...
+              </div>
+            )}
           </div>
 
           <div className="border-t border-dashed border-white/5 pt-4 flex items-center justify-between text-[10px] text-slate-500 font-medium font-body">
-            <span>Đối soát hệ thống tuần tự 24/7</span>
+            <span>Thống kê cập nhật tự động theo thời gian thực</span>
             <button
               onClick={() => router.push("/admin/order")}
               className="text-[#FBBF24] font-black uppercase tracking-widest flex items-center gap-1 hover:underline cursor-pointer"
@@ -223,8 +376,158 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* Right Bento: Recent Sign-ups (5 Cols) */}
+        {/* Right Bento: Pie Chart showing store revenue for a month by product category (5 Cols) */}
         <div className="lg:col-span-5 rounded-[2rem] border border-white/5 bg-[#080d1a]/80 backdrop-blur-md p-6 sm:p-8 shadow-lg flex flex-col justify-between space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1 text-left">
+              <span className="text-[9px] font-black uppercase text-pink-400 tracking-widest block">
+                Category Breakdown
+              </span>
+              <h3 className="font-heading text-sm font-bold text-slate-200 uppercase tracking-wide">
+                PHÂN BỔ GÓI DỊCH VỤ
+              </h3>
+            </div>
+            
+            {/* Month selector dropdown */}
+            <div className="relative shrink-0">
+              <select
+                value={pieMonth}
+                onChange={(e) => setPieMonth(e.target.value as any)}
+                className="bg-white/5 border border-white/10 rounded-xl px-2.5 py-1.5 text-[9px] font-black uppercase tracking-wider text-slate-200 outline-none cursor-pointer focus:border-pink-500/55 transition-all"
+              >
+                <option value="6" className="bg-[#080d1a] text-slate-200">Tháng 6 / 2026</option>
+                <option value="5" className="bg-[#080d1a] text-slate-200">Tháng 5 / 2026</option>
+                <option value="4" className="bg-[#080d1a] text-slate-200">Tháng 4 / 2026</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Pie Chart Display */}
+          <div className="h-44 w-full relative flex items-center justify-center">
+            {mounted ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={getPieChartData()}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={renderCustomizedLabel}
+                    outerRadius={70}
+                    innerRadius={45}
+                    paddingAngle={3}
+                    dataKey="value"
+                  >
+                    {getPieChartData().map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: "#0f172a", borderColor: "rgba(255,255,255,0.1)", borderRadius: "0.75rem" }}
+                    itemStyle={{ fontWeight: "bold" }}
+                    formatter={(value: any) => [formatVND(value), "Doanh thu"]}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-full flex items-center justify-center text-slate-500">
+                Đang tải biểu đồ phân bổ...
+              </div>
+            )}
+            <div className="absolute text-center select-none pointer-events-none font-sans">
+              <span className="text-[8px] font-bold text-slate-500 block uppercase tracking-widest">Tổng thu</span>
+              <span className="text-xs font-black text-slate-100 block mt-0.5">
+                {formatVND(getPieChartData().reduce((sum, item) => sum + item.value, 0))}
+              </span>
+            </div>
+          </div>
+
+          {/* Custom legends listing */}
+          <div className="grid grid-cols-2 gap-2 text-[9px] font-bold text-slate-400 border-t border-dashed border-white/5 pt-3">
+            {getPieChartData().map((item, idx) => (
+              <div key={idx} className="flex items-center gap-1.5 truncate">
+                <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
+                <span className="truncate text-slate-400" title={item.name}>{item.name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+      </div>
+
+      {/* 4. Bottom Data Row: Reports (8 columns) and Signups (4 columns) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+        
+        {/* Reports Verification Desk (8 Columns) */}
+        <div className="lg:col-span-8 rounded-[2rem] border border-white/5 bg-[#080d1a]/80 backdrop-blur-md p-6 sm:p-8 shadow-lg space-y-6 flex flex-col justify-between">
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="space-y-1 text-left">
+                <h3 className="font-heading text-sm font-bold text-slate-200 uppercase tracking-wide">
+                  YÊU CẦU BÁO CÁO CẦN DUYỆT
+                </h3>
+                <p className="text-[10px] text-slate-400 font-medium font-body leading-none">
+                  Danh sách tin đăng hoặc người dùng bị cắm cờ cảnh báo mới nhất từ renters.
+                </p>
+              </div>
+
+              <div className="flex gap-2">
+                <div className="inline-flex items-center gap-1 text-[8px] font-mono tracking-widest font-black uppercase bg-red-500/10 border border-red-500/20 text-red-400 px-2.5 py-1 rounded-full">
+                  <Clock className="h-3 w-3 animate-pulse" />
+                  <span>Chờ xử lý: {recentReports.filter(r => r.status === "PENDING").length}</span>
+                </div>
+                <div className="inline-flex items-center gap-1 text-[8px] font-mono tracking-widest font-black uppercase bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-2.5 py-1 rounded-full">
+                  <CheckCircle2 className="h-3 w-3" />
+                  <span>Đã xử lý: {recentReports.filter(r => r.status === "RESOLVED").length}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Reports Grid Table */}
+            <div className="overflow-x-auto pr-1">
+              <table className="w-full text-left border-collapse min-w-[550px] text-xs font-body">
+                <thead>
+                  <tr className="border-b border-white/5 text-[9px] font-black uppercase tracking-wider text-slate-500 pb-3">
+                    <th className="py-3 px-3 pl-0">Mã Báo cáo</th>
+                    <th className="py-3 px-3">Người tố cáo</th>
+                    <th className="py-3 px-3">Đối tượng</th>
+                    <th className="py-3 px-3">Lý do</th>
+                    <th className="py-3 px-3 text-right">Trạng thái</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5 font-medium text-slate-350">
+                  {recentReports.map((report) => (
+                    <tr key={report.id} className="hover:bg-white/2 transition-colors">
+                      <td className="py-3 px-3 pl-0 font-mono font-bold text-slate-300">{report.id}</td>
+                      <td className="py-3 px-3 font-bold text-slate-200">{report.reporter}</td>
+                      <td className="py-3 px-3 text-slate-400 truncate max-w-[120px]" title={report.target}>{report.target}</td>
+                      <td className="py-3 px-3 italic text-slate-400 truncate max-w-[150px]" title={report.reason}>{report.reason}</td>
+                      <td className="py-3 px-3 text-right shrink-0">
+                        <span className={`inline-flex items-center gap-0.5 text-[8px] font-mono tracking-widest font-black uppercase px-2 py-0.5 rounded-md ${
+                          report.status === "PENDING"
+                            ? "bg-red-500/10 border border-red-500/20 text-red-400"
+                            : "bg-emerald-500/10 border border-emerald-500/20 text-emerald-400"
+                        }`}>
+                          {report.status === "PENDING" ? "Chờ xử lý" : "Đã xử lý"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <button
+            onClick={() => router.push("/admin/report")}
+            className="w-full h-10 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-slate-200 text-[10px] font-black uppercase tracking-wider cursor-pointer active:scale-95 transition-all flex items-center justify-center gap-1.5 mt-4"
+          >
+            Xử lý trung tâm báo cáo
+          </button>
+        </div>
+
+        {/* Recent Signups (4 Columns) */}
+        <div className="lg:col-span-4 rounded-[2rem] border border-white/5 bg-[#080d1a]/80 backdrop-blur-md p-6 sm:p-8 shadow-lg flex flex-col justify-between space-y-6">
           <div className="space-y-1 text-left">
             <h3 className="font-heading text-sm font-bold text-slate-200 uppercase tracking-wide">
               THÀNH VIÊN ĐĂNG KÝ MỚI
@@ -234,28 +537,28 @@ export default function AdminDashboardPage() {
             </p>
           </div>
 
-          <div className="divide-y divide-white/5 space-y-3.5">
+          <div className="divide-y divide-white/5 space-y-3">
             {recentUsers.map((userItem, idx) => (
-              <div key={idx} className="flex justify-between items-center pt-3.5 first:pt-0">
-                <div className="flex items-center gap-3">
-                  <div className="h-9 w-9 rounded-xl bg-slate-800 border border-white/5 text-slate-300 text-xs font-black flex items-center justify-center shadow-inner">
+              <div key={idx} className="flex justify-between items-center pt-3 first:pt-0">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="h-8 w-8 rounded-xl bg-slate-800 border border-white/5 text-slate-300 text-[10px] font-black flex items-center justify-center shadow-inner shrink-0">
                     {userItem.name.split(" ").slice(-1)[0][0]}
                   </div>
-                  <div className="space-y-0.5 text-left">
-                    <span className="text-xs font-bold text-slate-200 block">{userItem.name}</span>
-                    <span className="text-[10px] text-slate-500 font-medium font-body block">{userItem.email}</span>
+                  <div className="space-y-0.5 text-left min-w-0">
+                    <span className="text-xs font-bold text-slate-200 block truncate">{userItem.name}</span>
+                    <span className="text-[9px] text-slate-500 font-medium font-body block truncate">{userItem.email}</span>
                   </div>
                 </div>
                 
-                <div className="text-right space-y-0.5 shrink-0">
-                  <span className={`inline-flex items-center gap-0.5 text-[8px] font-mono tracking-widest font-black uppercase px-2 py-0.5 rounded ${
+                <div className="text-right space-y-0.5 shrink-0 ml-2">
+                  <span className={`inline-flex items-center gap-0.5 text-[7px] font-mono tracking-widest font-black uppercase px-1.5 py-0.5 rounded ${
                     userItem.role === "LANDLORD" 
                       ? "bg-amber-500/10 border border-amber-500/20 text-amber-400" 
                       : "bg-blue-500/10 border border-blue-500/20 text-blue-400"
                   }`}>
                     {userItem.role}
                   </span>
-                  <span className="text-[8px] font-bold text-slate-600 font-body block">
+                  <span className="text-[7px] font-bold text-slate-600 block">
                     {userItem.time}
                   </span>
                 </div>
@@ -265,80 +568,12 @@ export default function AdminDashboardPage() {
 
           <button
             onClick={() => router.push("/admin/user")}
-            className="w-full h-11 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-slate-200 text-[10px] font-black uppercase tracking-wider cursor-pointer active:scale-95 transition-all flex items-center justify-center gap-1.5"
+            className="w-full h-10 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-slate-200 text-[10px] font-black uppercase tracking-wider cursor-pointer active:scale-95 transition-all flex items-center justify-center gap-1.5"
           >
             Quản lý thành viên
           </button>
         </div>
 
-      </div>
-
-      {/* 4. Recent Reports verification desk */}
-      <div className="rounded-[2.5rem] border border-white/5 bg-[#080d1a]/80 backdrop-blur-md p-6 sm:p-8 shadow-lg space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="space-y-1 text-left">
-            <h3 className="font-heading text-sm font-bold text-slate-200 uppercase tracking-wide">
-              YÊU CẦU BÁO CÁO CẦN DUYỆT
-            </h3>
-            <p className="text-[10px] text-slate-400 font-medium font-body leading-none">
-              Danh sách tin đăng hoặc người dùng bị cắm cờ cảnh báo mới nhất từ renters.
-            </p>
-          </div>
-
-          <div className="flex gap-2">
-            <div className="inline-flex items-center gap-1 text-[8px] font-mono tracking-widest font-black uppercase bg-red-500/10 border border-red-500/20 text-red-400 px-2.5 py-1 rounded-full">
-              <Clock className="h-3 w-3 animate-pulse" />
-              <span>Chờ xử lý: {recentReports.filter(r => r.status === "PENDING").length}</span>
-            </div>
-            <div className="inline-flex items-center gap-1 text-[8px] font-mono tracking-widest font-black uppercase bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-2.5 py-1 rounded-full">
-              <CheckCircle2 className="h-3 w-3" />
-              <span>Đã xử lý: {recentReports.filter(r => r.status === "RESOLVED").length}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Reports Grid Table */}
-        <div className="overflow-x-auto pr-1">
-          <table className="w-full text-left border-collapse min-w-[700px] text-xs font-body">
-            <thead>
-              <tr className="border-b border-white/5 text-[10px] font-black uppercase tracking-wider text-slate-500 pb-3">
-                <th className="py-3 px-4 pl-0">Mã Báo cáo</th>
-                <th className="py-3 px-4">Người báo cáo</th>
-                <th className="py-3 px-4">Đối tượng bị tố cáo</th>
-                <th className="py-3 px-4">Lý do</th>
-                <th className="py-3 px-4">Thời gian</th>
-                <th className="py-3 px-4 text-right">Trạng thái</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5 font-medium text-slate-350">
-              {recentReports.map((report) => (
-                <tr key={report.id} className="hover:bg-white/2 transition-colors">
-                  <td className="py-4 px-4 pl-0 font-mono font-bold text-slate-300">{report.id}</td>
-                  <td className="py-4 px-4 font-bold text-slate-200">{report.reporter}</td>
-                  <td className="py-4 px-4 text-slate-400">{report.target}</td>
-                  <td className="py-4 px-4 italic text-slate-450">{report.reason}</td>
-                  <td className="py-4 px-4 text-slate-500">{report.time}</td>
-                  <td className="py-4 px-4 text-right shrink-0">
-                    <span className={`inline-flex items-center gap-0.5 text-[8px] font-mono tracking-widest font-black uppercase px-2 py-0.5 rounded-md ${
-                      report.status === "PENDING"
-                        ? "bg-red-500/10 border border-red-500/20 text-red-400"
-                        : "bg-emerald-500/10 border border-emerald-500/20 text-emerald-400"
-                    }`}>
-                      {report.status === "PENDING" ? "Chờ xử lý" : "Đã giải quyết"}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <button
-          onClick={() => router.push("/admin/report")}
-          className="w-full h-11 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-slate-200 text-[10px] font-black uppercase tracking-wider cursor-pointer active:scale-95 transition-all flex items-center justify-center gap-1.5"
-        >
-          Xử lý trung tâm báo cáo
-        </button>
       </div>
 
     </div>

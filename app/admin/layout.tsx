@@ -20,7 +20,8 @@ import {
   Users,
   FileText,
   Package,
-  Coins
+  Coins,
+  LineChart
 } from "lucide-react";
 import { toast } from "sonner";
 import { UserApi } from "@/services/api/user";
@@ -75,6 +76,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const navItems = [
     { name: "Tổng quan", href: "/admin", icon: LayoutDashboard },
+    { name: "Thống kê", href: "/admin/statistic", icon: LineChart },
     { name: "Thành viên", href: "/admin/user", icon: Users },
     { name: "Tin đăng", href: "/admin/post", icon: FileText },
     { name: "Phòng trọ", href: "/admin/room", icon: Home },
