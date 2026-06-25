@@ -152,18 +152,18 @@ export default function AdminSubscriptionsPage() {
   };
 
   return (
-    <div className="space-y-10 text-slate-100 font-sans w-full">
+    <div className="space-y-10 text-slate-800 font-sans w-full">
       {/* 1. Header & Title Block */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-white/5 pb-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-slate-200 pb-6">
         <div className="space-y-1 text-left">
-          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/5 px-4 py-1 text-[10px] font-black uppercase tracking-widest text-emerald-400">
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1 text-[10px] font-black uppercase tracking-widest text-primary">
             <Sparkles className="h-3.5 w-3.5" />
             Cấu hình biểu phí & Gói dịch vụ thành viên
           </div>
-          <h2 className="text-3xl font-bold tracking-tight text-slate-100 font-heading">
+          <h2 className="text-3xl font-bold tracking-tight text-slate-800 font-heading">
             QUẢN LÝ GÓI DỊCH VỤ
           </h2>
-          <p className="text-xs text-slate-400 font-medium font-body max-w-xl">
+          <p className="text-xs text-slate-650 font-medium font-body max-w-xl">
             Toàn quyền tạo mới, chỉnh sửa thông tin hoặc gỡ bỏ các gói dịch vụ dành cho khách đi thuê phòng (Renter) hoặc chủ trọ đăng bài (Landlord).
           </p>
         </div>
@@ -171,7 +171,7 @@ export default function AdminSubscriptionsPage() {
         {/* Add subscription button */}
         <button
           onClick={handleOpenCreate}
-          className="h-12 px-6 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider transition-all duration-300 active:scale-95 shadow-lg shadow-emerald-500/10 cursor-pointer flex items-center gap-2 shrink-0 self-start md:self-center"
+          className="h-12 px-6 rounded-xl bg-primary hover:bg-primary/90 text-white font-black text-xs uppercase tracking-wider transition-all duration-300 active:scale-95 shadow-lg shadow-primary/10 cursor-pointer flex items-center gap-2 shrink-0 self-start md:self-center"
         >
           <Plus className="h-4.5 w-4.5 stroke-[2.5]" />
           Tạo gói mới
@@ -182,15 +182,15 @@ export default function AdminSubscriptionsPage() {
       {loading ? (
         <div className="h-64 flex flex-col items-center justify-center gap-3">
           <Loader2 className="h-9 w-9 text-emerald-500 animate-spin" />
-          <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+          <span className="text-[10px] font-black uppercase tracking-widest text-slate-650">
             Đang tải dữ liệu gói cước...
           </span>
         </div>
       ) : packages.length === 0 ? (
-        <div className="rounded-[2.5rem] border border-white/5 bg-[#080d1a]/30 p-16 text-center space-y-4 max-w-md mx-auto">
+        <div className="rounded-[2.5rem] border border-slate-200 bg-slate-50 p-16 text-center space-y-4 max-w-md mx-auto">
           <AlertOctagon className="h-10 w-10 text-slate-600 animate-pulse mx-auto" />
-          <h3 className="text-sm font-bold text-slate-200">Chưa thiết lập gói cước nào</h3>
-          <p className="text-xs text-slate-500 leading-relaxed font-body">
+          <h3 className="text-sm font-bold text-slate-700">Chưa thiết lập gói cước nào</h3>
+          <p className="text-xs text-slate-650 leading-relaxed font-body">
             Vui lòng nhấn nút &quot;Tạo gói mới&quot; ở góc trên để cấu hình gói cước hệ thống đầu tiên.
           </p>
         </div>
@@ -202,20 +202,20 @@ export default function AdminSubscriptionsPage() {
               initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
               whileHover={{ y: -4 }}
-              className="rounded-3xl border border-white/5 bg-[#080d1a]/60 backdrop-blur-md p-6 flex flex-col justify-between shadow-lg relative group cursor-pointer"
+              className="rounded-3xl border border-slate-200 bg-card/60 backdrop-blur-md p-6 flex flex-col justify-between shadow-lg relative group cursor-pointer"
             >
               <div className="space-y-4 text-left">
                 {/* Header tags */}
                 <div className="flex justify-between items-start gap-4">
                   <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[8px] font-black uppercase tracking-widest border ${
                     pkg.sub_type.startsWith("LANDLORD")
-                      ? "bg-amber-500/10 border-amber-500/30 text-amber-400"
+                      ? "bg-primary/10 border-primary/30 text-primary"
                       : "bg-blue-500/10 border-blue-500/30 text-blue-400"
                   }`}>
                     {pkg.sub_type.startsWith("LANDLORD") ? "Chủ nhà" : "Người thuê"}
                   </span>
                   
-                  <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1">
+                  <span className="text-[10px] font-bold text-slate-650 flex items-center gap-1">
                     <Clock className="h-3.5 w-3.5" />
                     {pkg.sub_time}
                   </span>
@@ -223,40 +223,40 @@ export default function AdminSubscriptionsPage() {
 
                 {/* Plan Title & description */}
                 <div className="space-y-1.5">
-                  <h3 className="font-bold text-base text-slate-100 group-hover:text-emerald-400 transition-colors leading-tight line-clamp-1">
+                  <h3 className="font-bold text-base text-slate-800 group-hover:text-emerald-400 transition-colors leading-tight line-clamp-1">
                     {pkg.sub_title}
                   </h3>
-                  <p className="text-[11px] text-slate-400 font-medium font-body leading-relaxed min-h-[44px] line-clamp-2">
+                  <p className="text-[11px] text-slate-650 font-medium font-body leading-relaxed min-h-[44px] line-clamp-2">
                     {pkg.sub_description}
                   </p>
                 </div>
 
-                <hr className="border-white/5" />
+                <hr className="border-slate-200" />
 
                 {/* Metadata & Limits exceptions */}
                 <div className="space-y-1">
-                  <span className="text-[8px] font-black uppercase text-slate-500 tracking-wider">Cơ chế giới hạn:</span>
+                  <span className="text-[8px] font-black uppercase text-slate-650 tracking-wider">Cơ chế giới hạn:</span>
                   <div className="flex flex-wrap gap-1.5">
                     {pkg.sub_exception ? (
                       pkg.sub_exception.split(",").map((exc, eIdx) => (
                         <span
                           key={eIdx}
-                          className="inline-flex text-[9px] font-mono font-bold text-slate-400 bg-slate-900 border border-white/5 px-2 py-0.5 rounded"
+                          className="inline-flex text-[9px] font-mono font-bold text-slate-650 bg-background border border-slate-200 px-2 py-0.5 rounded"
                         >
                           {exc}
                         </span>
                       ))
                     ) : (
-                      <span className="inline-flex text-[9px] font-semibold text-slate-500 italic">Không cấu hình giới hạn</span>
+                      <span className="inline-flex text-[9px] font-semibold text-slate-650 italic">Không cấu hình giới hạn</span>
                     )}
                   </div>
                 </div>
               </div>
 
               {/* Price footer and actions */}
-              <div className="mt-6 pt-4 border-t border-dashed border-white/5 flex items-center justify-between">
+              <div className="mt-6 pt-4 border-t border-dashed border-slate-200 flex items-center justify-between">
                 <div className="space-y-0.5 text-left">
-                  <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest block font-body">Mức phí trọn gói</span>
+                  <span className="text-[8px] font-black text-slate-650 uppercase tracking-widest block font-body">Mức phí trọn gói</span>
                   <span className="text-base font-black text-[#FBBF24] font-sans">
                     {pkg.sub_price === 0 ? "MIỄN PHÍ" : formatVND(pkg.sub_price)}
                   </span>
@@ -266,7 +266,7 @@ export default function AdminSubscriptionsPage() {
                 <div className="flex items-center gap-1.5 shrink-0">
                   <button
                     onClick={() => handleOpenEdit(pkg)}
-                    className="h-8 w-8 rounded-lg bg-white/5 border border-white/10 hover:bg-[#FBBF24]/20 hover:text-[#FBBF24] hover:border-[#FBBF24]/30 text-slate-400 flex items-center justify-center cursor-pointer transition-all active:scale-90"
+                    className="h-8 w-8 rounded-lg bg-slate-100 border border-slate-200 hover:bg-[#FBBF24]/20 hover:text-[#FBBF24] hover:border-[#FBBF24]/30 text-slate-650 flex items-center justify-center cursor-pointer transition-all active:scale-90"
                     title="Chỉnh sửa gói"
                   >
                     <Edit2 className="h-4 w-4" />
@@ -274,7 +274,7 @@ export default function AdminSubscriptionsPage() {
 
                   <button
                     onClick={() => handleDeletePackage(pkg)}
-                    className="h-8 w-8 rounded-lg bg-white/5 border border-white/10 hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/30 text-slate-400 flex items-center justify-center cursor-pointer transition-all active:scale-90"
+                    className="h-8 w-8 rounded-lg bg-slate-100 border border-slate-200 hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/30 text-slate-650 flex items-center justify-center cursor-pointer transition-all active:scale-90"
                     title="Xóa gói"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -304,21 +304,21 @@ export default function AdminSubscriptionsPage() {
               initial={{ opacity: 0, scale: 0.96, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.96, y: 10 }}
-              className="relative w-full max-w-2xl rounded-[2.5rem] border border-white/10 bg-[#0f172a] shadow-2xl p-6 sm:p-10 z-10 text-left space-y-6"
+              className="relative w-full max-w-2xl rounded-[2.5rem] border border-slate-200 bg-card shadow-2xl p-6 sm:p-10 z-10 text-left space-y-6"
             >
               {/* Close Button */}
               <button
                 onClick={() => setIsFormOpen(false)}
-                className="absolute top-6 right-6 p-2 rounded-full border border-white/10 bg-white/5 text-slate-400 hover:text-white cursor-pointer"
+                className="absolute top-6 right-6 p-2 rounded-full border border-slate-200 bg-slate-100 text-slate-650 hover:text-white cursor-pointer"
               >
                 <X className="h-4 w-4" />
               </button>
 
-              <div className="space-y-1.5 text-left border-b border-white/5 pb-4">
+              <div className="space-y-1.5 text-left border-b border-slate-200 pb-4">
                 <span className="text-[9px] font-mono tracking-widest font-black uppercase text-emerald-400 block">
                   {formMode === "CREATE" ? "Tạo gói dịch vụ mới" : "Chỉnh sửa gói dịch vụ"}
                 </span>
-                <h3 className="text-xl font-bold text-slate-100 font-heading">
+                <h3 className="text-xl font-bold text-slate-800 font-heading">
                   {formMode === "CREATE" ? "Thiết lập cấu hình gói cước" : `Cập nhật thông tin gói #${selectedPackage?.id}`}
                 </h3>
               </div>
@@ -328,73 +328,73 @@ export default function AdminSubscriptionsPage() {
                 {/* Title and code type */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-slate-400 block text-[9px] uppercase tracking-wider">Tên gói dịch vụ</label>
+                    <label className="text-slate-650 block text-[9px] uppercase tracking-wider">Tên gói dịch vụ</label>
                     <input
                       type="text"
                       value={formTitle}
                       onChange={(e) => setFormTitle(e.target.value)}
                       placeholder="Ví dụ: Gói Landlord Premium"
                       required
-                      className="w-full h-11 border border-white/5 bg-slate-900 rounded-xl px-4 text-slate-200 outline-none focus:border-emerald-500/50"
+                      className="w-full h-11 border border-slate-200 bg-background rounded-xl px-4 text-slate-700 outline-none focus:border-primary/50"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-slate-400 block text-[9px] uppercase tracking-wider">Phân loại (Type Code)</label>
+                    <label className="text-slate-650 block text-[9px] uppercase tracking-wider">Phân loại (Type Code)</label>
                     <input
                       type="text"
                       value={formType}
                       onChange={(e) => setFormType(e.target.value)}
                       placeholder="Ví dụ: LANDLORD_PREMIUM, RENTER_VIP"
                       required
-                      className="w-full h-11 border border-white/5 bg-slate-900 rounded-xl px-4 text-slate-200 outline-none focus:border-emerald-500/50 uppercase"
+                      className="w-full h-11 border border-slate-200 bg-background rounded-xl px-4 text-slate-700 outline-none focus:border-primary/50 uppercase"
                     />
                   </div>
                 </div>
 
                 {/* Description */}
                 <div className="space-y-2">
-                  <label className="text-slate-400 block text-[9px] uppercase tracking-wider">Mô tả đặc quyền của gói</label>
+                  <label className="text-slate-650 block text-[9px] uppercase tracking-wider">Mô tả đặc quyền của gói</label>
                   <textarea
                     value={formDesc}
                     onChange={(e) => setFormDesc(e.target.value)}
                     placeholder="Mô tả tóm tắt cho người dùng hiểu giá trị gói..."
                     rows={3}
                     required
-                    className="w-full border border-white/5 bg-slate-900 rounded-xl p-4 text-slate-200 outline-none focus:border-emerald-500/50 resize-none font-medium"
+                    className="w-full border border-slate-200 bg-background rounded-xl p-4 text-slate-700 outline-none focus:border-primary/50 resize-none font-medium"
                   />
                 </div>
 
                 {/* Pricing & Time duration */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-2">
-                    <label className="text-slate-400 block text-[9px] uppercase tracking-wider">Đơn giá (VND)</label>
+                    <label className="text-slate-650 block text-[9px] uppercase tracking-wider">Đơn giá (VND)</label>
                     <input
                       type="number"
                       value={formPrice}
                       onChange={(e) => setFormPrice(Number(e.target.value))}
                       required
-                      className="w-full h-11 border border-white/5 bg-slate-900 rounded-xl px-4 text-slate-200 outline-none focus:border-emerald-500/50"
+                      className="w-full h-11 border border-slate-200 bg-background rounded-xl px-4 text-slate-700 outline-none focus:border-primary/50"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-slate-400 block text-[9px] uppercase tracking-wider">Thời hạn gói cước</label>
+                    <label className="text-slate-650 block text-[9px] uppercase tracking-wider">Thời hạn gói cước</label>
                     <input
                       type="text"
                       value={formTime}
                       onChange={(e) => setFormTime(e.target.value)}
                       placeholder="Ví dụ: 30 days, 1 year"
                       required
-                      className="w-full h-11 border border-white/5 bg-slate-900 rounded-xl px-4 text-slate-200 outline-none focus:border-emerald-500/50"
+                      className="w-full h-11 border border-slate-200 bg-background rounded-xl px-4 text-slate-700 outline-none focus:border-primary/50"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-slate-400 block text-[9px] uppercase tracking-wider">Cấu hình Exception / Giới hạn</label>
+                    <label className="text-slate-650 block text-[9px] uppercase tracking-wider">Cấu hình Exception / Giới hạn</label>
                     <input
                       type="text"
                       value={formException}
                       onChange={(e) => setFormException(e.target.value)}
                       placeholder="Ví dụ: posts_limit:5,featured:true"
-                      className="w-full h-11 border border-white/5 bg-slate-900 rounded-xl px-4 text-slate-200 outline-none focus:border-emerald-500/50 font-mono"
+                      className="w-full h-11 border border-slate-200 bg-background rounded-xl px-4 text-slate-700 outline-none focus:border-primary/50 font-mono"
                     />
                   </div>
                 </div>
@@ -403,7 +403,7 @@ export default function AdminSubscriptionsPage() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="h-11 px-5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold uppercase text-[10px] tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/10 w-full"
+                  className="h-11 px-5 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold uppercase text-[10px] tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-md shadow-primary/10 w-full"
                 >
                   {saving ? (
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />

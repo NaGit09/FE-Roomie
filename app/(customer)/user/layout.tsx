@@ -213,7 +213,7 @@ export default function UserDashboardLayout({
           </aside>
 
           {/* ── Right Content Pane ── */}
-          <main className="min-w-0 flex items-center justify-center flex-col gap-8 rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+          <main className="min-w-0 flex-1">
             {children}
           </main>
         </div>

@@ -174,9 +174,9 @@ export default function AdminStatisticPage() {
 
   if (loading) {
     return (
-      <div className="h-96 flex flex-col items-center justify-center gap-3 text-slate-400">
+      <div className="h-96 flex flex-col items-center justify-center gap-3 text-slate-650">
         <Loader2 className="h-9 w-9 text-emerald-500 animate-spin" />
-        <span className="text-[10px] font-mono tracking-widest font-black uppercase text-slate-500">
+        <span className="text-[10px] font-mono tracking-widest font-black uppercase text-slate-650">
           Đang tính toán dữ liệu thống kê tài chính...
         </span>
       </div>
@@ -191,19 +191,19 @@ export default function AdminStatisticPage() {
   const renterVipRevenue = activePieData.find(d => d.name.includes("Renter VIP"))?.value || 0;
 
   return (
-    <div className="space-y-10 text-slate-100 font-sans">
+    <div className="space-y-10 text-slate-800 font-sans">
       
       {/* 1. Header Row */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-white/5 pb-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-slate-200 pb-6">
         <div className="space-y-1 text-left">
           <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/5 px-4.5 py-1.5 text-xs font-semibold uppercase tracking-widest text-emerald-400">
             <TrendingUp className="h-3.5 w-3.5" />
             Báo cáo tài chính Roomie
           </div>
-          <h2 className="text-3xl font-bold tracking-tight text-slate-100 font-heading uppercase">
+          <h2 className="text-3xl font-bold tracking-tight text-slate-800 font-heading uppercase">
             THỐNG KÊ DOANH THU & GIAO DỊCH
           </h2>
-          <p className="text-xs text-slate-400 font-medium font-body max-w-2xl">
+          <p className="text-xs text-slate-650 font-medium font-body max-w-2xl">
             Báo cáo phân tích doanh thu từ các gói VIP/Premium của Landlords, gói VIP Renters và phí đẩy tin quảng cáo nổi bật trên toàn hệ thống Roomie.
           </p>
         </div>
@@ -212,7 +212,7 @@ export default function AdminStatisticPage() {
         <div className="flex flex-wrap items-center gap-3">
           <button
             onClick={handleRefresh}
-            className="h-11 w-11 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-slate-300 flex items-center justify-center cursor-pointer transition-all active:scale-95"
+            className="h-11 w-11 rounded-xl bg-slate-100 border border-slate-200 hover:bg-white/10 text-slate-600 flex items-center justify-center cursor-pointer transition-all active:scale-95"
             title="Làm mới dữ liệu"
           >
             <RefreshCw className="h-4 w-4" />
@@ -220,7 +220,7 @@ export default function AdminStatisticPage() {
           
           <button
             onClick={() => handleExport("pdf")}
-            className="h-11 px-4.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-slate-200 text-xs font-bold flex items-center gap-2 cursor-pointer active:scale-95 transition-all"
+            className="h-11 px-4.5 rounded-xl bg-slate-100 border border-slate-200 hover:bg-white/10 text-slate-700 text-xs font-bold flex items-center gap-2 cursor-pointer active:scale-95 transition-all"
           >
             <Download className="h-4 w-4" />
             Xuất PDF
@@ -240,36 +240,36 @@ export default function AdminStatisticPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         
         {/* Metric 1 */}
-        <div className="rounded-3xl border border-white/5 bg-[#080d1a]/80 backdrop-blur-md p-6 shadow-lg flex flex-col justify-between relative overflow-hidden">
+        <div className="rounded-3xl border border-slate-200 bg-card/80 backdrop-blur-md p-6 shadow-lg flex flex-col justify-between relative overflow-hidden">
           <div className="space-y-4">
             <div className="flex justify-between items-start">
-              <span className="text-[9px] font-black uppercase text-slate-500 tracking-wider">
+              <span className="text-[9px] font-black uppercase text-slate-650 tracking-wider">
                 Doanh thu ({getActiveMonthLabel()})
               </span>
-              <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+              <div className="p-2.5 rounded-xl bg-primary/10 border border-primary/20 text-primary">
                 <Coins className="h-4 w-4" />
               </div>
             </div>
             <div className="space-y-1 text-left">
-              <h3 className="text-2xl font-black text-slate-100">
+              <h3 className="text-2xl font-black text-slate-800">
                 {formatVND(totalMonthRevenue)}
               </h3>
-              <p className="text-[9px] font-bold text-slate-400">
+              <p className="text-[9px] font-bold text-slate-650">
                 Tổng doanh số các dịch vụ đã thanh toán
               </p>
             </div>
           </div>
-          <div className="mt-4 pt-4 border-t border-dashed border-white/5 flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-emerald-400">
+          <div className="mt-4 pt-4 border-t border-dashed border-slate-200 flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-emerald-400">
             <ChevronUp className="h-3.5 w-3.5" />
             <span>+14.5% so với tháng trước</span>
           </div>
         </div>
 
         {/* Metric 2 */}
-        <div className="rounded-3xl border border-white/5 bg-[#080d1a]/80 backdrop-blur-md p-6 shadow-lg flex flex-col justify-between relative overflow-hidden">
+        <div className="rounded-3xl border border-slate-200 bg-card/80 backdrop-blur-md p-6 shadow-lg flex flex-col justify-between relative overflow-hidden">
           <div className="space-y-4">
             <div className="flex justify-between items-start">
-              <span className="text-[9px] font-black uppercase text-slate-500 tracking-wider">
+              <span className="text-[9px] font-black uppercase text-slate-650 tracking-wider">
                 Doanh thu Chủ nhà VIP
               </span>
               <div className="p-2.5 rounded-xl bg-pink-550/10 bg-pink-500/10 border border-pink-500/20 text-pink-400 font-sans">
@@ -277,25 +277,25 @@ export default function AdminStatisticPage() {
               </div>
             </div>
             <div className="space-y-1 text-left">
-              <h3 className="text-2xl font-black text-slate-100">
+              <h3 className="text-2xl font-black text-slate-800">
                 {formatVND(landlordVipRevenue)}
               </h3>
-              <p className="text-[9px] font-bold text-slate-400">
+              <p className="text-[9px] font-bold text-slate-650">
                 Doanh số từ gói Landlord VIP nâng cao
               </p>
             </div>
           </div>
-          <div className="mt-4 pt-4 border-t border-dashed border-white/5 flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-emerald-400">
+          <div className="mt-4 pt-4 border-t border-dashed border-slate-200 flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-emerald-400">
             <ChevronUp className="h-3.5 w-3.5" />
             <span>+18.2% tăng trưởng gói</span>
           </div>
         </div>
 
         {/* Metric 3 */}
-        <div className="rounded-3xl border border-white/5 bg-[#080d1a]/80 backdrop-blur-md p-6 shadow-lg flex flex-col justify-between relative overflow-hidden">
+        <div className="rounded-3xl border border-slate-200 bg-card/80 backdrop-blur-md p-6 shadow-lg flex flex-col justify-between relative overflow-hidden">
           <div className="space-y-4">
             <div className="flex justify-between items-start">
-              <span className="text-[9px] font-black uppercase text-slate-500 tracking-wider">
+              <span className="text-[9px] font-black uppercase text-slate-650 tracking-wider">
                 Doanh thu Người tìm phòng
               </span>
               <div className="p-2.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400">
@@ -303,41 +303,41 @@ export default function AdminStatisticPage() {
               </div>
             </div>
             <div className="space-y-1 text-left">
-              <h3 className="text-2xl font-black text-slate-100">
+              <h3 className="text-2xl font-black text-slate-800">
                 {formatVND(renterVipRevenue)}
               </h3>
-              <p className="text-[9px] font-bold text-slate-400">
+              <p className="text-[9px] font-bold text-slate-650">
                 Doanh số dịch vụ VIP hỗ trợ Renter
               </p>
             </div>
           </div>
-          <div className="mt-4 pt-4 border-t border-dashed border-white/5 flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-emerald-400">
+          <div className="mt-4 pt-4 border-t border-dashed border-slate-200 flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-emerald-400">
             <ChevronUp className="h-3.5 w-3.5" />
             <span>+8.7% tài khoản VIP mới</span>
           </div>
         </div>
 
         {/* Metric 4 */}
-        <div className="rounded-3xl border border-white/5 bg-[#080d1a]/80 backdrop-blur-md p-6 shadow-lg flex flex-col justify-between relative overflow-hidden">
+        <div className="rounded-3xl border border-slate-200 bg-card/80 backdrop-blur-md p-6 shadow-lg flex flex-col justify-between relative overflow-hidden">
           <div className="space-y-4">
             <div className="flex justify-between items-start">
-              <span className="text-[9px] font-black uppercase text-slate-500 tracking-wider">
+              <span className="text-[9px] font-black uppercase text-slate-650 tracking-wider">
                 Số lượng giao dịch
               </span>
-              <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400">
+              <div className="p-2.5 rounded-xl bg-primary/10 border border-amber-500/20 text-primary">
                 <CheckCircle2 className="h-4 w-4" />
               </div>
             </div>
             <div className="space-y-1 text-left">
-              <h3 className="text-2xl font-black text-slate-100">
+              <h3 className="text-2xl font-black text-slate-800">
                 {totalMonthTransactions} đơn hàng
               </h3>
-              <p className="text-[9px] font-bold text-slate-400">
+              <p className="text-[9px] font-bold text-slate-650">
                 Số hóa đơn thanh toán thành công
               </p>
             </div>
           </div>
-          <div className="mt-4 pt-4 border-t border-dashed border-white/5 flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-emerald-400">
+          <div className="mt-4 pt-4 border-t border-dashed border-slate-200 flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-emerald-400">
             <ChevronUp className="h-3.5 w-3.5" />
             <span>98.6% Tỷ lệ thanh toán thành công</span>
           </div>
@@ -349,28 +349,28 @@ export default function AdminStatisticPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
         
         {/* Bar Chart: Store Revenue by Time Period (7 Columns) */}
-        <div className="lg:col-span-7 rounded-[2rem] border border-white/5 bg-[#080d1a]/80 backdrop-blur-md p-6 sm:p-8 shadow-lg flex flex-col justify-between space-y-6">
+        <div className="lg:col-span-7 rounded-[2rem] border border-slate-200 bg-card/80 backdrop-blur-md p-6 sm:p-8 shadow-lg flex flex-col justify-between space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="space-y-1 text-left">
               <span className="text-[9px] font-black uppercase text-emerald-400 tracking-widest block">
                 Revenue Over Time
               </span>
-              <h3 className="font-heading text-sm font-bold text-slate-200 uppercase tracking-wide">
+              <h3 className="font-heading text-sm font-bold text-slate-700 uppercase tracking-wide">
                 BIỂU ĐỒ DOANH THU CỬA HÀNG THEO CHU KỲ
               </h3>
-              <p className="text-[10px] text-slate-400 font-medium font-body leading-none">
+              <p className="text-[10px] text-slate-650 font-medium font-body leading-none">
                 Doanh số các gói subscription và dịch vụ phụ trợ trên hệ thống.
               </p>
             </div>
 
             {/* Selector controls */}
-            <div className="flex items-center gap-1 rounded-xl bg-white/5 border border-white/5 p-1 self-start sm:self-center shrink-0">
+            <div className="flex items-center gap-1 rounded-xl bg-slate-100 border border-slate-200 p-1 self-start sm:self-center shrink-0">
               <button
                 onClick={() => setRevenuePeriod("week")}
                 className={`px-3.5 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer ${
                   revenuePeriod === "week"
-                    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                    : "text-slate-400 hover:text-slate-200 border border-transparent"
+                    ? "bg-primary/20 text-primary border border-primary/30"
+                    : "text-slate-650 hover:text-slate-700 border border-transparent"
                 }`}
               >
                 Hằng ngày (Tuần này)
@@ -379,8 +379,8 @@ export default function AdminStatisticPage() {
                 onClick={() => setRevenuePeriod("month")}
                 className={`px-3.5 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer ${
                   revenuePeriod === "month"
-                    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                    : "text-slate-400 hover:text-slate-200 border border-transparent"
+                    ? "bg-primary/20 text-primary border border-primary/30"
+                    : "text-slate-650 hover:text-slate-700 border border-transparent"
                 }`}
               >
                 Hằng tuần (Tháng này)
@@ -389,8 +389,8 @@ export default function AdminStatisticPage() {
                 onClick={() => setRevenuePeriod("year")}
                 className={`px-3.5 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer ${
                   revenuePeriod === "year"
-                    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                    : "text-slate-400 hover:text-slate-200 border border-transparent"
+                    ? "bg-primary/20 text-primary border border-primary/30"
+                    : "text-slate-650 hover:text-slate-700 border border-transparent"
                 }`}
               >
                 Hằng tháng (Năm nay)
@@ -408,24 +408,24 @@ export default function AdminStatisticPage() {
                     <stop offset="95%" stopColor="#10B981" stopOpacity={0.2} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#D9D9D9" vertical={false} />
                 <XAxis 
                   dataKey="name" 
-                  stroke="rgba(255,255,255,0.3)" 
+                  stroke="#6B6560" 
                   tickLine={false} 
                   axisLine={false}
                   dy={5}
                 />
                 <YAxis 
-                  stroke="rgba(255,255,255,0.3)" 
+                  stroke="#6B6560" 
                   tickLine={false} 
                   axisLine={false}
                   tickFormatter={(v) => `${(v / 1000000).toFixed(0)}M`}
                   dx={-5}
                 />
                 <Tooltip 
-                  contentStyle={{ backgroundColor: "#0f172a", borderColor: "rgba(255,255,255,0.1)", borderRadius: "1rem" }}
-                  labelStyle={{ color: "rgba(255,255,255,0.4)", fontWeight: "bold", fontSize: "10px" }}
+                  contentStyle={{ backgroundColor: "#F5EDE0", borderColor: "#D9D9D9", borderRadius: "1rem", color: "#0D1117" }}
+                  labelStyle={{ color: "#6B6560", fontWeight: "bold", fontSize: "10px" }}
                   itemStyle={{ color: "#10B981", fontWeight: "bold" }}
                   formatter={(value: any) => [formatVND(value), "Doanh thu"]}
                 />
@@ -442,13 +442,13 @@ export default function AdminStatisticPage() {
         </div>
 
         {/* Pie Chart: Product Category Distribution (5 Columns) */}
-        <div className="lg:col-span-5 rounded-[2rem] border border-white/5 bg-[#080d1a]/80 backdrop-blur-md p-6 sm:p-8 shadow-lg flex flex-col justify-between space-y-6">
+        <div className="lg:col-span-5 rounded-[2rem] border border-slate-200 bg-card/80 backdrop-blur-md p-6 sm:p-8 shadow-lg flex flex-col justify-between space-y-6">
           <div className="flex items-center justify-between">
             <div className="space-y-1 text-left">
               <span className="text-[9px] font-black uppercase text-pink-400 tracking-widest block">
                 Subscription Share
               </span>
-              <h3 className="font-heading text-sm font-bold text-slate-200 uppercase tracking-wide">
+              <h3 className="font-heading text-sm font-bold text-slate-700 uppercase tracking-wide">
                 PHÂN BỔ THEO DÀN GÓI SẢN PHẨM
               </h3>
             </div>
@@ -458,11 +458,11 @@ export default function AdminStatisticPage() {
               <select
                 value={pieMonth}
                 onChange={(e) => setPieMonth(e.target.value as any)}
-                className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-[9px] font-black uppercase tracking-wider text-slate-200 outline-none cursor-pointer focus:border-pink-500/55 transition-all"
+                className="bg-slate-100 border border-slate-200 rounded-xl px-3 py-2 text-[9px] font-black uppercase tracking-wider text-slate-700 outline-none cursor-pointer focus:border-pink-500/55 transition-all"
               >
-                <option value="6" className="bg-[#080d1a]">Tháng 6 / 2026</option>
-                <option value="5" className="bg-[#080d1a]">Tháng 5 / 2026</option>
-                <option value="4" className="bg-[#080d1a]">Tháng 4 / 2026</option>
+                <option value="6" className="bg-card">Tháng 6 / 2026</option>
+                <option value="5" className="bg-card">Tháng 5 / 2026</option>
+                <option value="4" className="bg-card">Tháng 4 / 2026</option>
               </select>
             </div>
           </div>
@@ -487,31 +487,31 @@ export default function AdminStatisticPage() {
                   ))}
                 </Pie>
                 <Tooltip 
-                  contentStyle={{ backgroundColor: "#0f172a", borderColor: "rgba(255,255,255,0.1)", borderRadius: "0.75rem" }}
+                  contentStyle={{ backgroundColor: "#F5EDE0", borderColor: "#D9D9D9", borderRadius: "0.75rem", color: "#0D1117" }}
                   itemStyle={{ fontWeight: "bold" }}
                   formatter={(value: any) => [formatVND(value), "Doanh thu"]}
                 />
               </PieChart>
             </ResponsiveContainer>
             <div className="absolute text-center select-none pointer-events-none font-sans">
-              <span className="text-[8px] font-bold text-slate-500 block uppercase tracking-widest">Doanh số</span>
-              <span className="text-sm font-black text-slate-100 block">
+              <span className="text-[8px] font-bold text-slate-650 block uppercase tracking-widest">Doanh số</span>
+              <span className="text-sm font-black text-slate-800 block">
                 {formatVND(totalMonthRevenue)}
               </span>
             </div>
           </div>
 
           {/* Detailed legends with count statistics */}
-          <div className="divide-y divide-white/5 space-y-2 pt-2 text-[10px] font-semibold text-slate-400">
+          <div className="divide-y divide-white/5 space-y-2 pt-2 text-[10px] font-semibold text-slate-650">
             {activePieData.map((item, idx) => (
               <div key={idx} className="flex items-center justify-between pt-2 first:pt-0">
                 <div className="flex items-center gap-2 truncate">
                   <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
-                  <span className="truncate text-slate-300">{item.name}</span>
+                  <span className="truncate text-slate-600">{item.name}</span>
                 </div>
                 <div className="text-right shrink-0">
-                  <span className="text-slate-100 block">{formatVND(item.value)}</span>
-                  <span className="text-[8px] text-slate-500 block font-normal">{item.count} lượt bán ({((item.value / totalMonthRevenue) * 100).toFixed(0)}%)</span>
+                  <span className="text-slate-800 block">{formatVND(item.value)}</span>
+                  <span className="text-[8px] text-slate-650 block font-normal">{item.count} lượt bán ({((item.value / totalMonthRevenue) * 100).toFixed(0)}%)</span>
                 </div>
               </div>
             ))}
@@ -521,13 +521,13 @@ export default function AdminStatisticPage() {
       </div>
 
       {/* 4. Detailed Data Grid Table: Product package share list */}
-      <div className="rounded-[2.5rem] border border-white/5 bg-[#080d1a]/80 backdrop-blur-md p-6 sm:p-8 shadow-lg space-y-6">
+      <div className="rounded-[2.5rem] border border-slate-200 bg-card/80 backdrop-blur-md p-6 sm:p-8 shadow-lg space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1 text-left">
-            <h3 className="font-heading text-sm font-bold text-slate-200 uppercase tracking-wide">
+            <h3 className="font-heading text-sm font-bold text-slate-700 uppercase tracking-wide">
               CHI TIẾT PHÂN KHÚC GÓI SẢN PHẨM ({getActiveMonthLabel()})
             </h3>
-            <p className="text-[10px] text-slate-400 font-medium font-body leading-none">
+            <p className="text-[10px] text-slate-650 font-medium font-body leading-none">
               Thống kê lượng bán và tỷ lệ chuyển đổi đóng góp doanh thu của từng sản phẩm.
             </p>
           </div>
@@ -541,7 +541,7 @@ export default function AdminStatisticPage() {
         <div className="overflow-x-auto pr-1">
           <table className="w-full text-left border-collapse min-w-[700px] text-xs font-body">
             <thead>
-              <tr className="border-b border-white/5 text-[9px] font-black uppercase tracking-wider text-slate-500 pb-3">
+              <tr className="border-b border-slate-200 text-[9px] font-black uppercase tracking-wider text-slate-650 pb-3">
                 <th className="py-3.5 px-4 pl-0">Tên Gói dịch vụ</th>
                 <th className="py-3.5 px-4">Lượt mua</th>
                 <th className="py-3.5 px-4">Đơn giá định lượng</th>
@@ -550,7 +550,7 @@ export default function AdminStatisticPage() {
                 <th className="py-3.5 px-4 text-right">Xuuyên hướng mua</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5 font-medium text-slate-300">
+            <tbody className="divide-y divide-white/5 font-medium text-slate-600">
               {activePieData.map((item, idx) => {
                 // Mock individual prices
                 let priceStr = "Miễn phí";
@@ -567,7 +567,7 @@ export default function AdminStatisticPage() {
                     <td className="py-4 px-4 pl-0">
                       <div className="flex items-center gap-3">
                         <span className="h-3 w-3 rounded-full shrink-0 animate-pulse" style={{ backgroundColor: item.color }} />
-                        <span className="font-bold text-slate-100">{item.name}</span>
+                        <span className="font-bold text-slate-800">{item.name}</span>
                         {isVip && (
                           <span className="inline-flex items-center gap-0.5 text-[7px] font-mono tracking-widest font-black uppercase text-pink-400 bg-pink-500/10 border border-pink-500/20 px-1.5 py-0.5 rounded">
                             VIP
@@ -576,14 +576,14 @@ export default function AdminStatisticPage() {
                       </div>
                     </td>
                     <td className="py-4 px-4 font-mono font-bold text-slate-350">{item.count} lượt đăng ký</td>
-                    <td className="py-4 px-4 text-slate-400">{priceStr}</td>
+                    <td className="py-4 px-4 text-slate-650">{priceStr}</td>
                     <td className="py-4 px-4 font-mono font-bold text-emerald-400">{formatVND(item.value)}</td>
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-2">
-                        <div className="w-16 h-1.5 rounded-full bg-slate-800 border border-white/5 overflow-hidden shrink-0">
+                        <div className="w-16 h-1.5 rounded-full bg-slate-200 border border-slate-200 overflow-hidden shrink-0">
                           <div className="h-full rounded-full" style={{ width: `${((item.value / totalMonthRevenue) * 105)}%`, maxWidth: "100%", backgroundColor: item.color }} />
                         </div>
-                        <span className="font-bold text-slate-400 text-[10px]">{((item.value / totalMonthRevenue) * 100).toFixed(0)}%</span>
+                        <span className="font-bold text-slate-650 text-[10px]">{((item.value / totalMonthRevenue) * 100).toFixed(0)}%</span>
                       </div>
                     </td>
                     <td className="py-4 px-4 text-right shrink-0">
@@ -592,7 +592,7 @@ export default function AdminStatisticPage() {
                           <ChevronUp className="h-3 w-3" /> Tăng
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-0.5 text-[8px] font-mono tracking-widest font-black uppercase text-slate-500 bg-slate-550/10 px-2 py-0.5 rounded border border-white/5">
+                        <span className="inline-flex items-center gap-0.5 text-[8px] font-mono tracking-widest font-black uppercase text-slate-650 bg-slate-550/10 px-2 py-0.5 rounded border border-slate-200">
                           Ổn định
                         </span>
                       )}

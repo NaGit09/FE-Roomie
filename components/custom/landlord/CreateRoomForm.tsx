@@ -320,22 +320,22 @@ export const CreateRoomForm: React.FC<CreateRoomFormProps> = ({
             initial={{ opacity: 0, scale: 0.96, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 10 }}
-            className="relative w-full max-w-2xl rounded-[2.5rem] border border-white/10 bg-[#0f172a]/95 backdrop-blur-2xl shadow-2xl p-6 sm:p-8 z-10 text-left text-[#F8FAFC] max-h-[90vh] overflow-y-auto"
+            className="relative w-full max-w-2xl rounded-[2.5rem] border border-slate-200 bg-card/95 backdrop-blur-2xl shadow-2xl p-6 sm:p-8 z-10 text-left text-foreground max-h-[90vh] overflow-y-auto"
           >
             {/* Close button */}
             <button
               onClick={onClose}
-              className="absolute top-6 right-6 p-2 rounded-full border border-white/10 bg-white/5 text-slate-400 hover:text-white cursor-pointer transition-all"
+              className="absolute top-6 right-6 p-2 rounded-full border border-slate-200 bg-slate-100 text-slate-650 hover:text-white cursor-pointer transition-all"
             >
               <X className="h-4 w-4" />
             </button>
 
             <div className="space-y-1.5 mb-6">
-              <span className="text-[10px] font-black uppercase text-[#F59E0B] tracking-widest block font-heading">
+              <span className="text-[10px] font-black uppercase text-primary tracking-widest block font-heading">
                 Add New Apartment Room
               </span>
-              <h3 className="text-xl font-black text-slate-100 font-heading">Khai báo phòng thuê mới</h3>
-              <p className="text-[10px] text-slate-400 leading-relaxed font-body">
+              <h3 className="text-xl font-black text-slate-800 font-heading">Khai báo phòng thuê mới</h3>
+              <p className="text-[10px] text-slate-650 leading-relaxed font-body">
                 Điền các thông tin vị trí, giá tiền, sức chứa và các tiện nghi phòng để đồng bộ trực tiếp lên hệ thống Roomie.
               </p>
             </div>
@@ -343,39 +343,39 @@ export const CreateRoomForm: React.FC<CreateRoomFormProps> = ({
             <form onSubmit={handleAddRoomSubmit} className="space-y-5 font-body">
               {/* Input 1: Room name */}
               <div className="space-y-1">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block font-body">Tên phòng hoặc căn hộ</label>
+                <label className="text-[9px] font-black text-slate-650 uppercase tracking-widest block font-body">Tên phòng hoặc căn hộ</label>
                 <input
                   type="text"
                   placeholder="Ví dụ: Phòng 302 - Căn Hộ Penthouse Ban Công"
                   value={newRoomName}
                   onChange={(e) => setNewRoomName(e.target.value)}
-                  className="w-full h-11 bg-white/5 border border-white/10 rounded-xl px-4 text-xs font-semibold text-slate-200 placeholder-slate-500 focus:outline-none focus:border-[#F59E0B]"
+                  className="w-full h-11 bg-slate-100 border border-slate-200 rounded-xl px-4 text-xs font-semibold text-slate-700 placeholder-slate-500 focus:outline-none focus:border-[#F59E0B]"
                   required
                 />
               </div>
 
               {/* Input 2: Description */}
               <div className="space-y-1">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block font-body">Mô tả chi tiết phòng</label>
+                <label className="text-[9px] font-black text-slate-650 uppercase tracking-widest block font-body">Mô tả chi tiết phòng</label>
                 <textarea
                   placeholder="Nhập thông tin mô tả chi tiết về phòng, giờ giấc tự do, điện nước, vv..."
                   value={newRoomDescription}
                   onChange={(e) => setNewRoomDescription(e.target.value)}
                   rows={2}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-xs font-semibold text-slate-200 placeholder-slate-500 focus:outline-none focus:border-[#F59E0B] resize-none"
+                  className="w-full bg-slate-100 border border-slate-200 rounded-xl p-4 text-xs font-semibold text-slate-700 placeholder-slate-500 focus:outline-none focus:border-[#F59E0B] resize-none"
                   required
                 />
               </div>
 
               {/* Input 3: Detailed Street Address */}
               <div className="space-y-1">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block font-body">Địa chỉ chi tiết (Số nhà, tên đường)</label>
+                <label className="text-[9px] font-black text-slate-650 uppercase tracking-widest block font-body">Địa chỉ chi tiết (Số nhà, tên đường)</label>
                 <input
                   type="text"
                   placeholder="Ví dụ: 15/4 Nguyễn Thị Minh Khai"
                   value={newRoomAddress}
                   onChange={(e) => setNewRoomAddress(e.target.value)}
-                  className="w-full h-11 bg-white/5 border border-white/10 rounded-xl px-4 text-xs font-semibold text-slate-200 placeholder-slate-500 focus:outline-none focus:border-[#F59E0B]"
+                  className="w-full h-11 bg-slate-100 border border-slate-200 rounded-xl px-4 text-xs font-semibold text-slate-700 placeholder-slate-500 focus:outline-none focus:border-[#F59E0B]"
                   required
                 />
               </div>
@@ -383,13 +383,13 @@ export const CreateRoomForm: React.FC<CreateRoomFormProps> = ({
               {/* Address details: City, District, Ward */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="space-y-1">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block font-body">
+                  <label className="text-[9px] font-black text-slate-650 uppercase tracking-widest block font-body">
                     Tỉnh / Thành phố {loadingProvinces && "..."}
                   </label>
                   <select
                     value={selectedProvinceCode}
                     onChange={handleProvinceChange}
-                    className="w-full h-11 bg-[#0f172a] border border-white/10 rounded-xl px-4 text-xs font-semibold text-slate-200 focus:outline-none focus:border-[#F59E0B]"
+                    className="w-full h-11 bg-card border border-slate-200 rounded-xl px-4 text-xs font-semibold text-slate-700 focus:outline-none focus:border-[#F59E0B]"
                     required
                   >
                     <option value="">-- Chọn Tỉnh / Thành --</option>
@@ -401,14 +401,14 @@ export const CreateRoomForm: React.FC<CreateRoomFormProps> = ({
                   </select>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block font-body">
+                  <label className="text-[9px] font-black text-slate-650 uppercase tracking-widest block font-body">
                     Quận / Huyện {loadingDistricts && "..."}
                   </label>
                   <select
                     value={selectedDistrictCode}
                     onChange={handleDistrictChange}
                     disabled={!selectedProvinceCode}
-                    className="w-full h-11 bg-[#0f172a] border border-white/10 rounded-xl px-4 text-xs font-semibold text-slate-200 focus:outline-none focus:border-[#F59E0B] disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full h-11 bg-card border border-slate-200 rounded-xl px-4 text-xs font-semibold text-slate-700 focus:outline-none focus:border-[#F59E0B] disabled:opacity-50 disabled:cursor-not-allowed"
                     required
                   >
                     <option value="">-- Chọn Quận / Huyện --</option>
@@ -420,14 +420,14 @@ export const CreateRoomForm: React.FC<CreateRoomFormProps> = ({
                   </select>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block font-body">
+                  <label className="text-[9px] font-black text-slate-650 uppercase tracking-widest block font-body">
                     Phường / Xã {loadingWards && "..."}
                   </label>
                   <select
                     value={selectedWardCode}
                     onChange={handleWardChange}
                     disabled={!selectedDistrictCode}
-                    className="w-full h-11 bg-[#0f172a] border border-white/10 rounded-xl px-4 text-xs font-semibold text-slate-200 focus:outline-none focus:border-[#F59E0B] disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full h-11 bg-card border border-slate-200 rounded-xl px-4 text-xs font-semibold text-slate-700 focus:outline-none focus:border-[#F59E0B] disabled:opacity-50 disabled:cursor-not-allowed"
                     required
                   >
                     <option value="">-- Chọn Phường / Xã --</option>
@@ -443,45 +443,45 @@ export const CreateRoomForm: React.FC<CreateRoomFormProps> = ({
               {/* Price, Deposit, Area, Capacity */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div className="space-y-1">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block font-body">Giá thuê (VNĐ)</label>
+                  <label className="text-[9px] font-black text-slate-650 uppercase tracking-widest block font-body">Giá thuê (VNĐ)</label>
                   <input
                     type="number"
                     value={newRoomPrice}
                     onChange={(e) => setNewRoomPrice(Number(e.target.value))}
-                    className="w-full h-11 bg-white/5 border border-white/10 rounded-xl px-4 text-xs font-semibold text-slate-200 focus:outline-none focus:border-[#F59E0B]"
+                    className="w-full h-11 bg-slate-100 border border-slate-200 rounded-xl px-4 text-xs font-semibold text-slate-700 focus:outline-none focus:border-[#F59E0B]"
                     required
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block font-body">Tiền cọc (VNĐ)</label>
+                  <label className="text-[9px] font-black text-slate-650 uppercase tracking-widest block font-body">Tiền cọc (VNĐ)</label>
                   <input
                     type="number"
                     value={newRoomDeposit}
                     onChange={(e) => setNewRoomDeposit(Number(e.target.value))}
-                    className="w-full h-11 bg-white/5 border border-white/10 rounded-xl px-4 text-xs font-semibold text-slate-200 focus:outline-none focus:border-[#F59E0B]"
+                    className="w-full h-11 bg-slate-100 border border-slate-200 rounded-xl px-4 text-xs font-semibold text-slate-700 focus:outline-none focus:border-[#F59E0B]"
                     required
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block font-body">Diện tích (m²)</label>
+                  <label className="text-[9px] font-black text-slate-650 uppercase tracking-widest block font-body">Diện tích (m²)</label>
                   <input
                     type="number"
                     min={5}
                     value={newRoomArea}
                     onChange={(e) => setNewRoomArea(Number(e.target.value))}
-                    className="w-full h-11 bg-white/5 border border-white/10 rounded-xl px-4 text-xs font-semibold text-slate-200 focus:outline-none focus:border-[#F59E0B]"
+                    className="w-full h-11 bg-slate-100 border border-slate-200 rounded-xl px-4 text-xs font-semibold text-slate-700 focus:outline-none focus:border-[#F59E0B]"
                     required
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block font-body">Sức chứa (Người)</label>
+                  <label className="text-[9px] font-black text-slate-650 uppercase tracking-widest block font-body">Sức chứa (Người)</label>
                   <input
                     type="number"
                     min={1}
                     max={10}
                     value={newRoomCapacity}
                     onChange={(e) => setNewRoomCapacity(Number(e.target.value))}
-                    className="w-full h-11 bg-white/5 border border-white/10 rounded-xl px-4 text-xs font-semibold text-slate-200 focus:outline-none focus:border-[#F59E0B]"
+                    className="w-full h-11 bg-slate-100 border border-slate-200 rounded-xl px-4 text-xs font-semibold text-slate-700 focus:outline-none focus:border-[#F59E0B]"
                     required
                   />
                 </div>
@@ -489,13 +489,13 @@ export const CreateRoomForm: React.FC<CreateRoomFormProps> = ({
 
               {/* Image upload section */}
               <div className="space-y-2">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block font-body">
+                <label className="text-[9px] font-black text-slate-650 uppercase tracking-widest block font-body">
                   Hình ảnh căn hộ ({uploadedImages.length} ảnh)
                 </label>
                 
                 {/* Drag and Drop Zone */}
                 <div 
-                  className="border border-dashed border-white/10 hover:border-[#F59E0B]/50 rounded-2xl p-6 bg-white/5 transition-all text-center cursor-pointer relative group flex flex-col items-center justify-center min-h-[120px]"
+                  className="border border-dashed border-slate-200 hover:border-[#F59E0B]/50 rounded-2xl p-6 bg-slate-100 transition-all text-center cursor-pointer relative group flex flex-col items-center justify-center min-h-[120px]"
                   onDragOver={(e) => e.preventDefault()}
                   onDrop={async (e) => {
                     e.preventDefault();
@@ -521,15 +521,15 @@ export const CreateRoomForm: React.FC<CreateRoomFormProps> = ({
                   {isUploading ? (
                     <div className="space-y-2">
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#F59E0B] mx-auto" />
-                      <span className="text-[10px] text-slate-400 font-bold block">Đang tải ảnh lên hệ thống...</span>
+                      <span className="text-[10px] text-slate-650 font-bold block">Đang tải ảnh lên hệ thống...</span>
                     </div>
                   ) : (
                     <div className="space-y-1">
-                      <Plus className="h-6 w-6 text-slate-400 group-hover:text-[#F59E0B] mx-auto transition-colors" />
-                      <p className="text-[11px] font-bold text-slate-200 group-hover:text-white transition-colors">
+                      <Plus className="h-6 w-6 text-slate-650 group-hover:text-primary mx-auto transition-colors" />
+                      <p className="text-[11px] font-bold text-slate-700 group-hover:text-white transition-colors">
                         Kéo thả ảnh hoặc click để chọn ảnh
                       </p>
-                      <p className="text-[9px] text-slate-500 font-body">
+                      <p className="text-[9px] text-slate-650 font-body">
                         Định dạng JPEG, PNG. Tối đa 5MB/ảnh.
                       </p>
                     </div>
@@ -540,7 +540,7 @@ export const CreateRoomForm: React.FC<CreateRoomFormProps> = ({
                 {uploadedImages.length > 0 && (
                   <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 pt-2">
                     {uploadedImages.map((imgUrl, index) => (
-                      <div key={index} className="relative aspect-video rounded-xl overflow-hidden border border-white/10 group bg-slate-800">
+                      <div key={index} className="relative aspect-video rounded-xl overflow-hidden border border-slate-200 group bg-slate-200">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img 
                           src={imgUrl} 
@@ -553,12 +553,12 @@ export const CreateRoomForm: React.FC<CreateRoomFormProps> = ({
                             e.stopPropagation();
                             setUploadedImages(uploadedImages.filter((_, i) => i !== index));
                           }}
-                          className="absolute top-1 right-1 h-5 w-5 bg-black/60 rounded-full flex items-center justify-center hover:bg-red-500/80 text-white cursor-pointer transition-all border border-white/15"
+                          className="absolute top-1 right-1 h-5 w-5 bg-black/60 rounded-full flex items-center justify-center hover:bg-red-500/80 text-white cursor-pointer transition-all border border-slate-200"
                         >
                           <X className="h-3 w-3" />
                         </button>
                         {index === 0 && (
-                          <span className="absolute bottom-1 left-1 px-1.5 py-0.5 bg-[#F59E0B] text-slate-950 text-[7px] font-black uppercase rounded shadow">
+                          <span className="absolute bottom-1 left-1 px-1.5 py-0.5 bg-primary text-white text-[7px] font-black uppercase rounded shadow">
                             Ảnh chính
                           </span>
                         )}
@@ -570,7 +570,7 @@ export const CreateRoomForm: React.FC<CreateRoomFormProps> = ({
 
               {/* Amenities checklist grid */}
               <div className="space-y-2">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block font-body">Tiện nghi có sẵn</label>
+                <label className="text-[9px] font-black text-slate-650 uppercase tracking-widest block font-body">Tiện nghi có sẵn</label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {["Wifi", "Máy lạnh", "Ban công", "Bếp riêng", "Tủ lạnh", "Máy giặt", "Khu để xe", "Cửa sổ lớn", "Tủ quần áo"].map((amenity) => {
                     const isSelected = selectedAmenities.includes(amenity);
@@ -587,11 +587,11 @@ export const CreateRoomForm: React.FC<CreateRoomFormProps> = ({
                         }}
                         className={`h-9 rounded-xl border text-[10px] font-black uppercase tracking-wider px-3 transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                           isSelected
-                            ? "bg-[#F59E0B]/10 border-[#F59E0B]/40 text-[#F59E0B] shadow"
-                            : "bg-white/5 border-white/10 text-slate-400 hover:text-slate-200 hover:border-white/20"
+                            ? "bg-primary/10 border-primary/40 text-primary shadow"
+                            : "bg-slate-100 border-slate-200 text-slate-650 hover:text-slate-700 hover:border-white/20"
                         }`}
                       >
-                        {isSelected && <CheckCircle className="h-3.5 w-3.5 text-[#F59E0B]" />}
+                        {isSelected && <CheckCircle className="h-3.5 w-3.5 text-primary" />}
                         {amenity}
                       </button>
                     );
@@ -600,17 +600,17 @@ export const CreateRoomForm: React.FC<CreateRoomFormProps> = ({
               </div>
 
               {/* Actions */}
-              <div className="pt-4 border-t border-white/5 flex justify-end gap-3.5">
+              <div className="pt-4 border-t border-slate-200 flex justify-end gap-3.5">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="h-11 px-5 rounded-xl border border-white/10 hover:bg-white/5 text-slate-300 text-xs font-bold uppercase tracking-wider cursor-pointer transition-all"
+                  className="h-11 px-5 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-600 text-xs font-bold uppercase tracking-wider cursor-pointer transition-all"
                 >
                   Hủy bỏ
                 </button>
                 <button
                   type="submit"
-                  className="h-11 px-6 rounded-xl bg-[#F59E0B] hover:bg-[#FBBF24] text-slate-900 text-xs font-black uppercase tracking-wider cursor-pointer transition-all shadow-md shadow-[#F59E0B]/10"
+                  className="h-11 px-6 rounded-xl bg-primary hover:bg-primary/90 text-white text-xs font-black uppercase tracking-wider cursor-pointer transition-all shadow-md shadow-primary/10"
                 >
                   {editingRoom ? "Cập nhật phòng" : "Đăng phòng ngay"}
                 </button>

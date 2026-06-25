@@ -150,11 +150,11 @@ export default function LandlordDashboardIndex() {
     const planType = normalizePlanType(type);
     switch (planType) {
       case "GOLD":
-        return <Crown className="h-5 w-5 text-[#F59E0B]" />;
+        return <Crown className="h-5 w-5 text-primary" />;
       case "DIAMOND":
         return <Sparkles className="h-5 w-5 text-[#D946EF]" />;
       default:
-        return <Zap className="h-5 w-5 text-slate-400" />;
+        return <Zap className="h-5 w-5 text-slate-650" />;
     }
   };
 
@@ -162,7 +162,7 @@ export default function LandlordDashboardIndex() {
     const planType = normalizePlanType(type);
     switch (planType) {
       case "GOLD":
-        return "from-[#F59E0B]/20 via-[#F59E0B]/5 to-transparent border-[#F59E0B]/30";
+        return "from-[#F59E0B]/20 via-[#F59E0B]/5 to-transparent border-primary/30";
       case "DIAMOND":
         return "from-[#D946EF]/20 via-[#D946EF]/5 to-transparent border-[#D946EF]/30";
       default:
@@ -208,7 +208,7 @@ export default function LandlordDashboardIndex() {
       change: "+12.5% so với tháng trước",
       icon: Coins,
       color: "text-amber-500",
-      bg: "bg-amber-500/10 border-amber-500/20",
+      bg: "bg-primary/10 border-amber-500/20",
       link: "/landlord/statistic"
     },
     {
@@ -244,14 +244,14 @@ export default function LandlordDashboardIndex() {
   ];
 
   return (
-    <div className="space-y-10 animate-fade-in text-[#F8FAFC]">
+    <div className="space-y-10 animate-fade-in text-foreground">
       
       {/* Editorial Header Greeting */}
       <div className="space-y-2">
         <motion.div
           initial={{ opacity: 0, y: 5 }}
           animate={{ opacity: 1, y: 0 }}
-          className="inline-flex items-center gap-2 rounded-full border border-[#F59E0B]/20 bg-[#F59E0B]/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-[#F59E0B]"
+          className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-primary"
         >
           <Sparkles className="h-3.5 w-3.5" />
           Khu vực Chủ nhà Pro
@@ -261,11 +261,11 @@ export default function LandlordDashboardIndex() {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="font-heading text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-100 leading-tight"
+          className="font-heading text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-800 leading-tight"
         >
-          Xin chào, <span className="bg-linear-to-r from-[#F59E0B] via-[#FBBF24] to-[#8B5CF6] bg-clip-text text-transparent italic font-display">{user?.full_name}</span>
+          Xin chào, <span className="bg-linear-to-r from-primary via-primary to-primary/80 bg-clip-text text-transparent italic font-display">{user?.full_name}</span>
         </motion.h1>
-        <p className="text-xs sm:text-sm text-slate-400 font-medium font-body max-w-2xl leading-relaxed">
+        <p className="text-xs sm:text-sm text-slate-650 font-medium font-body max-w-2xl leading-relaxed">
           Chào mừng bạn quay lại hệ thống quản trị Roomie Landlord. Dưới đây là thông số vận hành kinh doanh và tình hình khai thác phòng của bạn trong 30 ngày qua.
         </p>
       </div>
@@ -281,7 +281,7 @@ export default function LandlordDashboardIndex() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: 0.15 + idx * 0.05 }}
                 whileHover={{ y: -4 }}
-                className="rounded-3xl border border-white/5 bg-[#0f172a]/60 backdrop-blur-md p-6 flex flex-col justify-between shadow-lg relative overflow-hidden group cursor-pointer h-full"
+                className="rounded-3xl border border-slate-200 bg-card/60 backdrop-blur-md p-6 flex flex-col justify-between shadow-lg relative overflow-hidden group cursor-pointer h-full"
               >
                 {/* Pulse effect */}
                 {stat.pulse && (
@@ -293,7 +293,7 @@ export default function LandlordDashboardIndex() {
 
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-[9px] font-black uppercase text-slate-400 tracking-wider">
+                    <span className="text-[9px] font-black uppercase text-slate-650 tracking-wider">
                       {stat.label}
                     </span>
                     <div className={`p-3 rounded-2xl ${stat.bg} transition-transform group-hover:scale-110`}>
@@ -302,18 +302,18 @@ export default function LandlordDashboardIndex() {
                   </div>
 
                   <div className="space-y-1">
-                    <h3 className="text-2xl font-black text-slate-100">
+                    <h3 className="text-2xl font-black text-slate-800">
                       {stat.format === "vnd" ? formatVND(stat.value as number) : stat.value}
                     </h3>
                     {stat.sub && (
-                      <p className="text-[10px] font-bold text-slate-400 font-body">
+                      <p className="text-[10px] font-bold text-slate-650 font-body">
                         {stat.sub}
                       </p>
                     )}
                   </div>
                 </div>
 
-                <div className="mt-4 pt-4 border-t border-dashed border-white/5 flex items-center justify-between text-[9px] font-black uppercase tracking-widest text-[#FBBF24]">
+                <div className="mt-4 pt-4 border-t border-dashed border-slate-200 flex items-center justify-between text-[9px] font-black uppercase tracking-widest text-[#FBBF24]">
                   <span>{stat.change}</span>
                   <ChevronRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
@@ -325,42 +325,42 @@ export default function LandlordDashboardIndex() {
 
       {/* Subscription Status Banner Section */}
       {loadingSub ? (
-        <div className="h-28 rounded-[2.5rem] bg-[#0F172A]/40 border border-white/5 animate-pulse flex items-center justify-center">
-          <span className="text-slate-500 text-xs font-semibold">Đang nạp trạng thái cước phí...</span>
+        <div className="h-28 rounded-[2.5rem] bg-background/40 border border-slate-200 animate-pulse flex items-center justify-center">
+          <span className="text-slate-650 text-xs font-semibold">Đang nạp trạng thái cước phí...</span>
         </div>
       ) : hasActiveSub ? (
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, delay: 0.4 }}
-          className="rounded-[2.5rem] bg-linear-to-tr from-[#0F172A] via-[#1E293B]/60 to-[#0F172A] border border-white/5 p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl relative overflow-hidden"
+          className="rounded-[2.5rem] bg-linear-to-tr from-[#0F172A] via-[#1E293B]/60 to-[#0F172A] border border-slate-200 p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl relative overflow-hidden"
         >
           {/* Glow */}
-          <div className="absolute top-[-50%] right-[-10%] w-[30%] h-full rounded-full bg-[#F59E0B]/10 blur-[80px] pointer-events-none" />
+          <div className="absolute top-[-50%] right-[-10%] w-[30%] h-full rounded-full bg-primary/10 blur-[80px] pointer-events-none" />
 
           <div className="flex items-center gap-5">
-            <div className="h-16 w-16 rounded-2xl bg-linear-to-tr from-[#F59E0B]/20 to-[#FBBF24]/10 border border-[#F59E0B]/30 flex items-center justify-center text-[#F59E0B] shadow-inner shrink-0">
-              <Zap className="h-8 w-8 text-[#F59E0B] animate-pulse" />
+            <div className="h-16 w-16 rounded-2xl bg-linear-to-tr from-[#F59E0B]/20 to-[#FBBF24]/10 border border-primary/30 flex items-center justify-center text-primary shadow-inner shrink-0">
+              <Zap className="h-8 w-8 text-primary animate-pulse" />
             </div>
             <div className="space-y-1.5 text-left">
               <div className="flex items-center gap-2">
-                <span className="text-[9px] font-black uppercase bg-[#F59E0B]/10 border border-[#F59E0B]/30 text-[#F59E0B] px-2 py-0.5 rounded">
+                <span className="text-[9px] font-black uppercase bg-primary/10 border border-primary/30 text-primary px-2 py-0.5 rounded">
                   Active Member
                 </span>
-                <span className="text-[9px] font-black uppercase bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-2 py-0.5 rounded flex items-center gap-0.5">
+                <span className="text-[9px] font-black uppercase bg-primary/10 border border-primary/30 text-primary px-2 py-0.5 rounded flex items-center gap-0.5">
                   <ShieldCheck className="h-3 w-3" /> Auto Verified
                 </span>
               </div>
-              <h3 className="font-heading text-lg font-bold text-slate-100">{activePlanName || "Gói Chủ Nhà Pro"}</h3>
-              <p className="text-[11px] text-slate-400 leading-relaxed font-body flex items-center gap-1.5">
-                <Calendar className="h-3.5 w-3.5 text-slate-500 shrink-0" />
-                Gói cước của bạn đang hoạt động. Ngày hết hạn tiếp theo: <strong className="text-slate-200">{formatDate(activePlanEndDate)}</strong>.
+              <h3 className="font-heading text-lg font-bold text-slate-800">{activePlanName || "Gói Chủ Nhà Pro"}</h3>
+              <p className="text-[11px] text-slate-650 leading-relaxed font-body flex items-center gap-1.5">
+                <Calendar className="h-3.5 w-3.5 text-slate-650 shrink-0" />
+                Gói cước của bạn đang hoạt động. Ngày hết hạn tiếp theo: <strong className="text-slate-700">{formatDate(activePlanEndDate)}</strong>.
               </p>
             </div>
           </div>
 
           <Link href="/landlord/subscription">
-            <button className="h-12 px-6 rounded-xl bg-[#F59E0B] hover:bg-[#FBBF24] text-slate-900 text-xs font-black uppercase tracking-wider transition-all duration-300 active:scale-95 shadow-md shadow-[#F59E0B]/10 cursor-pointer flex items-center gap-1.5 shrink-0 self-start md:self-center">
+            <button className="h-12 px-6 rounded-xl bg-primary hover:bg-primary/90 text-white text-xs font-black uppercase tracking-wider transition-all duration-300 active:scale-95 shadow-md shadow-primary/10 cursor-pointer flex items-center gap-1.5 shrink-0 self-start md:self-center">
               Quản lý đăng ký
               <ArrowRight className="h-3.5 w-3.5" />
             </button>
@@ -374,23 +374,23 @@ export default function LandlordDashboardIndex() {
           className="rounded-[2.5rem] bg-gradient-to-tr from-amber-500/10 via-[#1E293B]/20 to-amber-500/5 border border-amber-500/20 p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl relative overflow-hidden"
         >
           {/* Glow */}
-          <div className="absolute top-[-50%] right-[-10%] w-[30%] h-full rounded-full bg-amber-500/10 blur-[80px] pointer-events-none" />
+          <div className="absolute top-[-50%] right-[-10%] w-[30%] h-full rounded-full bg-primary/10 blur-[80px] pointer-events-none" />
 
           <div className="flex items-center gap-5">
-            <div className="h-16 w-16 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500 shadow-inner shrink-0">
-              <Zap className="h-8 w-8 text-amber-400 animate-pulse" />
+            <div className="h-16 w-16 rounded-2xl bg-primary/10 border border-primary/30 flex items-center justify-center text-amber-500 shadow-inner shrink-0">
+              <Zap className="h-8 w-8 text-primary animate-pulse" />
             </div>
             <div className="space-y-1.5 text-left">
               <div className="flex items-center gap-2">
-                <span className="text-[9px] font-black uppercase bg-slate-500/10 border border-slate-500/30 text-slate-400 px-2 py-0.5 rounded">
+                <span className="text-[9px] font-black uppercase bg-slate-500/10 border border-slate-500/30 text-slate-650 px-2 py-0.5 rounded">
                   Free Member
                 </span>
-                <span className="text-[9px] font-black uppercase bg-amber-500/10 border border-amber-500/30 text-amber-400 px-2 py-0.5 rounded flex items-center gap-0.5">
+                <span className="text-[9px] font-black uppercase bg-primary/10 border border-primary/30 text-primary px-2 py-0.5 rounded flex items-center gap-0.5">
                   <Info className="h-3 w-3" /> Chưa nâng cấp
                 </span>
               </div>
-              <h3 className="font-heading text-lg font-bold text-slate-100">Gói Hội Viên Thường (Free Account)</h3>
-              <p className="text-[11px] text-slate-400 leading-relaxed font-body">
+              <h3 className="font-heading text-lg font-bold text-slate-800">Gói Hội Viên Thường (Free Account)</h3>
+              <p className="text-[11px] text-slate-650 leading-relaxed font-body">
                 Bạn đang sử dụng quyền lợi miễn phí. Các tính năng AI so khớp và đẩy tin nổi bật bị giới hạn.
               </p>
             </div>
@@ -398,7 +398,7 @@ export default function LandlordDashboardIndex() {
 
           <button
             onClick={() => setShowPlansModal(true)}
-            className="h-12 px-6 rounded-xl bg-[#F59E0B] hover:bg-[#FBBF24] text-slate-900 text-xs font-black uppercase tracking-wider transition-all duration-300 active:scale-95 shadow-md shadow-[#F59E0B]/10 cursor-pointer flex items-center gap-1.5 shrink-0 self-start md:self-center"
+            className="h-12 px-6 rounded-xl bg-primary hover:bg-primary/90 text-white text-xs font-black uppercase tracking-wider transition-all duration-300 active:scale-95 shadow-md shadow-primary/10 cursor-pointer flex items-center gap-1.5 shrink-0 self-start md:self-center"
           >
             Nâng cấp ngay
             <ArrowRight className="h-3.5 w-3.5" />
@@ -424,30 +424,30 @@ export default function LandlordDashboardIndex() {
               initial={{ opacity: 0, scale: 0.96, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.96, y: 10 }}
-              className="relative w-full max-w-4xl rounded-[2.5rem] border border-white/10 bg-[#0f172a]/95 backdrop-blur-2xl shadow-2xl p-6 sm:p-8 z-10 text-left text-[#F8FAFC]"
+              className="relative w-full max-w-4xl rounded-[2.5rem] border border-slate-200 bg-card/95 backdrop-blur-2xl shadow-2xl p-6 sm:p-8 z-10 text-left text-foreground"
             >
               {/* Close Button */}
               <button
                 onClick={() => setShowPlansModal(false)}
-                className="absolute top-6 right-6 p-2 rounded-full border border-white/10 bg-white/5 text-slate-400 hover:text-white cursor-pointer transition-all"
+                className="absolute top-6 right-6 p-2 rounded-full border border-slate-200 bg-slate-100 text-slate-650 hover:text-white cursor-pointer transition-all"
               >
                 <X className="h-4 w-4" />
               </button>
 
               <div className="space-y-1.5 mb-6">
-                <span className="text-[10px] font-black uppercase text-[#F59E0B] tracking-widest block font-body">
+                <span className="text-[10px] font-black uppercase text-primary tracking-widest block font-body">
                   Nâng cấp đặc quyền hội viên
                 </span>
-                <h3 className="text-xl font-black text-slate-100">Kích hoạt Gói cước Landlord VIP</h3>
-                <p className="text-[10px] text-slate-400 leading-relaxed font-body">
+                <h3 className="text-xl font-black text-slate-800">Kích hoạt Gói cước Landlord VIP</h3>
+                <p className="text-[10px] text-slate-650 leading-relaxed font-body">
                   Chọn gói cước phù hợp nhất với tần suất đăng tin và nhu cầu tìm kiếm khách thuê của bạn.
                 </p>
               </div>
 
               {loadingPlans ? (
                 <div className="h-48 flex flex-col items-center justify-center gap-3">
-                  <Compass className="h-7 w-7 text-[#F59E0B] animate-spin" />
-                  <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 font-body">
+                  <Compass className="h-7 w-7 text-primary animate-spin" />
+                  <span className="text-[9px] font-black uppercase tracking-widest text-slate-650 font-body">
                     Đang nạp dữ liệu gói cước VIP...
                   </span>
                 </div>
@@ -461,7 +461,7 @@ export default function LandlordDashboardIndex() {
                     return (
                       <div
                         key={plan.id}
-                        className={`relative rounded-[2rem] border bg-[#0f172a]/60 backdrop-blur-md p-5 flex flex-col justify-between shadow-md transition-all border-white/5 ${gradient}`}
+                        className={`relative rounded-[2rem] border bg-card/60 backdrop-blur-md p-5 flex flex-col justify-between shadow-md transition-all border-slate-200 ${gradient}`}
                       >
                         <div className="space-y-4">
                           <div className="flex items-center justify-between">
@@ -469,34 +469,34 @@ export default function LandlordDashboardIndex() {
                               <h4 className="font-extrabold text-xs text-[#FBBF24]">
                                 {plan.sub_title}
                               </h4>
-                              <span className="text-[8px] uppercase font-black tracking-widest text-slate-500 block font-body">
+                              <span className="text-[8px] uppercase font-black tracking-widest text-slate-650 block font-body">
                                 Thời hạn: {plan.sub_time}
                               </span>
                             </div>
-                            <div className="p-2 rounded-xl bg-white/5 border border-white/5">
+                            <div className="p-2 rounded-xl bg-slate-100 border border-slate-200">
                               {getPlanIcon(plan.sub_type)}
                             </div>
                           </div>
 
                           <div className="flex items-baseline gap-1">
-                            <span className="text-xl font-black text-slate-100">
+                            <span className="text-xl font-black text-slate-800">
                               {formatVND(plan.sub_price)}
                             </span>
-                            <span className="text-[8px] text-slate-500 font-bold uppercase tracking-widest">
+                            <span className="text-[8px] text-slate-650 font-bold uppercase tracking-widest">
                               / chu kỳ
                             </span>
                           </div>
 
-                          <p className="text-[9px] text-slate-400 leading-relaxed font-medium">
+                          <p className="text-[9px] text-slate-650 leading-relaxed font-medium">
                             {plan.sub_description}
                           </p>
 
-                          <hr className="border-white/5" />
+                          <hr className="border-slate-200" />
 
                           <ul className="space-y-1.5 text-[9px] text-slate-455 font-body font-medium">
                             {getPlanFeatures(plan.sub_type).map((feature, idx) => (
                               <li key={idx} className="flex gap-2 items-start leading-tight">
-                                <div className="h-4 w-4 rounded-full flex items-center justify-center shrink-0 mt-0.5 bg-[#FBBF24]/10 text-[#FBBF24]">
+                                <div className="h-4 w-4 rounded-full flex items-center justify-center shrink-0 mt-0.5 bg-primary/10 text-primary">
                                   <Check className="h-2 w-2 stroke-[3]" />
                                 </div>
                                 <span>{feature}</span>
@@ -525,8 +525,8 @@ export default function LandlordDashboardIndex() {
       {/* Quick Actions Panel */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-2">
         {/* Box 1: Recent connect requests */}
-        <div className="rounded-[2rem] border border-white/5 bg-[#0f172a]/30 backdrop-blur-md p-8 space-y-6">
-          <h3 className="font-heading text-md font-bold text-slate-200">Kết nối khách thuê mới nhất</h3>
+        <div className="rounded-[2rem] border border-slate-200 bg-slate-50 backdrop-blur-md p-8 space-y-6">
+          <h3 className="font-heading text-md font-bold text-slate-700">Kết nối khách thuê mới nhất</h3>
           <div className="divide-y divide-white/5 space-y-4">
             {[
               { name: "Lê Nguyễn Anh Hùng", match: 94, budget: 4500000, time: "2 giờ trước" },
@@ -535,17 +535,17 @@ export default function LandlordDashboardIndex() {
             ].map((renter, idx) => (
               <div key={idx} className="flex justify-between items-center pt-4 first:pt-0">
                 <div className="flex items-center gap-3">
-                  <div className="h-9 w-9 rounded-xl bg-linear-to-tr from-[#8B5CF6]/30 to-[#8B5CF6]/5 border border-[#8B5CF6]/20 text-[#8B5CF6] text-xs font-black flex items-center justify-center">
+                  <div className="h-9 w-9 rounded-xl bg-linear-to-tr from-[#8B5CF6]/30 to-[#8B5CF6]/5 border border-primary/20 text-primary text-xs font-black flex items-center justify-center">
                     {renter.name.split(" ").slice(-1)[0][0]}
                   </div>
                   <div className="space-y-0.5">
-                    <span className="text-xs font-bold text-slate-200 block">{renter.name}</span>
-                    <span className="text-[10px] text-slate-400 font-medium font-body block">
+                    <span className="text-xs font-bold text-slate-700 block">{renter.name}</span>
+                    <span className="text-[10px] text-slate-650 font-medium font-body block">
                       Ngân sách: {formatVND(renter.budget)}/tháng • {renter.time}
                     </span>
                   </div>
                 </div>
-                <span className="inline-flex items-center gap-0.5 text-[9px] font-black uppercase bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-2.5 py-0.5 rounded-full">
+                <span className="inline-flex items-center gap-0.5 text-[9px] font-black uppercase bg-primary/10 border border-primary/30 text-primary px-2.5 py-0.5 rounded-full">
                   {renter.match}% Khớp
                 </span>
               </div>
@@ -554,19 +554,19 @@ export default function LandlordDashboardIndex() {
         </div>
 
         {/* Box 2: Quick Links */}
-        <div className="rounded-[2rem] border border-white/5 bg-[#0f172a]/30 backdrop-blur-md p-8 space-y-6 flex flex-col justify-between">
+        <div className="rounded-[2rem] border border-slate-200 bg-slate-50 backdrop-blur-md p-8 space-y-6 flex flex-col justify-between">
           <div className="space-y-4">
-            <h3 className="font-heading text-md font-bold text-slate-200">Thao tác nhanh</h3>
-            <p className="text-xs text-slate-400 font-medium font-body leading-relaxed">
+            <h3 className="font-heading text-md font-bold text-slate-700">Thao tác nhanh</h3>
+            <p className="text-xs text-slate-650 font-medium font-body leading-relaxed">
               Bạn có thể dễ dàng thêm phòng mới, cập nhật bảng giá tiện ích, hoặc đẩy tin đăng để thu hút thêm nhiều renter tương thích nhất.
             </p>
           </div>
           
           <div className="grid grid-cols-2 gap-4">
-            <button className="h-12 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-slate-200 text-[10px] font-black uppercase tracking-wider cursor-pointer transition-all flex items-center justify-center gap-1.5">
+            <button className="h-12 rounded-xl bg-slate-100 border border-slate-200 hover:bg-white/10 text-slate-700 text-[10px] font-black uppercase tracking-wider cursor-pointer transition-all flex items-center justify-center gap-1.5">
               Đăng phòng mới
             </button>
-            <button className="h-12 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-slate-200 text-[10px] font-black uppercase tracking-wider cursor-pointer transition-all flex items-center justify-center gap-1.5">
+            <button className="h-12 rounded-xl bg-slate-100 border border-slate-200 hover:bg-white/10 text-slate-700 text-[10px] font-black uppercase tracking-wider cursor-pointer transition-all flex items-center justify-center gap-1.5">
               Đẩy tin nổi bật
             </button>
           </div>

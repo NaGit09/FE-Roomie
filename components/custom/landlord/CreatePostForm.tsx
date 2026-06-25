@@ -177,24 +177,24 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
             initial={{ opacity: 0, scale: 0.96, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 10 }}
-            className="relative w-full max-w-xl rounded-[2.5rem] border border-white/10 bg-[#0f172a]/95 backdrop-blur-2xl shadow-2xl p-6 sm:p-8 z-10 text-left text-[#F8FAFC] max-h-[90vh] overflow-y-auto"
+            className="relative w-full max-w-xl rounded-[2.5rem] border border-slate-200 bg-card/95 backdrop-blur-2xl shadow-2xl p-6 sm:p-8 z-10 text-left text-foreground max-h-[90vh] overflow-y-auto"
           >
             {/* Close button */}
             <button
               onClick={onClose}
-              className="absolute top-6 right-6 p-2 rounded-full border border-white/10 bg-white/5 text-slate-400 hover:text-white cursor-pointer transition-all"
+              className="absolute top-6 right-6 p-2 rounded-full border border-slate-200 bg-slate-100 text-slate-650 hover:text-white cursor-pointer transition-all"
             >
               <X className="h-4 w-4" />
             </button>
 
             <div className="space-y-1.5 mb-6">
-              <span className="text-[10px] font-black uppercase text-[#F59E0B] tracking-widest block font-heading">
+              <span className="text-[10px] font-black uppercase text-primary tracking-widest block font-heading">
                 Quảng cáo phòng ghép
               </span>
-              <h3 className="text-xl font-black text-slate-100 font-heading">
+              <h3 className="text-xl font-black text-slate-800 font-heading">
                 {editingPost ? "Cập nhật bài viết tìm bạn ở ghép" : "Tạo bài viết tìm bạn ở ghép"}
               </h3>
-              <p className="text-[10px] text-slate-400 leading-relaxed font-body">
+              <p className="text-[10px] text-slate-650 leading-relaxed font-body">
                 Khai báo tiêu đề, bài viết chi tiết, đính kèm phòng đã thuê để người tìm phòng có thể dễ dàng ghép phòng.
               </p>
             </div>
@@ -202,13 +202,13 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
             <form onSubmit={handleSubmit} className="space-y-5 font-body">
               {/* Select Room */}
               <div className="space-y-1">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block font-body">
+                <label className="text-[9px] font-black text-slate-650 uppercase tracking-widest block font-body">
                   Liên kết với căn hộ / phòng trống {loadingRooms && "..."}
                 </label>
                 <select
                   value={selectedRoomId}
                   onChange={(e) => setSelectedRoomId(e.target.value)}
-                  className="w-full h-11 bg-[#0f172a] border border-white/10 rounded-xl px-4 text-xs font-semibold text-slate-200 focus:outline-none focus:border-[#F59E0B]"
+                  className="w-full h-11 bg-card border border-slate-200 rounded-xl px-4 text-xs font-semibold text-slate-700 focus:outline-none focus:border-[#F59E0B]"
                   required
                 >
                   <option value="">-- Chọn Căn hộ / Phòng trống của bạn --</option>
@@ -222,38 +222,38 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
 
               {/* Title */}
               <div className="space-y-1">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block font-body">Tiêu đề bài viết</label>
+                <label className="text-[9px] font-black text-slate-650 uppercase tracking-widest block font-body">Tiêu đề bài viết</label>
                 <input
                   type="text"
                   placeholder="Ví dụ: Tìm nam ở ghép phòng Penthouse ban công Q3 siêu đẹp"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full h-11 bg-white/5 border border-white/10 rounded-xl px-4 text-xs font-semibold text-slate-200 placeholder-slate-500 focus:outline-none focus:border-[#F59E0B]"
+                  className="w-full h-11 bg-slate-100 border border-slate-200 rounded-xl px-4 text-xs font-semibold text-slate-700 placeholder-slate-500 focus:outline-none focus:border-[#F59E0B]"
                   required
                 />
               </div>
 
               {/* Content */}
               <div className="space-y-1">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block font-body">Nội dung chi tiết bài viết</label>
+                <label className="text-[9px] font-black text-slate-650 uppercase tracking-widest block font-body">Nội dung chi tiết bài viết</label>
                 <textarea
                   placeholder="Nhập thông tin giới thiệu bản thân, phong cách sống, yêu cầu đối với roommate của bạn..."
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   rows={4}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-xs font-semibold text-slate-200 placeholder-slate-500 focus:outline-none focus:border-[#F59E0B] resize-none"
+                  className="w-full bg-slate-100 border border-slate-200 rounded-xl p-4 text-xs font-semibold text-slate-700 placeholder-slate-500 focus:outline-none focus:border-[#F59E0B] resize-none"
                   required
                 />
               </div>
 
               {/* Banner Image Uploader */}
               <div className="space-y-2">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block font-body">
+                <label className="text-[9px] font-black text-slate-650 uppercase tracking-widest block font-body">
                   Ảnh bìa bài viết (1 ảnh)
                 </label>
                 
                 {imageUrl ? (
-                  <div className="relative aspect-video w-full rounded-2xl overflow-hidden border border-white/10 bg-slate-800 group">
+                  <div className="relative aspect-video w-full rounded-2xl overflow-hidden border border-slate-200 bg-slate-200 group">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img 
                       src={imageUrl} 
@@ -263,14 +263,14 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
                     <button
                       type="button"
                       onClick={() => setImageUrl("")}
-                      className="absolute top-3 right-3 p-2 bg-black/70 rounded-full hover:bg-red-500/80 text-white cursor-pointer transition-all border border-white/15"
+                      className="absolute top-3 right-3 p-2 bg-black/70 rounded-full hover:bg-red-500/80 text-white cursor-pointer transition-all border border-slate-200"
                     >
                       <X className="h-4 w-4" />
                     </button>
                   </div>
                 ) : (
                   <div 
-                    className="border border-dashed border-white/10 hover:border-[#F59E0B]/50 rounded-2xl p-6 bg-white/5 transition-all text-center cursor-pointer relative group flex flex-col items-center justify-center min-h-[120px]"
+                    className="border border-dashed border-slate-200 hover:border-[#F59E0B]/50 rounded-2xl p-6 bg-slate-100 transition-all text-center cursor-pointer relative group flex flex-col items-center justify-center min-h-[120px]"
                     onDragOver={(e) => e.preventDefault()}
                     onDrop={async (e) => {
                       e.preventDefault();
@@ -295,15 +295,15 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
                     {isUploading ? (
                       <div className="space-y-2">
                         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#F59E0B] mx-auto" />
-                        <span className="text-[10px] text-slate-400 font-bold block">Đang tải ảnh banner bài viết...</span>
+                        <span className="text-[10px] text-slate-650 font-bold block">Đang tải ảnh banner bài viết...</span>
                       </div>
                     ) : (
                       <div className="space-y-1">
-                        <Plus className="h-6 w-6 text-slate-400 group-hover:text-[#F59E0B] mx-auto transition-colors" />
-                        <p className="text-[11px] font-bold text-slate-200 group-hover:text-white transition-colors">
+                        <Plus className="h-6 w-6 text-slate-650 group-hover:text-primary mx-auto transition-colors" />
+                        <p className="text-[11px] font-bold text-slate-700 group-hover:text-white transition-colors">
                           Kéo thả ảnh hoặc click để chọn ảnh bìa
                         </p>
-                        <p className="text-[9px] text-slate-500 font-body">
+                        <p className="text-[9px] text-slate-650 font-body">
                           Định dạng JPEG, PNG. Tối đa 5MB.
                         </p>
                       </div>
@@ -313,17 +313,17 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
               </div>
 
               {/* Actions */}
-              <div className="pt-4 border-t border-white/5 flex justify-end gap-3.5">
+              <div className="pt-4 border-t border-slate-200 flex justify-end gap-3.5">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="h-11 px-5 rounded-xl border border-white/10 hover:bg-white/5 text-slate-300 text-xs font-bold uppercase tracking-wider cursor-pointer transition-all"
+                  className="h-11 px-5 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-600 text-xs font-bold uppercase tracking-wider cursor-pointer transition-all"
                 >
                   Hủy bỏ
                 </button>
                 <button
                   type="submit"
-                  className="h-11 px-6 rounded-xl bg-[#F59E0B] hover:bg-[#FBBF24] text-slate-900 text-xs font-black uppercase tracking-wider cursor-pointer transition-all shadow-md shadow-[#F59E0B]/10"
+                  className="h-11 px-6 rounded-xl bg-primary hover:bg-primary/90 text-white text-xs font-black uppercase tracking-wider cursor-pointer transition-all shadow-md shadow-primary/10"
                 >
                   {editingPost ? "Cập nhật bài viết" : "Đăng tin ngay"}
                 </button>

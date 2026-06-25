@@ -136,11 +136,11 @@ export default function LandlordSubscriptionPage() {
     const planType = normalizePlanType(type);
     switch (planType) {
       case "GOLD":
-        return <Crown className="h-5 w-5 text-[#F59E0B]" />;
+        return <Crown className="h-5 w-5 text-primary" />;
       case "DIAMOND":
         return <Sparkles className="h-5 w-5 text-[#D946EF]" />;
       default:
-        return <Zap className="h-5 w-5 text-slate-400" />;
+        return <Zap className="h-5 w-5 text-slate-650" />;
     }
   };
 
@@ -148,7 +148,7 @@ export default function LandlordSubscriptionPage() {
     const planType = normalizePlanType(type);
     switch (planType) {
       case "GOLD":
-        return "from-[#F59E0B]/20 via-[#F59E0B]/5 to-transparent border-[#F59E0B]/30 shadow-[#F59E0B]/5";
+        return "from-primary/20 via-primary/5 to-transparent border-primary/30 shadow-primary/5";
       case "DIAMOND":
         return "from-[#D946EF]/20 via-[#D946EF]/5 to-transparent border-[#D946EF]/30 shadow-[#D946EF]/5";
       default:
@@ -254,31 +254,31 @@ export default function LandlordSubscriptionPage() {
   const activePlanTitle = activeSubDetail ? getPlanTitle(activeSubDetail) : "";
 
   return (
-    <div className="space-y-10 animate-fade-in text-[#F8FAFC] relative">
+    <div className="space-y-10 animate-fade-in text-foreground relative">
       
       {/* Dynamic Background Blurs */}
       <div className="absolute top-0 right-0 w-[400px] h-[400px] rounded-full bg-fuchsia-500/5 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-10 left-10 w-[300px] h-[300px] rounded-full bg-amber-500/5 blur-[100px] pointer-events-none" />
 
       {/* 1. Header Title */}
-      <div className="space-y-1.5 border-b border-white/5 pb-6 text-left relative z-10">
-        <div className="inline-flex items-center gap-2 rounded-full border border-[#F59E0B]/20 bg-[#F59E0B]/5 px-4.5 py-1.5 text-xs font-semibold uppercase tracking-widest text-[#F59E0B]">
+      <div className="space-y-1.5 border-b border-slate-200 pb-6 text-left relative z-10">
+        <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4.5 py-1.5 text-xs font-semibold uppercase tracking-widest text-primary">
           <CreditCard className="h-3.5 w-3.5" />
           Hạng hội viên & cước phí
         </div>
-        <h1 className="font-heading text-3xl font-extrabold tracking-tight text-slate-100">
+        <h1 className="font-heading text-3xl font-extrabold tracking-tight text-slate-800">
           Vận hành gói cước chủ nhà
         </h1>
-        <p className="text-xs sm:text-sm text-slate-400 font-medium font-body leading-relaxed max-w-xl">
+        <p className="text-xs sm:text-sm text-slate-650 font-medium font-body leading-relaxed max-w-xl">
           Nâng cấp quyền lợi Pro để tăng hiệu suất tiếp cận người tìm phòng, mở rộng quy mô hiển thị bài đăng và in hóa đơn giao dịch.
         </p>
       </div>
 
       {isLoading ? (
         /* ── LOADING SKELETON ── */
-        <div className="h-72 flex flex-col items-center justify-center gap-4 bg-[#0f172a]/20 border border-white/5 rounded-[2.5rem] animate-pulse">
+        <div className="h-72 flex flex-col items-center justify-center gap-4 bg-card/20 border border-slate-200 rounded-[2.5rem] animate-pulse">
           <Compass className="h-8 w-8 text-[#FBBF24] animate-spin" />
-          <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 font-body">
+          <span className="text-[10px] font-black uppercase tracking-widest text-slate-650 font-body">
             Đang xác minh lịch sử tài khoản...
           </span>
         </div>
@@ -290,50 +290,50 @@ export default function LandlordSubscriptionPage() {
             <motion.div
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              className="rounded-[2.5rem] bg-gradient-to-tr from-[#0F172A]/80 via-[#1e293b]/40 to-[#0F172A]/80 border border-white/10 p-6 sm:p-10 shadow-2xl relative overflow-hidden flex flex-col lg:flex-row justify-between lg:items-center gap-8 z-10 backdrop-blur-xl"
+              className="rounded-[2.5rem] bg-card border border-slate-200 p-6 sm:p-10 shadow-2xl relative overflow-hidden flex flex-col lg:flex-row justify-between lg:items-center gap-8 z-10"
             >
               {/* Spotlight animated blur node */}
-              <div className="absolute top-[-50%] right-[-10%] w-[45%] h-[120%] rounded-full bg-gradient-to-br from-[#F59E0B]/15 via-[#FBBF24]/5 to-transparent blur-[80px] pointer-events-none animate-pulse" />
+              <div className="absolute top-[-50%] right-[-10%] w-[45%] h-[120%] rounded-full bg-gradient-to-br from-primary/15 via-primary/5 to-transparent blur-[80px] pointer-events-none animate-pulse" />
 
               <div className="space-y-6 flex-1 text-left">
                 <div className="space-y-2">
                   <div className="flex flex-wrap items-center gap-2.5">
-                    <span className="text-[8px] font-black uppercase bg-[#FBBF24]/10 border border-[#FBBF24]/30 text-[#FBBF24] px-3 py-1 rounded-full shadow-md animate-pulse flex items-center gap-1 font-heading">
-                      <Crown className="h-3 w-3 fill-current text-[#F59E0B]" /> Active Member
+                    <span className="text-[8px] font-black uppercase bg-primary/10 border border-primary/30 text-primary px-3 py-1 rounded-full shadow-md animate-pulse flex items-center gap-1 font-heading">
+                      <Crown className="h-3 w-3 fill-current text-primary" /> Active Member
                     </span>
-                    <span className="text-[8px] font-black uppercase bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-3 py-1 rounded-full shadow-sm font-heading">
+                    <span className="text-[8px] font-black uppercase bg-primary/10 border border-primary/30 text-primary px-3 py-1 rounded-full shadow-sm font-heading">
                       Đang hoạt động
                     </span>
                   </div>
                   
-                  <h2 className="text-2xl sm:text-3xl font-black text-slate-100 leading-tight font-heading">
+                  <h2 className="text-2xl sm:text-3xl font-black text-slate-800 leading-tight font-heading">
                     {activePlanTitle}
                   </h2>
                   
-                  <p className="text-xs text-slate-400 font-body max-w-xl leading-relaxed">
+                  <p className="text-xs text-slate-650 font-body max-w-xl leading-relaxed">
                     Tài khoản của bạn đã được nâng cấp lên hạng cước Chủ nhà cao cấp. Bài viết của bạn sẽ được ưu tiên xuất hiện đầu tiên trên bảng tin so khớp, và kích hoạt đầy đủ hệ thống AI để giới thiệu Renter tương thích.
                   </p>
                 </div>
 
-                <hr className="border-white/5" />
+                <hr className="border-slate-200" />
 
                 {/* Pricing details grid */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 text-xs font-semibold">
                   <div className="space-y-1 text-left">
-                    <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest block font-body">Biểu phí định kỳ</span>
-                    <span className="text-sm font-black text-[#F59E0B]">
+                    <span className="text-[8px] font-black text-slate-650 uppercase tracking-widest block font-body">Biểu phí định kỳ</span>
+                    <span className="text-sm font-black text-primary">
                       {activeSubDetail.sub_id ? formatVND(userSubscriptions.find(s => s.id === activeSubDetail.id)?.sub_id === 1 ? 199000 : 1668000) : "Nạp xu gia hạn"}
                     </span>
                   </div>
                   
                   <div className="space-y-1 text-left">
-                    <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest block font-body">Chu kỳ tiếp theo</span>
-                    <span className="text-sm font-black text-slate-200 font-body">{formatDate(activeSubDetail.time_end)}</span>
+                    <span className="text-[8px] font-black text-slate-650 uppercase tracking-widest block font-body">Chu kỳ tiếp theo</span>
+                    <span className="text-sm font-black text-slate-700 font-body">{formatDate(activeSubDetail.time_end)}</span>
                   </div>
                   
                   <div className="space-y-1 text-left col-span-2 sm:col-span-1">
-                    <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest block font-body">Kênh thụ hưởng</span>
-                    <span className="text-sm font-black text-slate-200">Ví xu hệ thống</span>
+                    <span className="text-[8px] font-black text-slate-650 uppercase tracking-widest block font-body">Kênh thụ hưởng</span>
+                    <span className="text-sm font-black text-slate-700">Ví xu hệ thống</span>
                   </div>
                 </div>
               </div>
@@ -353,7 +353,7 @@ export default function LandlordSubscriptionPage() {
                         }
                       }, 100);
                     }}
-                    className="h-12 px-6 rounded-xl bg-[#F59E0B] hover:bg-[#FBBF24] text-slate-900 text-xs font-black uppercase tracking-wider cursor-pointer transition-all text-center flex items-center justify-center gap-1.5 shadow-md shadow-[#F59E0B]/10 active:scale-95"
+                    className="h-12 px-6 rounded-xl bg-primary hover:bg-primary/90 text-white text-xs font-black uppercase tracking-wider cursor-pointer transition-all text-center flex items-center justify-center gap-1.5 shadow-md shadow-primary/10 active:scale-95"
                   >
                     <Sparkles className="h-4 w-4 fill-current text-slate-900 animate-pulse" />
                     Nâng cấp gói cước
@@ -372,13 +372,13 @@ export default function LandlordSubscriptionPage() {
 
           {/* ── 2b. UPGRADE RECOMMENDATION SECTION ── */}
           {hasActiveSub && showUpgradeSection && upgradeInfo && upgradeInfo.can_upgrade && upgradeInfo.higher_packages.length > 0 && (
-            <div id="upgrade-section" className="space-y-6 bg-[#0f172a]/20 border border-white/5 rounded-[2.5rem] p-6 sm:p-10 relative overflow-hidden backdrop-blur-xl text-left z-10 shadow-2xl">
+            <div id="upgrade-section" className="space-y-6 bg-card/20 border border-slate-200 rounded-[2.5rem] p-6 sm:p-10 relative overflow-hidden backdrop-blur-xl text-left z-10 shadow-2xl">
               {/* Glowing background */}
               <div className="absolute top-[-30%] left-[-10%] w-[40%] h-[60%] rounded-full bg-gradient-to-tr from-[#D946EF]/10 via-[#F59E0B]/5 to-transparent blur-[90px] pointer-events-none" />
 
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 relative z-10">
                 <div className="space-y-1.5">
-                  <h2 className="text-xl font-black text-[#F59E0B] flex items-center gap-2 font-heading">
+                  <h2 className="text-xl font-black text-primary flex items-center gap-2 font-heading">
                     <Sparkles className="h-5 w-5 text-[#D946EF] animate-pulse" />
                     Nâng cấp Trải Nghiệm Chủ Nhà Pro
                   </h2>
@@ -388,14 +388,14 @@ export default function LandlordSubscriptionPage() {
                 </div>
 
                 {/* Switch Billing Cycle Toggle */}
-                <div className="bg-[#0b0f19] p-1 rounded-2xl flex items-center border border-white/5 shadow-inner self-start md:self-center">
+                <div className="bg-background p-1 rounded-2xl flex items-center border border-slate-200 shadow-inner self-start md:self-center">
                   <button
                     type="button"
                     onClick={() => setBillingCycle("monthly")}
                     className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all duration-300 cursor-pointer ${
                       billingCycle === "monthly"
                         ? "bg-white/10 text-[#FBBF24] shadow-sm"
-                        : "text-slate-500 hover:text-slate-350"
+                        : "text-slate-650 hover:text-slate-350"
                     }`}
                   >
                     Hàng tháng
@@ -406,7 +406,7 @@ export default function LandlordSubscriptionPage() {
                     className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all duration-300 flex items-center gap-1 cursor-pointer ${
                       billingCycle === "yearly"
                         ? "bg-white/10 text-[#FBBF24] shadow-sm"
-                        : "text-slate-500 hover:text-slate-350"
+                        : "text-slate-650 hover:text-slate-350"
                     }`}
                   >
                     Hàng năm
@@ -420,7 +420,7 @@ export default function LandlordSubscriptionPage() {
 
               {loadingUpgrade ? (
                 <div className="h-44 flex flex-col items-center justify-center gap-3">
-                  <Compass className="h-7 w-7 text-[#F59E0B] animate-spin" />
+                  <Compass className="h-7 w-7 text-primary animate-spin" />
                   <span className="text-[9px] font-black uppercase tracking-widest text-slate-555 font-body">
                     Đang đối chiếu các gói nâng cấp...
                   </span>
@@ -442,14 +442,14 @@ export default function LandlordSubscriptionPage() {
                         key={plan.id}
                         whileHover={{ y: -6, scale: 1.02 }}
                         transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                        className={`relative rounded-[2rem] border bg-[#0f172a]/60 backdrop-blur-md p-6 flex flex-col justify-between shadow-lg group cursor-pointer ${gradient}`}
+                        className={`relative rounded-[2rem] border bg-card/60 backdrop-blur-md p-6 flex flex-col justify-between shadow-lg group cursor-pointer ${gradient}`}
                       >
                         {/* Badge */}
-                        <span className={`absolute -top-3 right-6 rounded-full px-3 py-0.5 text-[8px] font-black uppercase tracking-widest text-slate-900 shadow-md ${
+                        <span className={`absolute -top-3 right-6 rounded-full px-3 py-0.5 text-[8px] font-black uppercase tracking-widest text-white shadow-md ${
                           isGold 
-                            ? "bg-[#FBBF24]" 
+                            ? "bg-primary" 
                             : isDiamond 
-                              ? "bg-fuchsia-400" 
+                              ? "bg-fuchsia-500" 
                               : "bg-slate-400"
                         }`}>
                           {badge}
@@ -458,14 +458,14 @@ export default function LandlordSubscriptionPage() {
                         <div className="space-y-4">
                           <div className="flex items-center justify-between">
                             <div className="space-y-0.5 text-left font-heading">
-                              <h3 className="font-extrabold text-sm text-[#FBBF24] group-hover:text-white transition-colors">
+                              <h3 className="font-extrabold text-sm text-primary group-hover:text-white transition-colors">
                                 {plan.sub_title}
                               </h3>
-                              <span className="text-[8px] uppercase font-black tracking-widest text-slate-500 block font-body">
+                              <span className="text-[8px] uppercase font-black tracking-widest text-slate-650 block font-body">
                                 Thời hạn: {billingCycle === "yearly" ? "12 Tháng" : plan.sub_time}
                               </span>
                             </div>
-                            <div className="p-2.5 rounded-xl bg-white/5 border border-white/5">
+                            <div className="p-2.5 rounded-xl bg-slate-100 border border-slate-200">
                               {getPlanIcon(plan.sub_type)}
                             </div>
                           </div>
@@ -473,16 +473,16 @@ export default function LandlordSubscriptionPage() {
                           {/* Display Pricing details */}
                           <div className="space-y-0.5 text-left">
                             <div className="flex items-baseline gap-1">
-                              <span className="text-2xl font-black text-slate-100 bg-gradient-to-r from-slate-100 to-slate-400 bg-clip-text">
+                              <span className="text-2xl font-black text-slate-800 bg-gradient-to-r from-slate-100 to-slate-400 bg-clip-text">
                                 {formatVND(displayPrice)}
                               </span>
-                              <span className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">
+                              <span className="text-[9px] text-slate-650 font-bold uppercase tracking-widest">
                                 / tháng
                               </span>
                             </div>
                             {billingCycle === "yearly" ? (
                               <div className="space-y-0.5 text-[8px] font-bold">
-                                <span className="text-slate-500 uppercase tracking-wider block">
+                                <span className="text-slate-650 uppercase tracking-wider block">
                                   Thanh toán định kỳ {formatVND(displayPrice * 12)} / năm
                                 </span>
                                 <span className="text-emerald-400 uppercase tracking-wider block">
@@ -498,17 +498,17 @@ export default function LandlordSubscriptionPage() {
                             )}
                           </div>
 
-                          <p className="text-[10px] text-slate-400 leading-relaxed font-medium text-left font-body">
+                          <p className="text-[10px] text-slate-650 leading-relaxed font-medium text-left font-body">
                             {plan.sub_description}
                           </p>
 
-                          <hr className="border-white/5" />
+                          <hr className="border-slate-200" />
 
                           {/* Features checklist */}
-                          <ul className="space-y-2 text-[10px] text-slate-400 font-body font-medium text-left">
+                          <ul className="space-y-2 text-[10px] text-slate-650 font-body font-medium text-left">
                             {getPlanFeatures(plan.sub_type).map((feature, idx) => (
                               <li key={idx} className="flex gap-2 items-start leading-tight">
-                                <div className="h-4.5 w-4.5 rounded-full flex items-center justify-center shrink-0 mt-0.5 bg-white/5 border border-white/5 text-slate-400">
+                                <div className="h-4.5 w-4.5 rounded-full flex items-center justify-center shrink-0 mt-0.5 bg-slate-100 border border-slate-200 text-slate-650">
                                   <Check className="h-2.5 w-2.5" />
                                 </div>
                                 <span>{feature}</span>
@@ -533,31 +533,31 @@ export default function LandlordSubscriptionPage() {
           )}
 
           {/* ── 2c. ALL AVAILABLE PACKAGES GRID ── */}
-          <div className="space-y-6 bg-[#0f172a]/20 border border-white/5 rounded-[2.5rem] p-6 sm:p-10 relative overflow-hidden backdrop-blur-xl text-left z-10 shadow-2xl">
+          <div className="space-y-6 bg-card/20 border border-slate-200 rounded-[2.5rem] p-6 sm:p-10 relative overflow-hidden backdrop-blur-xl text-left z-10 shadow-2xl">
             {/* Background glowing iridescent node */}
             <div className="absolute top-[-30%] left-[-10%] w-[40%] h-[60%] rounded-full bg-gradient-to-tr from-[#D946EF]/10 via-[#F59E0B]/5 to-transparent blur-[90px] pointer-events-none" />
 
             {/* Pricing header controls */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 relative z-10">
               <div className="space-y-1.5">
-                <h2 className="text-xl font-black text-[#F59E0B] flex items-center gap-2 font-heading">
+                <h2 className="text-xl font-black text-primary flex items-center gap-2 font-heading">
                   <Crown className="h-5 w-5 text-[#FBBF24] animate-pulse" />
                   {hasActiveSub ? "Các Gói Cước Chủ Nhà Roomie" : "Nâng cấp Gói hội viên Chủ nhà"}
                 </h2>
-                <p className="text-xs text-slate-400 font-medium font-body max-w-xl leading-relaxed">
+                <p className="text-xs text-slate-650 font-medium font-body max-w-xl leading-relaxed">
                   Đăng tin phòng không giới hạn, đẩy tin tự động, mở khóa toàn bộ tiêu chí so khớp của Renter và hỗ trợ kỹ thuật 24/7.
                 </p>
               </div>
 
               {/* Switch Billing Cycle Toggle */}
-              <div className="bg-[#0b0f19] p-1 rounded-2xl flex items-center border border-white/5 shadow-inner self-start md:self-center">
+              <div className="bg-background p-1 rounded-2xl flex items-center border border-slate-200 shadow-inner self-start md:self-center">
                 <button
                   type="button"
                   onClick={() => setBillingCycle("monthly")}
                   className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all duration-300 cursor-pointer ${
                     billingCycle === "monthly"
                       ? "bg-white/10 text-[#FBBF24] shadow-sm"
-                      : "text-slate-500 hover:text-slate-350"
+                      : "text-slate-650 hover:text-slate-350"
                   }`}
                 >
                   Hàng tháng
@@ -568,7 +568,7 @@ export default function LandlordSubscriptionPage() {
                   className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all duration-300 flex items-center gap-1 cursor-pointer ${
                     billingCycle === "yearly"
                       ? "bg-white/10 text-[#FBBF24] shadow-sm"
-                      : "text-slate-500 hover:text-slate-350"
+                      : "text-slate-650 hover:text-slate-350"
                   }`}
                 >
                   Hàng năm
@@ -582,7 +582,7 @@ export default function LandlordSubscriptionPage() {
 
             {loadingPlans ? (
               <div className="h-44 flex flex-col items-center justify-center gap-3">
-                <Compass className="h-7 w-7 text-[#F59E0B] animate-spin" />
+                <Compass className="h-7 w-7 text-primary animate-spin" />
                 <span className="text-[9px] font-black uppercase tracking-widest text-slate-555 font-body">
                   Đang đối chiếu bảng giá chủ nhà...
                 </span>
@@ -604,12 +604,12 @@ export default function LandlordSubscriptionPage() {
                       key={plan.id}
                       whileHover={{ y: -6, scale: 1.02 }}
                       transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                      className={`relative rounded-[2rem] border bg-[#0f172a]/60 backdrop-blur-md p-6 flex flex-col justify-between shadow-lg group cursor-pointer ${gradient}`}
+                      className={`relative rounded-[2rem] border bg-card/60 backdrop-blur-md p-6 flex flex-col justify-between shadow-lg group cursor-pointer ${gradient}`}
                     >
                       {/* Badge */}
                       <span className={`absolute -top-3 right-6 rounded-full px-3 py-0.5 text-[8px] font-black uppercase tracking-widest text-slate-900 shadow-md ${
                         isGold 
-                          ? "bg-[#FBBF24]" 
+                          ? "bg-primary text-white" 
                           : isDiamond 
                             ? "bg-fuchsia-400" 
                             : "bg-slate-400"
@@ -620,14 +620,14 @@ export default function LandlordSubscriptionPage() {
                       <div className="space-y-4">
                         <div className="flex items-center justify-between">
                           <div className="space-y-0.5 text-left font-heading">
-                            <h3 className="font-extrabold text-sm text-[#FBBF24] group-hover:text-white transition-colors">
+                            <h3 className="font-extrabold text-sm text-primary group-hover:text-white transition-colors">
                               {plan.sub_title}
                             </h3>
                             <span className="text-[8px] uppercase font-black tracking-widest text-slate-555 block font-body">
                               Thời hạn: {billingCycle === "yearly" ? "12 Tháng" : plan.sub_time}
                             </span>
                           </div>
-                          <div className="p-2.5 rounded-xl bg-white/5 border border-white/5">
+                          <div className="p-2.5 rounded-xl bg-slate-100 border border-slate-200">
                             {getPlanIcon(plan.sub_type)}
                           </div>
                         </div>
@@ -635,16 +635,16 @@ export default function LandlordSubscriptionPage() {
                         {/* Display Pricing details */}
                         <div className="space-y-0.5 text-left">
                           <div className="flex items-baseline gap-1">
-                            <span className="text-2xl font-black text-slate-100 bg-gradient-to-r from-slate-100 to-slate-400 bg-clip-text">
+                            <span className="text-2xl font-black text-slate-800 bg-gradient-to-r from-slate-100 to-slate-400 bg-clip-text">
                               {formatVND(displayPrice)}
                             </span>
-                            <span className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">
+                            <span className="text-[9px] text-slate-650 font-bold uppercase tracking-widest">
                               / tháng
                             </span>
                           </div>
                           {billingCycle === "yearly" ? (
                             <div className="space-y-0.5 text-[8px] font-bold">
-                              <span className="text-slate-500 uppercase tracking-wider block">
+                              <span className="text-slate-650 uppercase tracking-wider block">
                                 Thanh toán định kỳ {formatVND(displayPrice * 12)} / năm
                               </span>
                               <span className="text-emerald-400 uppercase tracking-wider block">
@@ -660,17 +660,17 @@ export default function LandlordSubscriptionPage() {
                           )}
                         </div>
 
-                        <p className="text-[10px] text-slate-400 leading-relaxed font-medium text-left font-body">
+                        <p className="text-[10px] text-slate-650 leading-relaxed font-medium text-left font-body">
                           {plan.sub_description}
                         </p>
 
-                        <hr className="border-white/5" />
+                        <hr className="border-slate-200" />
 
                         {/* Features checklist */}
-                        <ul className="space-y-2 text-[10px] text-slate-400 font-body font-medium text-left">
+                        <ul className="space-y-2 text-[10px] text-slate-650 font-body font-medium text-left">
                           {getPlanFeatures(plan.sub_type).map((feature, idx) => (
                             <li key={idx} className="flex gap-2 items-start leading-tight">
-                              <div className="h-4.5 w-4.5 rounded-full flex items-center justify-center shrink-0 mt-0.5 bg-white/5 border border-white/5 text-slate-400">
+                              <div className="h-4.5 w-4.5 rounded-full flex items-center justify-center shrink-0 mt-0.5 bg-slate-100 border border-slate-200 text-slate-650">
                                 <Check className="h-2.5 w-2.5" />
                               </div>
                               <span>{feature}</span>
@@ -698,29 +698,29 @@ export default function LandlordSubscriptionPage() {
 
       {/* 4. Invoices Logs Table List */}
       <div className="space-y-4 relative z-10">
-        <h3 className="font-heading text-md font-bold text-slate-200 text-left">Lịch sử hóa đơn giao dịch</h3>
+        <h3 className="font-heading text-md font-bold text-slate-700 text-left">Lịch sử hóa đơn giao dịch</h3>
         
         {loadingHistory ? (
-          <div className="h-32 flex flex-col items-center justify-center gap-2 rounded-2xl border border-white/5 bg-[#0f172a]/20 animate-pulse">
-            <Compass className="h-6 w-6 text-[#F59E0B] animate-spin" />
+          <div className="h-32 flex flex-col items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-card/20 animate-pulse">
+            <Compass className="h-6 w-6 text-primary animate-spin" />
             <span className="text-[9px] font-black uppercase tracking-widest text-slate-555 font-body">
               Đang tải lịch sử giao dịch...
             </span>
           </div>
         ) : userSubscriptions.length === 0 ? (
-          <div className="rounded-[2rem] border border-white/5 bg-[#0f172a]/20 p-10 text-center space-y-4 max-w-md mx-auto">
-            <Info className="h-10 w-10 text-slate-500 animate-pulse mx-auto" />
+          <div className="rounded-[2rem] border border-slate-200 bg-card/20 p-10 text-center space-y-4 max-w-md mx-auto">
+            <Info className="h-10 w-10 text-slate-650 animate-pulse mx-auto" />
             <h3 className="text-sm font-bold text-slate-205">Chưa có hóa đơn nào</h3>
-            <p className="text-xs text-slate-500 leading-relaxed font-body">
+            <p className="text-xs text-slate-650 leading-relaxed font-body">
               Bạn chưa thực hiện bất kỳ giao dịch nạp và đăng ký gói cước nào trên hệ thống Roomie.
             </p>
           </div>
         ) : (
           /* Ledger Table */
-          <div className="overflow-x-auto rounded-3xl border border-white/5 bg-[#0f172a]/30 shadow-lg">
+          <div className="overflow-x-auto rounded-3xl border border-slate-200 bg-slate-50 shadow-lg">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="bg-white/5 border-b border-white/5 text-[9px] font-black uppercase tracking-widest text-slate-450 font-body">
+                <tr className="bg-slate-100 border-b border-slate-200 text-[9px] font-black uppercase tracking-widest text-slate-650 font-body">
                   <th className="py-4 px-6">Mã hóa đơn</th>
                   <th className="py-4 px-6">Ngày đăng ký</th>
                   <th className="py-4 px-6">Gói hội viên</th>
@@ -729,25 +729,25 @@ export default function LandlordSubscriptionPage() {
                   <th className="py-4 px-6">Trạng thái</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5 font-semibold text-slate-300">
+              <tbody className="divide-y divide-white/5 font-semibold text-slate-600">
                 {userSubscriptions.map((inv) => {
                   const matchedPlan = availablePlans.find(p => p.id === inv.sub_id);
                   const planTitle = getPlanTitle(inv);
                   const planTime = (inv as any).subscription?.sub_time || matchedPlan?.sub_time || "Theo chu kỳ";
                   return (
-                    <tr key={inv.id} className="hover:bg-white/5 transition-colors">
-                      <td className="py-4 px-6 font-mono text-slate-500 font-bold">RM-SUB-{inv.id}</td>
-                      <td className="py-4 px-6 text-slate-400 font-medium font-body">{formatDate(inv.created_at)}</td>
-                      <td className="py-4 px-6 font-extrabold text-slate-200">{planTitle}</td>
-                      <td className="py-4 px-6 text-slate-400 font-medium">{planTime}</td>
-                      <td className="py-4 px-6 text-slate-400 font-medium font-body">{formatDate(inv.time_end)}</td>
+                    <tr key={inv.id} className="hover:bg-slate-100 transition-colors">
+                      <td className="py-4 px-6 font-mono text-slate-650 font-bold">RM-SUB-{inv.id}</td>
+                      <td className="py-4 px-6 text-slate-650 font-medium font-body">{formatDate(inv.created_at)}</td>
+                      <td className="py-4 px-6 font-extrabold text-slate-700">{planTitle}</td>
+                      <td className="py-4 px-6 text-slate-650 font-medium">{planTime}</td>
+                      <td className="py-4 px-6 text-slate-650 font-medium font-body">{formatDate(inv.time_end)}</td>
                       <td className="py-4 px-6">
                         {inv.is_active ? (
                           <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-1 text-[9px] font-black uppercase text-emerald-400">
                             Thành công
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-white/5 border border-white/10 px-2.5 py-1 text-[9px] font-black uppercase text-slate-450">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 border border-slate-200 px-2.5 py-1 text-[9px] font-black uppercase text-slate-650">
                             Hết hạn
                           </span>
                         )}
@@ -762,12 +762,12 @@ export default function LandlordSubscriptionPage() {
       </div>
 
       {/* 5. Help & Support callout box */}
-      <div className="rounded-2xl border border-white/5 bg-[#0f172a]/30 p-5 flex gap-3 text-slate-400 items-start text-xs font-body font-medium text-left z-10 relative">
-        <HelpCircle className="h-5 w-5 text-slate-400 shrink-0 mt-0.5" />
+      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 flex gap-3 text-slate-650 items-start text-xs font-body font-medium text-left z-10 relative">
+        <HelpCircle className="h-5 w-5 text-slate-650 shrink-0 mt-0.5" />
         <div className="space-y-1">
-          <span className="font-bold text-slate-200 block">Bạn cần hỗ trợ về hóa đơn giao dịch?</span>
-          <p className="leading-relaxed font-body text-slate-400">
-            Nếu phát hiện bất kỳ sai sót nào trong giao dịch thanh toán hoặc muốn nhận hóa đơn giá trị gia tăng (VAT), vui lòng liên hệ ngay với bộ phận hỗ trợ Roomie Landlord qua hotline <strong className="text-slate-200">1900 6868</strong> hoặc email <strong className="text-slate-200">landlord-support@roomie.vn</strong>.
+          <span className="font-bold text-slate-700 block">Bạn cần hỗ trợ về hóa đơn giao dịch?</span>
+          <p className="leading-relaxed font-body text-slate-650">
+            Nếu phát hiện bất kỳ sai sót nào trong giao dịch thanh toán hoặc muốn nhận hóa đơn giá trị gia tăng (VAT), vui lòng liên hệ ngay với bộ phận hỗ trợ Roomie Landlord qua hotline <strong className="text-slate-700">1900 6868</strong> hoặc email <strong className="text-slate-700">landlord-support@roomie.vn</strong>.
           </p>
         </div>
       </div>

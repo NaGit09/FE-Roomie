@@ -34,8 +34,12 @@ export const GetPostsQuerySchema = z.object({
   province_code: z.number().optional(),
   district_code: z.number().optional(),
   ward_code: z.number().optional(),
+  city: z.string().optional(),
+  district: z.string().optional(),
   price_from: z.number().optional(),
   price_to: z.number().optional(),
+  min_price: z.number().optional(),
+  max_price: z.number().optional(),
   sort_by: z.string().optional().default("created_at"),
   order: z.string().optional().default("desc"),
 });

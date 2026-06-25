@@ -11,15 +11,20 @@ import {
   Clock, 
   Building,
   CheckCircle2,
-  AlertOctagon
+  AlertOctagon,
+  Key,
+  Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ReportModal from "@/components/custom/common/ReportModal";
+import { RentalApi } from "@/services/api/rental";
+import { toast } from "sonner";
 
 export default function DetailOwner() {
   const { currentRoomDetail } = useRoomStore();
   const [viewingRequested, setViewingRequested] = useState<boolean>(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState<boolean>(false);
+  const [isSubmittingInterest, setIsSubmittingInterest] = useState<boolean>(false);
 
   if (!currentRoomDetail) return null;
 
@@ -37,6 +42,29 @@ export default function DetailOwner() {
     responseTime: "Dưới 5 phút",
     totalPosts: 8,
     joined: "Tháng 10, 2025"
+  };
+
+  const handleExpressInterest = async () => {
+    const roomId = currentRoomDetail.room?.id;
+    if (!roomId) {
+      toast.error("Không tìm thấy thông tin phòng!");
+      return;
+    }
+    
+    setIsSubmittingInterest(true);
+    try {
+      const res = await RentalApi.expressInterest(roomId);
+      if (res.code === 200) {
+        toast.success("Bày tỏ sự quan tâm thuê phòng thành công!");
+      } else {
+        toast.error(res.message || "Bày tỏ sự quan tâm thất bại.");
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.response?.data?.message || err.message || "Có lỗi xảy ra, vui lòng thử lại!");
+    } finally {
+      setIsSubmittingInterest(false);
+    }
   };
 
   const handleRequestViewing = () => {
@@ -89,6 +117,20 @@ export default function DetailOwner() {
         {/* Action button triggers */}
         <div className="flex flex-col gap-3">
           
+          {/* Thuê phòng Action */}
+          <Button 
+            onClick={handleExpressInterest}
+            disabled={isSubmittingInterest}
+            className="w-full rounded-full font-extrabold shadow-md shadow-emerald-500/10 bg-emerald-600 hover:bg-emerald-700 text-white py-5.5 flex items-center justify-center gap-2 transition-all active:scale-98"
+          >
+            {isSubmittingInterest ? (
+              <Loader2 className="h-4.5 w-4.5 animate-spin" />
+            ) : (
+              <Key className="h-4.5 w-4.5" />
+            )}
+            {isSubmittingInterest ? "Đang gửi yêu cầu..." : "Thuê phòng"}
+          </Button>
+
           {/* Primary Phone Action */}
           <a href={`tel:${landlordPhone}`} className="w-full">
             <Button className="w-full rounded-full font-bold shadow-md shadow-primary/10 py-5 flex items-center justify-center gap-2 group">

@@ -85,9 +85,9 @@ export default function LandlordStatisticPage() {
 
   if (loading) {
     return (
-      <div className="h-96 flex flex-col items-center justify-center gap-3 text-slate-400">
-        <Loader2 className="h-9 w-9 text-[#F59E0B] animate-spin" />
-        <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+      <div className="h-96 flex flex-col items-center justify-center gap-3 text-slate-650">
+        <Loader2 className="h-9 w-9 text-primary animate-spin" />
+        <span className="text-[10px] font-black uppercase tracking-widest text-slate-650">
           Đang tải báo cáo thống kê...
         </span>
       </div>
@@ -138,22 +138,22 @@ export default function LandlordStatisticPage() {
   };
 
   return (
-    <div className="space-y-10 animate-fade-in text-[#F8FAFC]">
+    <div className="space-y-10 animate-fade-in text-foreground">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 border-b border-white/5 pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 border-b border-slate-200 pb-6">
         <div className="space-y-1.5">
           <motion.div
             initial={{ opacity: 0, y: 5 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 rounded-full border border-[#8B5CF6]/20 bg-[#8B5CF6]/5 px-4.5 py-1.5 text-xs font-semibold uppercase tracking-widest text-[#8B5CF6]"
+            className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4.5 py-1.5 text-xs font-semibold uppercase tracking-widest text-primary"
           >
             <LineChart className="h-3.5 w-3.5" />
             Báo cáo Vận hành
           </motion.div>
-          <h1 className="font-heading text-3xl font-extrabold tracking-tight text-slate-100">
+          <h1 className="font-heading text-3xl font-extrabold tracking-tight text-slate-800">
             Báo cáo thống kê chi tiết
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 font-medium font-body leading-relaxed max-w-xl">
+          <p className="text-xs sm:text-sm text-slate-650 font-medium font-body leading-relaxed max-w-xl">
             Theo dõi dòng tiền doanh thu thực tế, lượt tiếp cận khách thuê và phân bổ hiệu suất lấp đầy phòng trống.
           </p>
         </div>
@@ -162,14 +162,14 @@ export default function LandlordStatisticPage() {
         <div className="flex items-center gap-2.5 shrink-0 self-start sm:self-center">
           <button
             onClick={() => handleExport("excel")}
-            className="h-11 px-5 rounded-xl border border-white/10 hover:bg-white/5 text-slate-350 text-xs font-black uppercase tracking-wider cursor-pointer transition-all flex items-center gap-1.5 shadow-sm"
+            className="h-11 px-5 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-350 text-xs font-black uppercase tracking-wider cursor-pointer transition-all flex items-center gap-1.5 shadow-sm"
           >
             <Download className="h-4 w-4" />
             Excel
           </button>
           <button
             onClick={() => handleExport("pdf")}
-            className="h-11 px-5 rounded-xl bg-[#F59E0B] hover:bg-[#FBBF24] text-slate-900 text-xs font-black uppercase tracking-wider cursor-pointer transition-all flex items-center gap-1.5 shadow-md shadow-[#F59E0B]/10"
+            className="h-11 px-5 rounded-xl bg-primary hover:bg-primary/90 text-white text-xs font-black uppercase tracking-wider cursor-pointer transition-all flex items-center gap-1.5 shadow-md shadow-primary/10"
           >
             <FileText className="h-4 w-4" />
             Xuất PDF
@@ -178,13 +178,13 @@ export default function LandlordStatisticPage() {
       </div>
 
       {/* Filter range toggles */}
-      <div className="flex justify-between items-center bg-[#0f172a]/40 border border-white/5 rounded-2xl p-4">
-        <div className="flex items-center gap-2 text-xs text-slate-400 font-bold uppercase tracking-widest">
-          <Filter className="h-4 w-4 text-slate-500" />
+      <div className="flex justify-between items-center bg-slate-100 border border-slate-200 rounded-2xl p-4">
+        <div className="flex items-center gap-2 text-xs text-slate-650 font-bold uppercase tracking-widest">
+          <Filter className="h-4 w-4 text-slate-650" />
           <span>Khoảng thời gian:</span>
         </div>
         
-        <div className="flex items-center gap-1 bg-[#0b0f19] p-1 rounded-xl border border-white/5">
+        <div className="flex items-center gap-1 bg-background p-1 rounded-xl border border-slate-200">
           {[
             { id: "30", label: "30 Ngày qua" },
             { id: "90", label: "90 Ngày qua" },
@@ -195,8 +195,8 @@ export default function LandlordStatisticPage() {
               onClick={() => setTimeRange(range.id as any)}
               className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
                 timeRange === range.id
-                  ? "bg-[#F59E0B] text-slate-900 shadow"
-                  : "text-slate-400 hover:text-slate-200"
+                  ? "bg-primary text-white shadow"
+                  : "text-slate-650 hover:text-slate-700"
               }`}
             >
               {range.label}
@@ -209,13 +209,13 @@ export default function LandlordStatisticPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
         {/* CHART 1: AreaChart Doanh Thu (8 Columns) */}
-        <div className="lg:col-span-8 rounded-[2.5rem] border border-white/5 bg-[#0f172a]/40 backdrop-blur-md p-6 sm:p-8 shadow-xl space-y-6">
+        <div className="lg:col-span-8 rounded-[2.5rem] border border-slate-200 bg-slate-100 backdrop-blur-md p-6 sm:p-8 shadow-xl space-y-6">
           <div className="flex justify-between items-center">
             <div className="space-y-1">
-              <span className="text-[9px] font-black uppercase text-[#F59E0B] tracking-widest block">
+              <span className="text-[9px] font-black uppercase text-primary tracking-widest block">
                 Financial Report
               </span>
-              <h3 className="text-lg font-bold text-slate-100">Dòng tiền doanh thu</h3>
+              <h3 className="text-lg font-bold text-slate-800">Dòng tiền doanh thu</h3>
             </div>
             {revenueData.length > 0 && (
               <div className="flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 text-[10px] font-bold text-emerald-400">
@@ -226,7 +226,7 @@ export default function LandlordStatisticPage() {
           </div>
 
           {revenueData.length === 0 ? (
-            <div className="h-[280px] flex items-center justify-center text-slate-500 border border-dashed border-white/5 rounded-2xl text-xs font-semibold">
+            <div className="h-[280px] flex items-center justify-center text-slate-650 border border-dashed border-slate-200 rounded-2xl text-xs font-semibold">
               Chưa có dữ liệu doanh thu thực tế
             </div>
           ) : (
@@ -235,35 +235,35 @@ export default function LandlordStatisticPage() {
                 <AreaChart data={revenueData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.25} />
-                      <stop offset="95%" stopColor="#F59E0B" stopOpacity={0.0} />
+                      <stop offset="5%" stopColor="#C1440E" stopOpacity={0.25} />
+                      <stop offset="95%" stopColor="#C1440E" stopOpacity={0.0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#D9D9D9" vertical={false} />
                   <XAxis 
                     dataKey="month" 
-                    stroke="rgba(255,255,255,0.3)" 
+                    stroke="#6B6560" 
                     tickLine={false} 
                     axisLine={false}
                     dy={10}
                   />
                   <YAxis 
-                    stroke="rgba(255,255,255,0.3)" 
+                    stroke="#6B6560" 
                     tickLine={false} 
                     axisLine={false}
                     tickFormatter={(v) => `${v / 1000000}M`}
                     dx={-10}
                   />
                   <Tooltip 
-                    contentStyle={{ backgroundColor: "#0f172a", borderColor: "rgba(255,255,255,0.1)", borderRadius: "1rem" }}
-                    labelStyle={{ color: "rgba(255,255,255,0.4)", fontWeight: "bold", fontSize: "10px" }}
-                    itemStyle={{ color: "#F59E0B", fontWeight: "bold" }}
+                    contentStyle={{ backgroundColor: "#F5EDE0", borderColor: "#D9D9D9", borderRadius: "1rem", color: "#0D1117" }}
+                    labelStyle={{ color: "#6B6560", fontWeight: "bold", fontSize: "10px" }}
+                    itemStyle={{ color: "#C1440E", fontWeight: "bold" }}
                     formatter={(value: any) => [formatVND(value), "Doanh thu"]}
                   />
                   <Area 
                     type="monotone" 
                     dataKey="revenue" 
-                    stroke="#F59E0B" 
+                    stroke="#C1440E" 
                     strokeWidth={3}
                     fillOpacity={1} 
                     fill="url(#colorRevenue)" 
@@ -275,12 +275,12 @@ export default function LandlordStatisticPage() {
         </div>
 
         {/* CHART 2: PieChart Lấp đầy phòng (4 Columns) */}
-        <div className="lg:col-span-4 rounded-[2.5rem] border border-white/5 bg-[#0f172a]/40 backdrop-blur-md p-6 sm:p-8 shadow-xl flex flex-col justify-between space-y-6">
+        <div className="lg:col-span-4 rounded-[2.5rem] border border-slate-200 bg-slate-100 backdrop-blur-md p-6 sm:p-8 shadow-xl flex flex-col justify-between space-y-6">
           <div className="space-y-1">
-            <span className="text-[9px] font-black uppercase text-[#FBBF24] tracking-widest block">
+            <span className="text-[9px] font-black uppercase text-primary tracking-widest block">
               Occupancy Ratio
             </span>
-            <h3 className="text-lg font-bold text-slate-100">Trạng thái phòng thuê</h3>
+            <h3 className="text-lg font-bold text-slate-800">Trạng thái phòng thuê</h3>
           </div>
 
           <div className="h-[180px] w-full relative flex items-center justify-center">
@@ -301,15 +301,15 @@ export default function LandlordStatisticPage() {
                   ))}
                 </Pie>
                 <Tooltip 
-                  contentStyle={{ backgroundColor: "#0f172a", borderColor: "rgba(255,255,255,0.1)", borderRadius: "0.75rem" }}
+                  contentStyle={{ backgroundColor: "#F5EDE0", borderColor: "#D9D9D9", borderRadius: "0.75rem", color: "#0D1117" }}
                   itemStyle={{ fontWeight: "bold" }}
                 />
               </PieChart>
             </ResponsiveContainer>
             {/* Center Absolute indicator */}
             <div className="absolute text-center select-none pointer-events-none">
-              <span className="text-2xl font-black text-slate-100">{rooms.length}</span>
-              <span className="text-[8px] font-bold text-slate-450 block uppercase tracking-widest">Tổng số phòng</span>
+              <span className="text-2xl font-black text-slate-800">{rooms.length}</span>
+              <span className="text-[8px] font-bold text-slate-650 block uppercase tracking-widest">Tổng số phòng</span>
             </div>
           </div>
 
@@ -319,51 +319,51 @@ export default function LandlordStatisticPage() {
               <div key={idx} className="flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2 font-medium">
                   <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
-                  <span className="text-slate-355 text-slate-400">{item.name}</span>
+                  <span className="text-slate-355 text-slate-650">{item.name}</span>
                 </div>
-                <span className="font-extrabold text-slate-100">{item.value} Phòng</span>
+                <span className="font-extrabold text-slate-800">{item.value} Phòng</span>
               </div>
             ))}
           </div>
         </div>
 
         {/* CHART 3: BarChart Tin đăng clicks (12 Columns FULL) */}
-        <div className="lg:col-span-12 rounded-[2.5rem] border border-white/5 bg-[#0f172a]/40 backdrop-blur-md p-6 sm:p-8 shadow-xl space-y-6">
+        <div className="lg:col-span-12 rounded-[2.5rem] border border-slate-200 bg-slate-100 backdrop-blur-md p-6 sm:p-8 shadow-xl space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="space-y-1">
-              <span className="text-[9px] font-black uppercase text-[#8B5CF6] tracking-widest block">
+              <span className="text-[9px] font-black uppercase text-primary tracking-widest block">
                 Post Performance Traffic
               </span>
-              <h3 className="text-lg font-bold text-slate-100">Hiệu suất tương tác tin đăng</h3>
+              <h3 className="text-lg font-bold text-slate-800">Hiệu suất tương tác tin đăng</h3>
             </div>
-            <div className="rounded-xl bg-white/5 border border-white/5 p-1 flex gap-1.5 text-[9px] font-black uppercase tracking-widest text-slate-400">
-              <span className="flex items-center gap-1 px-3 py-1 bg-[#8B5CF6]/20 rounded-lg text-[#8B5CF6] border border-[#8B5CF6]/30">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#8B5CF6]" /> Lượt xem
+            <div className="rounded-xl bg-slate-100 border border-slate-200 p-1 flex gap-1.5 text-[9px] font-black uppercase tracking-widest text-slate-650">
+              <span className="flex items-center gap-1 px-3 py-1 bg-primary/20 rounded-lg text-primary border border-primary/30">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#6B6560]" /> Lượt xem
               </span>
-              <span className="flex items-center gap-1 px-3 py-1 bg-[#F59E0B]/20 rounded-lg text-[#F59E0B] border border-[#F59E0B]/30">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#F59E0B]" /> Kết nối
+              <span className="flex items-center gap-1 px-3 py-1 bg-primary/10 rounded-lg text-primary border border-primary/30">
+                <span className="h-1.5 w-1.5 rounded-full bg-primary" /> Kết nối
               </span>
             </div>
           </div>
 
           {postTrafficData.length === 0 ? (
-            <div className="h-[280px] flex items-center justify-center text-slate-500 border border-dashed border-white/5 rounded-2xl text-xs font-semibold">
+            <div className="h-[280px] flex items-center justify-center text-slate-650 border border-dashed border-slate-200 rounded-2xl text-xs font-semibold">
               Chưa có dữ liệu tin đăng ghép phòng
             </div>
           ) : (
             <div className="h-[280px] w-full text-xs font-semibold">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={postTrafficData} margin={{ top: 20, right: 10, left: 10, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
-                  <XAxis dataKey="name" stroke="rgba(255,255,255,0.3)" tickLine={false} axisLine={false} dy={5} />
-                  <YAxis stroke="rgba(255,255,255,0.3)" tickLine={false} axisLine={false} dx={-5} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#D9D9D9" vertical={false} />
+                  <XAxis dataKey="name" stroke="#6B6560" tickLine={false} axisLine={false} dy={5} />
+                  <YAxis stroke="#6B6560" tickLine={false} axisLine={false} dx={-5} />
                   <Tooltip 
-                    contentStyle={{ backgroundColor: "#0f172a", borderColor: "rgba(255,255,255,0.1)", borderRadius: "1rem" }}
-                    labelStyle={{ color: "rgba(255,255,255,0.4)", fontWeight: "bold", fontSize: "10px" }}
+                    contentStyle={{ backgroundColor: "#F5EDE0", borderColor: "#D9D9D9", borderRadius: "1rem", color: "#0D1117" }}
+                    labelStyle={{ color: "#6B6560", fontWeight: "bold", fontSize: "10px" }}
                   />
                   <Legend verticalAlign="top" height={36} content={() => null} />
-                  <Bar dataKey="views" name="Lượt xem tin" fill="#8B5CF6" radius={[6, 6, 0, 0]} maxBarSize={28} />
-                  <Bar dataKey="connects" name="Kết nối thành công" fill="#F59E0B" radius={[6, 6, 0, 0]} maxBarSize={28} />
+                  <Bar dataKey="views" name="Lượt xem tin" fill="#6B6560" radius={[6, 6, 0, 0]} maxBarSize={28} />
+                  <Bar dataKey="connects" name="Kết nối thành công" fill="#C1440E" radius={[6, 6, 0, 0]} maxBarSize={28} />
                 </BarChart>
               </ResponsiveContainer>
             </div>

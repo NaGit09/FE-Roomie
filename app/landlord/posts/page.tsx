@@ -76,7 +76,7 @@ export default function LandlordPostsPage() {
       );
     }
     return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 border border-amber-500/30 px-3 py-0.5 text-[9px] font-black uppercase tracking-widest text-amber-400 shadow-sm">
+      <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 border border-primary/30 px-3 py-0.5 text-[9px] font-black uppercase tracking-widest text-primary shadow-sm">
         <Clock className="h-3 w-3 animate-spin-slow" />
         Chờ duyệt tin
       </span>
@@ -84,26 +84,26 @@ export default function LandlordPostsPage() {
   };
 
   return (
-    <div className="space-y-10 animate-fade-in text-[#F8FAFC]">
+    <div className="space-y-10 animate-fade-in text-foreground">
       
       {/* Editorial Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 border-b border-white/5 pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 border-b border-slate-200 pb-6">
         <div className="space-y-1.5">
-          <div className="inline-flex items-center gap-2 rounded-full border border-[#8B5CF6]/20 bg-[#8B5CF6]/5 px-4.5 py-1.5 text-xs font-semibold uppercase tracking-widest text-[#8B5CF6]">
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4.5 py-1.5 text-xs font-semibold uppercase tracking-widest text-primary">
             <FileText className="h-3.5 w-3.5" />
             Truyền thông quảng cáo
           </div>
-          <h1 className="font-heading text-3xl font-extrabold tracking-tight text-slate-100">
+          <h1 className="font-heading text-3xl font-extrabold tracking-tight text-slate-800">
             Quản lý tin đăng ghép phòng
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 font-medium font-body leading-relaxed max-w-xl">
+          <p className="text-xs sm:text-sm text-slate-650 font-medium font-body leading-relaxed max-w-xl">
             Đăng tin tìm kiếm roommate, đẩy bài đăng lên vị trí ưu tiên và theo dõi lưu lượng clicks chuyển đổi ghép phòng.
           </p>
         </div>
 
         <button
           onClick={() => { setEditingPost(null); setIsAddOpen(true); }}
-          className="h-12 px-6 rounded-xl bg-[#F59E0B] hover:bg-[#FBBF24] text-slate-900 text-xs font-black uppercase tracking-wider cursor-pointer transition-all flex items-center gap-2 shadow-md shadow-[#F59E0B]/10 shrink-0 self-start sm:self-center"
+          className="h-12 px-6 rounded-xl bg-primary hover:bg-primary/90 text-white text-xs font-black uppercase tracking-wider cursor-pointer transition-all flex items-center gap-2 shadow-md shadow-primary/10 shrink-0 self-start sm:self-center"
         >
           <Plus className="h-4.5 w-4.5 stroke-[2.5]" />
           Tạo tin đăng mới
@@ -113,9 +113,9 @@ export default function LandlordPostsPage() {
       {/* Posts Cards Stack */}
       <div className="space-y-6">
         {isLoading ? (
-          <div className="text-center text-slate-400 py-10">Đang tải dữ liệu...</div>
+          <div className="text-center text-slate-650 py-10">Đang tải dữ liệu...</div>
         ) : posts.length === 0 ? (
-          <div className="text-center text-slate-400 py-10">Bạn chưa có tin đăng nào.</div>
+          <div className="text-center text-slate-650 py-10">Bạn chưa có tin đăng nào.</div>
         ) : (
           posts.map((post) => (
             <motion.div
@@ -123,31 +123,31 @@ export default function LandlordPostsPage() {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               whileHover={{ y: -3 }}
-              className="rounded-3xl border border-white/5 bg-[#0f172a]/60 backdrop-blur-md p-6 sm:p-8 flex flex-col lg:flex-row justify-between lg:items-center gap-6 shadow-xl relative group cursor-pointer"
+              className="rounded-3xl border border-slate-200 bg-card/60 backdrop-blur-md p-6 sm:p-8 flex flex-col lg:flex-row justify-between lg:items-center gap-6 shadow-xl relative group cursor-pointer"
             >
               {/* Left information card details */}
               <div className="space-y-4 flex-1 text-left">
                 <div className="flex flex-wrap items-center gap-3">
                   {getStatusBadge(post.is_verified)}
                   
-                  <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider flex items-center gap-1 font-body">
-                    <Calendar className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+                  <span className="text-[10px] text-slate-650 font-bold uppercase tracking-wider flex items-center gap-1 font-body">
+                    <Calendar className="h-3.5 w-3.5 text-slate-650 shrink-0" />
                     Đăng ngày: {new Date(post.created_at).toLocaleDateString('vi-VN')}
                   </span>
                 </div>
 
                 <div className="space-y-2">
-                  <h3 className="font-extrabold text-md sm:text-lg text-slate-100 leading-snug group-hover:text-[#FBBF24] transition-colors max-w-3xl">
+                  <h3 className="font-extrabold text-md sm:text-lg text-slate-800 leading-snug group-hover:text-[#FBBF24] transition-colors max-w-3xl">
                     {post.title}
                   </h3>
                   
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 text-xs text-slate-400 font-body">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 text-xs text-slate-650 font-body">
                     <span className="flex items-center gap-1 font-semibold text-slate-350">
-                      <Compass className="h-4 w-4 text-[#F59E0B]" />
+                      <Compass className="h-4 w-4 text-primary" />
                       {post.room.address.district}, {post.room.address.city}
                     </span>
                     
-                    <span className="font-bold text-[#F59E0B] sm:border-l sm:border-white/10 sm:pl-6">
+                    <span className="font-bold text-primary sm:border-l sm:border-slate-200 sm:pl-6">
                       {formatVND(post.room.price)}/tháng
                     </span>
                   </div>
@@ -159,7 +159,7 @@ export default function LandlordPostsPage() {
                 <button
                   type="button"
                   onClick={() => toast.success(`Mở trang xem chi tiết tin đăng`)}
-                  className="h-10 w-10 rounded-xl bg-white/5 border border-white/10 hover:bg-[#3b82f6]/20 hover:text-[#3b82f6] hover:border-[#3b82f6]/30 text-slate-400 transition-all cursor-pointer flex items-center justify-center"
+                  className="h-10 w-10 rounded-xl bg-slate-100 border border-slate-200 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 text-slate-650 transition-all cursor-pointer flex items-center justify-center"
                   title="Xem chi tiết"
                 >
                   <Eye className="h-4.5 w-4.5" />
@@ -167,7 +167,7 @@ export default function LandlordPostsPage() {
                 <button
                   type="button"
                   onClick={() => { setEditingPost(post); setIsAddOpen(true); }}
-                  className="h-10 w-10 rounded-xl bg-white/5 border border-white/10 hover:bg-[#F59E0B]/20 hover:text-[#F59E0B] hover:border-[#F59E0B]/30 text-slate-400 transition-all cursor-pointer flex items-center justify-center"
+                  className="h-10 w-10 rounded-xl bg-slate-100 border border-slate-200 hover:bg-primary/10 hover:text-primary hover:border-primary/20 text-slate-650 transition-all cursor-pointer flex items-center justify-center"
                   title="Cập nhật"
                 >
                   <Edit2 className="h-4.5 w-4.5" />
@@ -175,7 +175,7 @@ export default function LandlordPostsPage() {
                 <button
                   type="button"
                   onClick={() => handleDeletePost(post.post_id)}
-                  className="h-10 w-10 rounded-xl bg-white/5 border border-white/10 hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/30 text-slate-400 transition-all cursor-pointer flex items-center justify-center"
+                  className="h-10 w-10 rounded-xl bg-slate-100 border border-slate-200 hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/30 text-slate-650 transition-all cursor-pointer flex items-center justify-center"
                   title="Xóa"
                 >
                   <Trash2 className="h-4.5 w-4.5" />
