@@ -41,7 +41,7 @@ export function RegisterForm() {
       clientId
     )}&response_type=code&scope=openid&redirect_uri=${encodeURIComponent(
       redirectUri
-    )}`;
+    )}&kc_idp_hint=google`;
     
     window.location.href = targetUrl;
   };
