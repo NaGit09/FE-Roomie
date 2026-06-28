@@ -42,4 +42,19 @@ export const MatchingApi = {
     );
     return response.data;
   },
+
+  saveRoommate: async (savedUserId: string) => {
+    const response = await axiosInstance.post<ApiResponse<unknown>>(
+      `${BASE_URL}/save`,
+      { saved_user_id: savedUserId },
+    );
+    return response.data;
+  },
+
+  getSavedRoommates: async () => {
+    const response = await axiosInstance.get<ApiResponse<unknown[]>>(
+      `${BASE_URL}/saved`,
+    );
+    return response.data;
+  },
 };

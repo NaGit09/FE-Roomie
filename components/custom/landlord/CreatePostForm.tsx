@@ -28,6 +28,7 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
   const [content, setContent] = useState("");
   const [selectedRoomId, setSelectedRoomId] = useState<string>("");
   const [imageUrl, setImageUrl] = useState<string>("");
+  const [useFeaturedQuota, setUseFeaturedQuota] = useState(false);
   
   // Room list
   const [rooms, setRooms] = useState<RoomDetail[]>([]);
@@ -70,11 +71,13 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
       const rId = (editingPost as any).room_id || (editingPost.room as any)?.id?.toString() || "";
       setSelectedRoomId(rId);
       setImageUrl(editingPost.image_url || "");
+      setUseFeaturedQuota((editingPost as any).use_featured_quota || false);
     } else {
       setTitle("");
       setContent("");
       setSelectedRoomId("");
       setImageUrl("");
+      setUseFeaturedQuota(false);
     }
   }, [isOpen, editingPost]);
 
@@ -129,7 +132,8 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
       title,
       content,
       image_url: imageUrl,
-      room_id: selectedRoomId || undefined
+      room_id: selectedRoomId || undefined,
+      use_featured_quota: useFeaturedQuota,
     };
 
     try {
@@ -310,6 +314,31 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
                     )}
                   </div>
                 )}
+              </div>
+
+              {/* Boost Post Toggle */}
+              <div className="flex items-center justify-between p-4 bg-slate-105 border border-slate-200 rounded-xl">
+                <div className="space-y-0.5 text-left">
+                  <span className="text-[9px] font-black text-slate-650 uppercase tracking-widest block font-body">
+                    Đẩy bài viết nổi bật (Boost Post)
+                  </span>
+                  <p className="text-[10px] text-slate-550 font-medium">
+                    Sử dụng gói tin nổi bật để tăng lượt tiếp cận và hiển thị ưu tiên.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setUseFeaturedQuota(!useFeaturedQuota)}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none ${
+                    useFeaturedQuota ? "bg-[#F59E0B]" : "bg-slate-300"
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${
+                      useFeaturedQuota ? "translate-x-6" : "translate-x-1"
+                    }`}
+                  />
+                </button>
               </div>
 
               {/* Actions */}

@@ -4,6 +4,30 @@ import { UserPreference } from "@/schema/matching/UserPreference";
 import { UserMatching } from "@/schema/matching/UserMatching";
 import { MatchingApi } from "@/services/api/matching";
 
+export interface SavedRoommateMatch {
+  saved_id: number;
+  saved_at: string;
+  user: {
+    user_id: string;
+    email: string;
+    full_name: string;
+    status: "ACTIVE" | "INACTIVE";
+    role: "RENTER" | "LANDLORD";
+  };
+  matching_profile?: {
+    id?: number;
+    user_id?: string;
+    phone?: string;
+    zalo?: string;
+    facebook?: string;
+    avatar?: string;
+  } | null;
+  address?: {
+    district?: string;
+  } | null;
+  score?: number | null;
+}
+
 interface MatchingState {
   // Preference States
   budget_min: number;
@@ -21,6 +45,10 @@ interface MatchingState {
   loadingPreferences: boolean;
   loadingMatches: boolean;
   error: string | null;
+
+  // Saved candidates state
+  savedMatches: SavedRoommateMatch[];
+  loadingSavedMatches: boolean;
 
   // New preference status states
   hasPreference: boolean | null;
@@ -50,6 +78,8 @@ interface MatchingState {
   fetchMatches: () => Promise<void>;
   savePreferences: (data: UserPreference) => Promise<boolean>;
   connectRoommate: (candidateId: string) => Promise<boolean>;
+  saveRoommate: (savedUserId: string) => Promise<boolean>;
+  fetchSavedMatches: () => Promise<void>;
   resetStore: () => void;
 }
 
@@ -69,6 +99,9 @@ export const useMatchingStore = create<MatchingState>((set, get) => ({
   loadingPreferences: false,
   loadingMatches: false,
   error: null,
+
+  savedMatches: [],
+  loadingSavedMatches: false,
 
   // New default states
   hasPreference: null,
@@ -195,12 +228,40 @@ export const useMatchingStore = create<MatchingState>((set, get) => ({
       set({ connectingId: null });
       return false;
     } catch (err: any) {
-      console.warn("API connect details thất bại, kích hoạt kết nối giả định:", err);
-      set((state) => ({
-        connectedIds: [...state.connectedIds, candidateId],
-        connectingId: null,
-      }));
-      return true;
+      console.error("Lỗi khi kết nối bạn cùng phòng:", err);
+      set({ connectingId: null });
+      return false;
+    }
+  },
+
+  // Save Roommate Async Action
+  saveRoommate: async (savedUserId: string) => {
+    try {
+      const response = await MatchingApi.saveRoommate(savedUserId);
+      if (response && response.code === 200) {
+        get().fetchSavedMatches();
+        return true;
+      }
+      return false;
+    } catch (err: any) {
+      console.error("Lỗi khi lưu bạn cùng phòng:", err);
+      return false;
+    }
+  },
+
+  fetchSavedMatches: async () => {
+    set({ loadingSavedMatches: true, error: null });
+    try {
+      const response = await MatchingApi.getSavedRoommates();
+      const dataMatches = Array.isArray(response.data) ? (response.data as SavedRoommateMatch[]) : [];
+      set({ savedMatches: dataMatches, loadingSavedMatches: false });
+    } catch (err: any) {
+      console.error("Lỗi khi fetchSavedMatches:", err);
+      set({
+        error: err?.response?.data?.message || "Không thể tải danh sách đã lưu!",
+        savedMatches: [],
+        loadingSavedMatches: false,
+      });
     }
   },
 
@@ -216,6 +277,8 @@ export const useMatchingStore = create<MatchingState>((set, get) => ({
       pet_friendly: false,
       area: 25,
       matches: [],
+      savedMatches: [],
+      loadingSavedMatches: false,
       error: null,
       hasPreference: null,
       isEditingPreference: false,
