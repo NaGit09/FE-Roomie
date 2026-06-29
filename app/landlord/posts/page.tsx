@@ -1,6 +1,7 @@
 "use client";
  
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { 
   FileText, 
@@ -21,6 +22,7 @@ import { PostCardType } from "@/schema/room/post";
 import { CreatePostForm } from "@/components/custom/landlord/CreatePostForm";
 
 export default function LandlordPostsPage() {
+  const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [posts, setPosts] = useState<PostCardType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -158,7 +160,7 @@ export default function LandlordPostsPage() {
               <div className="flex items-center gap-2 shrink-0 self-end lg:self-center">
                 <button
                   type="button"
-                  onClick={() => toast.success(`Mở trang xem chi tiết tin đăng`)}
+                  onClick={() => router.push(`/rooms/${post.post_id}`)}
                   className="h-10 w-10 rounded-xl bg-slate-100 border border-slate-200 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 text-slate-650 transition-all cursor-pointer flex items-center justify-center"
                   title="Xem chi tiết"
                 >

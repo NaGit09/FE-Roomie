@@ -153,6 +153,7 @@ export const UserMatchingCard = () => {
     connectedIds,
     connectingId,
     connectRoommate,
+    saveRoommate,
     fetchMatches,
   } = useMatchingStore();
 
@@ -184,7 +185,11 @@ export const UserMatchingCard = () => {
   };
 
   const handleSwipeRight = () => {
+    if (activeCandidate) {
+      saveRoommate(activeCandidate.id);
+    }
     setSwipeDirection("right");
+    toast.success("Đã lưu ứng viên phù hợp!");
     setTimeout(() => {
       setCardIndex((prev) => prev + 1);
       setSwipeDirection(null);
