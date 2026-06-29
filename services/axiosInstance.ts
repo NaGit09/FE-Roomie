@@ -85,10 +85,15 @@ axiosInstance.interceptors.response.use(
       isRefreshing = true;
 
       try {
+        const refreshToken = getCookie("refresh_token");
         const refreshResponse = await axios.post(
-          `${baseURL}/auth/refresh-token`,
+          `${baseURL}/auth/refresh`,
           {},
-          { withCredentials: true },
+          {
+            headers: {
+              Authorization: `Bearer ${refreshToken}`,
+            },
+          },
         );
 
         const newAuthData = refreshResponse.data?.data;

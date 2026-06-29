@@ -41,8 +41,16 @@ export const AuthApi = {
   },
 
   refreshToken: async () => {
+    const { getCookie } = await import("@/utils/CookieUtils");
+    const refreshToken = getCookie("refresh_token");
     const res = await axiosInstance.post<ApiResponse<LoginResSchema>>(
       `${BASE_URL}/refresh`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${refreshToken}`,
+        },
+      }
     );
     return res.data;
   },
