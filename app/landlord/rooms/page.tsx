@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   Home, 
   Plus, 
@@ -11,22 +11,25 @@ import {
   ChevronRight,
   Eye,
   Edit2,
-  Trash2
+  Trash2,
+  X
 } from "lucide-react";
 import formatVND from "@/utils/priceUtils";
 import { toast } from "sonner";
-import { PostApi } from "@/services/api/room";
+import { RoomApi, RoomStatus } from "@/services/api/room";
 import { RoomDetail } from "@/schema/room/room";
 import { FilterRoom } from "@/components/custom/landlord/FilterRoom";
 import { CreateRoomForm } from "@/components/custom/landlord/CreateRoomForm";
 
 export default function LandlordRoomsPage() {
   const [mounted, setMounted] = useState(false);
-  const [filter, setFilter] = useState<"ALL" | "VACANT" | "OCCUPIED">("ALL");
+  const [filter, setFilter] = useState<"ALL" | RoomStatus>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editingRoom, setEditingRoom] = useState<RoomDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [selectedRoom, setSelectedRoom] = useState<RoomDetail | null>(null);
 
   // Rooms list state
   const [rooms, setRooms] = useState<RoomDetail[]>([]);
@@ -34,7 +37,7 @@ export default function LandlordRoomsPage() {
   const fetchRooms = async () => {
     setIsLoading(true);
     try {
-      const response = await PostApi.getMyRoom();
+      const response = await RoomApi.getMyRoom();
       if (response && response.data) {
         const roomsList = Array.isArray(response.data)
           ? response.data
@@ -54,7 +57,7 @@ export default function LandlordRoomsPage() {
   const handleDeleteRoom = async (roomId: number, name: string) => {
     if (confirm(`Bạn có chắc chắn muốn xóa phòng "${name}" không?`)) {
       try {
-        const response = await PostApi.deleteRoom(roomId);
+        const response = await RoomApi.deleteRoom(roomId);
         if (response && (response.code === 200 || response.code === 201)) {
           toast.success(`Đã xóa phòng "${name}" thành công!`);
           fetchRooms();
@@ -68,12 +71,37 @@ export default function LandlordRoomsPage() {
     }
   };
 
+  const handleUpdateStatus = async (room: RoomDetail, newStatus: string) => {
+    if (!room.id) return;
+    const payload: RoomDetail = {
+      ...room,
+      status: newStatus
+    };
+    try {
+      const response = await RoomApi.updateRoom(room.id, payload);
+      if (response && (response.code === 200 || response.code === 201)) {
+        toast.success(`Cập nhật trạng thái phòng "${room.name}" thành công!`);
+        fetchRooms();
+      } else {
+        toast.error(response?.message || "Không thể cập nhật trạng thái.");
+      }
+    } catch (error: any) {
+      console.error("Error updating room status:", error);
+      toast.error("Không thể cập nhật trạng thái. Vui lòng thử lại!");
+    }
+  };
+
   useEffect(() => {
     setMounted(true);
     fetchRooms();
   }, []);
 
   if (!mounted) return null;
+
+  const handleOpenDetail = (room: RoomDetail) => {
+    setSelectedRoom(room);
+    setIsDetailOpen(true);
+  };
 
   // Safe accessor utilities for room properties to support both schemas
   const getRoomFeatures = (room: any) => {
@@ -114,15 +142,21 @@ export default function LandlordRoomsPage() {
   const isRoomVacant = (status?: string) => {
     if (!status) return true;
     const s = status.toUpperCase();
-    return s === "VACANT" || s === "AVAILABLE";
+    return s === "VACANT" || s === "AVAILABLE" || s === "APPROVED";
   };
 
   // Filtered rooms listing
   const filteredRooms = rooms.filter((room) => {
-    const matchesFilter =
-      filter === "ALL" ||
-      (filter === "VACANT" && isRoomVacant(room.status)) ||
-      (filter === "OCCUPIED" && isRoomOccupied(room.status));
+    let matchesFilter = false;
+    if (filter === "ALL") {
+      matchesFilter = true;
+    } else if (filter === RoomStatus.VACANT) {
+      matchesFilter = isRoomVacant(room.status);
+    } else if (filter === RoomStatus.OCCUPIED) {
+      matchesFilter = isRoomOccupied(room.status);
+    } else {
+      matchesFilter = room.status === filter;
+    }
     
     const addressStr = getRoomFullAddress(room);
     const districtStr = getRoomDistrict(room);
@@ -227,13 +261,26 @@ export default function LandlordRoomsPage() {
               <div className="space-y-4">
                 {/* Header status block */}
                 <div className="flex justify-between items-start gap-4">
-                  <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[8px] font-black uppercase tracking-widest border ${
-                    isRoomOccupied(room.status)
-                      ? "bg-primary/10 border-primary/30 text-primary"
-                      : "bg-primary/10 border-primary/30 text-primary"
-                  }`}>
-                    {isRoomOccupied(room.status) ? "Đã lấp đầy" : "Còn trống"}
-                  </span>
+                  <select
+                    value={room.status}
+                    onClick={(e) => e.stopPropagation()}
+                    onChange={async (e) => {
+                      e.stopPropagation();
+                      await handleUpdateStatus(room, e.target.value);
+                    }}
+                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[8px] font-black uppercase tracking-widest border cursor-pointer outline-none transition-colors duration-200 ${
+                      isRoomOccupied(room.status)
+                        ? "bg-red-50 border-red-200 text-red-600 hover:bg-red-100"
+                        : room.status === "VACANT" || room.status === "APPROVED"
+                        ? "bg-green-50 border-green-200 text-green-600 hover:bg-green-100"
+                        : "bg-amber-50 border-amber-200 text-amber-650 hover:bg-amber-100"
+                    }`}
+                  >
+                    <option value={RoomStatus.VACANT} className="bg-background text-foreground text-xs">Còn trống</option>
+                    <option value={RoomStatus.OCCUPIED} className="bg-background text-foreground text-xs">Đã lấp đầy</option>
+                    <option value={RoomStatus.PENDING} className="bg-background text-foreground text-xs">Chờ duyệt</option>
+                    <option value={RoomStatus.APPROVED} className="bg-background text-foreground text-xs">Sẵn sàng</option>
+                  </select>
                   
                   <span className="text-[10px] font-extrabold text-slate-650 font-body">
                     Renter: {getRoomOccupied(room)} / {getRoomCapacity(room)}
@@ -278,7 +325,7 @@ export default function LandlordRoomsPage() {
                 
                 <div className="flex items-center gap-1.5 shrink-0">
                   <button
-                    onClick={(e) => { e.stopPropagation(); toast.success(`Xem chi tiết phòng "${room.name}"`); }}
+                    onClick={(e) => { e.stopPropagation(); handleOpenDetail(room); }}
                     className="h-8 w-8 rounded-lg bg-slate-100 border border-slate-200 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 text-slate-650 flex items-center justify-center cursor-pointer transition-all active:scale-90"
                     title="Xem chi tiết"
                   >
@@ -319,6 +366,124 @@ export default function LandlordRoomsPage() {
           fetchRooms();
         }}
       />
+
+      {/* DYNAMIC VIEW DETAILS MODAL SHEET */}
+      <AnimatePresence>
+        {isDetailOpen && selectedRoom && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsDetailOpen(false)}
+              className="fixed inset-0 bg-black/85 backdrop-blur-sm"
+            />
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 10 }}
+              className="relative w-full max-w-2xl rounded-[2.5rem] border border-slate-200 bg-card shadow-2xl p-6 sm:p-10 z-10 text-left space-y-6 text-foreground"
+            >
+              <button
+                onClick={() => setIsDetailOpen(false)}
+                className="absolute top-6 right-6 p-2 rounded-full border border-slate-200 bg-slate-100 text-slate-650 hover:text-white cursor-pointer"
+              >
+                <X className="h-4 w-4" />
+              </button>
+
+              <div className="space-y-1.5 text-left border-b border-slate-200 pb-4">
+                <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[8px] font-black uppercase tracking-widest border ${
+                  isRoomOccupied(selectedRoom.status)
+                    ? "bg-red-500/10 border-red-500/30 text-red-405"
+                    : selectedRoom.status === "VACANT" || selectedRoom.status === "APPROVED"
+                    ? "bg-green-500/10 border-green-500/30 text-green-405"
+                    : "bg-amber-500/10 border-amber-500/30 text-amber-405"
+                }`}>
+                  Trạng thái: {isRoomOccupied(selectedRoom.status) ? "Đã lấp đầy" : "Còn trống"}
+                </span>
+                <h3 className="text-xl font-bold text-slate-800 font-heading">{selectedRoom.name}</h3>
+                <p className="text-xs text-slate-650 leading-relaxed font-body flex items-center gap-1">
+                  <MapPin className="h-4 w-4 text-red-500 shrink-0" />
+                  {getRoomFullAddress(selectedRoom)}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-left">
+                <div className="space-y-4">
+                  {/* Financials & Area Info */}
+                  <div className="rounded-2xl border border-slate-200 bg-slate-100 p-4 space-y-3">
+                    <span className="text-slate-650 font-bold uppercase tracking-wider block text-[9px]">Tổng quan biểu phí</span>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div>
+                        <span className="text-[10px] text-slate-650 block">Giá thuê</span>
+                        <span className="font-extrabold text-[#FBBF24] text-xs">{formatVND(selectedRoom.price)}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-650 block">Tiền cọc</span>
+                        <span className="font-extrabold text-slate-700 text-xs">{formatVND(selectedRoom.deposit)}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-650 block">Diện tích</span>
+                        <span className="font-extrabold text-slate-700 text-xs">{selectedRoom.area} m²</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Attributes capacity */}
+                  <div className="rounded-2xl border border-slate-200 bg-slate-100 p-4 space-y-2">
+                    <span className="text-slate-650 font-bold uppercase tracking-wider block text-[9px]">Quy mô & Lấp đầy</span>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <span className="text-[10px] text-slate-650 block">Sức chứa tối đa</span>
+                        <span className="font-extrabold text-slate-700 text-xs">{getRoomCapacity(selectedRoom)} người / phòng</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-650 block">Số người đang ở</span>
+                        <span className="font-extrabold text-slate-700 text-xs">{getRoomOccupied(selectedRoom)} người</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <span className="text-slate-650 font-bold uppercase tracking-wider block text-[9px] mb-1.5">Tiện ích đặc quyền</span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {getRoomFeatures(selectedRoom).map((feat: string, idx: number) => (
+                        <span key={idx} className="text-[10px] font-bold text-slate-600 bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-md">
+                          {feat}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-slate-650 font-bold uppercase tracking-wider block text-[9px]">Mô tả chi tiết</span>
+                    <p className="text-[11px] text-slate-650 leading-relaxed font-body font-medium italic mt-1 max-h-24 overflow-y-auto pr-1">
+                      {selectedRoom.description || "Không có thông tin chi tiết nào khác cho phòng trọ này" }
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-slate-200 flex justify-end gap-3">
+                <button
+                  onClick={() => { setIsDetailOpen(false); setEditingRoom(selectedRoom); setIsAddOpen(true); }}
+                  className="h-11 px-5 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold uppercase text-[10px] tracking-wider transition-all cursor-pointer flex items-center gap-1.5 shadow-md shadow-primary/10"
+                >
+                  <Edit2 className="h-4 w-4" /> Cập nhật phòng
+                </button>
+                <button
+                  onClick={() => setIsDetailOpen(false)}
+                  className="h-11 px-5 rounded-xl bg-slate-100 border border-slate-200 hover:bg-slate-200 text-slate-700 font-bold uppercase text-[10px] tracking-wider transition-all cursor-pointer"
+                >
+                  Đóng
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

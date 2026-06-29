@@ -6,6 +6,7 @@ export const PostCardSchema = z.object({
   post_id: z.number(),
   title: z.string(),
   is_verified: z.boolean(),
+  is_featured: z.boolean().optional(),
   created_at: z.string(),
   image_url: z.string().nullable(),
   room: roomCardSchema,
@@ -20,6 +21,7 @@ export const PostDetailSchema = z.object({
   image_url: z.string().nullable(),
   created_by: z.string(),
   is_verified: z.boolean(),
+  is_featured: z.boolean().optional(),
   views: z.number(),
   created_at: z.string(),
   room: roomDetailSchema,
@@ -47,7 +49,7 @@ export const GetPostsQuerySchema = z.object({
 export type GetPostsQueryType = z.infer<typeof GetPostsQuerySchema>;
 
 export const CreatePostSchema = z.object({
-  room_id: z.uuid().optional(),
+  room_id: z.number().optional(),
   title: z.string(),
   content: z.string(),
   image_url: z.string(),

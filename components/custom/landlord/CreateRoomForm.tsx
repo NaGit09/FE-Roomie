@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, CheckCircle, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { AddressApi } from "@/services/api/adress";
-import { PostApi } from "@/services/api/room";
+import { RoomApi, RoomStatus } from "@/services/api/room";
 import { UploadApi } from "@/services/api/upload";
 import { RoomDetail } from "@/schema/room/room";
 
@@ -54,6 +54,7 @@ export const CreateRoomForm: React.FC<CreateRoomFormProps> = ({
     "Máy lạnh",
     "Tủ lạnh"
   ]);
+  const [roomStatus, setRoomStatus] = useState<string>("VACANT");
 
   // Image Upload States
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
@@ -78,6 +79,7 @@ export const CreateRoomForm: React.FC<CreateRoomFormProps> = ({
           setNewRoomDeposit(editingRoom.deposit);
           setSelectedAmenities(editingRoom.amenities);
           setUploadedImages(editingRoom.images || []);
+          setRoomStatus(editingRoom.status || RoomStatus.VACANT);
 
           const capacityAttr = editingRoom.attributes?.find((a: string) => a.startsWith("capacity:"));
           if (capacityAttr) {
@@ -124,6 +126,7 @@ export const CreateRoomForm: React.FC<CreateRoomFormProps> = ({
           setNewRoomCapacity(2);
           setSelectedAmenities(["Wifi", "Máy lạnh", "Tủ lạnh"]);
           setUploadedImages([]);
+          setRoomStatus(RoomStatus.VACANT);
         }
       } catch (error) {
         console.error("Failed to load provinces or pre-fill room:", error);
@@ -253,15 +256,20 @@ export const CreateRoomForm: React.FC<CreateRoomFormProps> = ({
       return;
     }
 
+    const occupiedAttr = editingRoom?.attributes?.find((a: string) => a.startsWith("occupied:"));
+    const occupiedCount = occupiedAttr ? occupiedAttr.split(":")[1] : "0";
+
     const newRoomPayload: RoomDetail = {
+      ...(editingRoom?.id ? { id: editingRoom.id } : {}),
+      ...(editingRoom?.owner_id ? { owner_id: editingRoom.owner_id } : {}),
       name: newRoomName,
       description: newRoomDescription || "Không có mô tả chi tiết cho phòng này.",
       price: newRoomPrice,
       area: newRoomArea,
       deposit: newRoomDeposit,
-      status: editingRoom ? editingRoom.status : "VACANT",
+      status: roomStatus,
       amenities: selectedAmenities,
-      attributes: [`capacity:${newRoomCapacity}`, `occupied:0`],
+      attributes: [`capacity:${newRoomCapacity}`, `occupied:${occupiedCount}`],
       images: uploadedImages,
       address: {
         street: newRoomAddress,
@@ -278,7 +286,7 @@ export const CreateRoomForm: React.FC<CreateRoomFormProps> = ({
     try {
       let response;
       if (editingRoom && editingRoom.id) {
-        response = await PostApi.updateRoom(editingRoom.id, newRoomPayload);
+        response = await RoomApi.updateRoom(editingRoom.id, newRoomPayload);
         if (response && (response.code === 200 || response.code === 201)) {
           toast.success(`Đã cập nhật phòng "${newRoomName}" thành công!`);
           onSuccess();
@@ -287,7 +295,7 @@ export const CreateRoomForm: React.FC<CreateRoomFormProps> = ({
           toast.error(response?.message || "Đã xảy ra lỗi khi cập nhật phòng.");
         }
       } else {
-        response = await PostApi.createNewRoom(newRoomPayload);
+        response = await RoomApi.createNewRoom(newRoomPayload);
         if (response && (response.code === 200 || response.code === 201)) {
           toast.success(`Đã thêm phòng "${newRoomName}" thành công!`);
           onSuccess();
@@ -440,8 +448,8 @@ export const CreateRoomForm: React.FC<CreateRoomFormProps> = ({
                 </div>
               </div>
 
-              {/* Price, Deposit, Area, Capacity */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {/* Price, Deposit, Area, Capacity, Status */}
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
                 <div className="space-y-1">
                   <label className="text-[9px] font-black text-slate-650 uppercase tracking-widest block font-body">Giá thuê (VNĐ)</label>
                   <input
@@ -484,6 +492,20 @@ export const CreateRoomForm: React.FC<CreateRoomFormProps> = ({
                     className="w-full h-11 bg-slate-100 border border-slate-200 rounded-xl px-4 text-xs font-semibold text-slate-700 focus:outline-none focus:border-[#F59E0B]"
                     required
                   />
+                </div>
+                <div className="space-y-1 col-span-2 sm:col-span-1">
+                  <label className="text-[9px] font-black text-slate-650 uppercase tracking-widest block font-body">Trạng thái</label>
+                  <select
+                    value={roomStatus}
+                    onChange={(e) => setRoomStatus(e.target.value)}
+                    className="w-full h-11 bg-card border border-slate-200 rounded-xl px-3 text-xs font-semibold text-slate-700 focus:outline-none focus:border-[#F59E0B]"
+                    required
+                  >
+                    <option value={RoomStatus.VACANT}>Còn trống</option>
+                    <option value={RoomStatus.OCCUPIED}>Đã lấp đầy</option>
+                    <option value={RoomStatus.PENDING}>Chờ duyệt</option>
+                    <option value={RoomStatus.APPROVED}>Sẵn sàng</option>
+                  </select>
                 </div>
               </div>
 

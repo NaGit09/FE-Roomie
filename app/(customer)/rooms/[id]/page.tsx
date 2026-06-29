@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useRoomStore } from "@/stores/roomStore";
-import { ChevronLeft, Heart } from "lucide-react";
+import { useAuthStore } from "@/stores/authStore";
+import { ChevronLeft, Heart, Sparkles } from "lucide-react";
 import DetailHeader from "@/components/custom/customer/room/RoomDetail/DetailHeader";
 import DetailNotFound from "@/components/custom/customer/room/RoomDetail/DetailNotFound";
 import DetailLoading from "@/components/custom/customer/room/RoomDetail/DetailLoading";
@@ -18,6 +19,8 @@ export default function RoomDetailPage() {
   const router = useRouter();
   const idStr = typeof params?.id === "string" ? params.id : "";
   const postId = parseInt(idStr, 10);
+
+  const { user } = useAuthStore();
 
   const {
     currentRoomDetail,
@@ -72,6 +75,51 @@ export default function RoomDetailPage() {
             <Heart className={`h-5 w-5 ${isSaved ? "fill-current" : ""}`} />
           </button>
         </div>
+
+        {/* Landlord Owner Quick Dashboard Banner */}
+        {user?.id === currentRoomDetail.created_by && (
+          <div className="mb-8 overflow-hidden rounded-3xl border border-amber-500/20 bg-amber-500/5 p-6 backdrop-blur-md shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div className="space-y-2 text-left">
+              <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/25 bg-amber-500/10 px-3.5 py-1 text-xs font-extrabold uppercase tracking-wider text-amber-600">
+                <Sparkles className="h-3.5 w-3.5 fill-amber-200 animate-pulse" />
+                Góc chủ nhà
+              </div>
+              <h2 className="text-xl font-black text-slate-800 leading-tight">
+                Chào {user?.full_name || "Chủ nhà"}, đây là bài đăng của bạn!
+              </h2>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-semibold text-slate-650">
+                <span className="flex items-center gap-1">
+                  Trạng thái duyệt:{" "}
+                  {currentRoomDetail.is_verified ? (
+                    <span className="text-emerald-600 font-bold">Đã duyệt</span>
+                  ) : (
+                    <span className="text-amber-500 font-bold">Đang chờ duyệt</span>
+                  )}
+                </span>
+                <span className="h-1.5 w-1.5 rounded-full bg-slate-300 hidden sm:block" />
+                <span className="flex items-center gap-1">
+                  Đo lường hiển thị:{" "}
+                  {currentRoomDetail.is_featured ? (
+                    <span className="text-amber-500 font-bold">Đang được Đẩy Tin nổi bật ⭐</span>
+                  ) : (
+                    <span className="text-slate-500 font-bold">Tin thường</span>
+                  )}
+                </span>
+                <span className="h-1.5 w-1.5 rounded-full bg-slate-300 hidden sm:block" />
+                <span className="text-slate-650 font-bold">{currentRoomDetail.views || 0} lượt xem</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 shrink-0 self-stretch sm:self-auto">
+              <button
+                onClick={() => router.push("/landlord/posts")}
+                className="flex-1 sm:flex-none h-11 px-5 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-xs font-black uppercase tracking-wider cursor-pointer transition-all flex items-center justify-center gap-2 shadow-md shadow-slate-900/10"
+              >
+                Quản lý tin đăng
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Dynamic Detail Card */}
         <div className="overflow-hidden rounded-[2.5rem] bg-white border border-slate-100 shadow-xl shadow-slate-100/30 md:p-10 p-6 space-y-10">

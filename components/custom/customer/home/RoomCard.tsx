@@ -10,6 +10,7 @@ import {
   MapPin,
   Clock,
   ArrowUpRight,
+  Sparkles,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -26,6 +27,7 @@ export interface Room {
   address: string;
   facilities: { icon: LucideIcon; label: string }[];
   verified: boolean;
+  isFeatured?: boolean;
 }
 
 // ── Smart Shared De-duplicated Request Cache ──
@@ -150,13 +152,21 @@ const RoomCard = memo(({ room }: { room: Room }) => {
         {/* Scrim/Overlay for legibility */}
         <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
-        {/* Floating Layer: Top Left (Verified) */}
-        {room.verified && (
-          <div className="absolute top-4 left-4 z-10 flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-1.5 text-[10px] font-bold uppercase tracking-tight text-emerald-600 shadow-sm backdrop-blur-md">
-            <ShieldCheck className="h-3.5 w-3.5 fill-emerald-100" />
-            <span>Verified</span>
-          </div>
-        )}
+        {/* Floating Layer: Top Left (Verified & Featured) */}
+        <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
+          {room.verified && (
+            <div className="flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-1.5 text-[10px] font-bold uppercase tracking-tight text-emerald-600 shadow-sm backdrop-blur-md">
+              <ShieldCheck className="h-3.5 w-3.5 fill-emerald-100" />
+              <span>Verified</span>
+            </div>
+          )}
+          {room.isFeatured && (
+            <div className="flex items-center gap-1.5 rounded-full bg-[#F59E0B]/90 px-3 py-1.5 text-[10px] font-bold uppercase tracking-tight text-white shadow-sm backdrop-blur-md">
+              <Sparkles className="h-3.5 w-3.5 fill-amber-100" />
+              <span>Nổi bật</span>
+            </div>
+          )}
+        </div>
 
         {/* Floating Layer: Top Right (Save Button) */}
         <button

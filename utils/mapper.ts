@@ -73,6 +73,7 @@ export const mapPostToRoom = (
     postedAt: formatRelativeTime(post.created_at),
     address: `${post.room.address.district}, ${post.room.address.city}`,
     verified: post.is_verified,
+    isFeatured: post.is_featured,
     facilities: finalFacilities,
     ward,
   };

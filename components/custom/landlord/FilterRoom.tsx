@@ -1,11 +1,12 @@
 import React from "react";
 import { Search } from "lucide-react";
+import { RoomStatus } from "@/services/api/room";
 
 interface FilterRoomProps {
   searchQuery: string;
   setSearchQuery: (query: string) => void;
-  filter: "ALL" | "VACANT" | "OCCUPIED";
-  setFilter: (filter: "ALL" | "VACANT" | "OCCUPIED") => void;
+  filter: "ALL" | RoomStatus;
+  setFilter: (filter: "ALL" | RoomStatus) => void;
 }
 
 export const FilterRoom: React.FC<FilterRoomProps> = ({
@@ -29,16 +30,18 @@ export const FilterRoom: React.FC<FilterRoomProps> = ({
       </div>
 
       {/* Filter togglers */}
-      <div className="flex items-center gap-1 bg-background p-1 rounded-xl border border-slate-200 self-stretch md:self-auto justify-between md:justify-start">
+      <div className="flex items-center gap-1 bg-background p-1 rounded-xl border border-slate-200 self-stretch md:self-auto justify-between md:justify-start overflow-x-auto">
         {[
           { id: "ALL", label: "Tất cả" },
-          { id: "VACANT", label: "Còn trống" },
-          { id: "OCCUPIED", label: "Đã cho thuê" },
+          { id: RoomStatus.VACANT, label: "Còn trống" },
+          { id: RoomStatus.OCCUPIED, label: "Đã cho thuê" },
+          { id: RoomStatus.PENDING, label: "Chờ duyệt" },
+          { id: RoomStatus.APPROVED, label: "Sẵn sàng" },
         ].map((item) => (
           <button
             key={item.id}
-            onClick={() => setFilter(item.id as "ALL" | "VACANT" | "OCCUPIED")}
-            className={`px-4 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
+            onClick={() => setFilter(item.id as "ALL" | RoomStatus)}
+            className={`px-4 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer whitespace-nowrap ${
               filter === item.id
                 ? "bg-primary text-white shadow"
                 : "text-slate-650 hover:text-slate-700"

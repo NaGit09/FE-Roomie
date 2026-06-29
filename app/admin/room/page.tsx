@@ -18,7 +18,7 @@ import {
   Activity,
 } from "lucide-react";
 import { toast } from "sonner";
-import { PostApi } from "@/services/api/room";
+import { RoomApi, RoomRequest } from "@/services/api/room";
 import { RoomDetail } from "@/schema/room/room";
 import formatVND from "@/utils/priceUtils";
 
@@ -28,6 +28,7 @@ export default function AdminRoomsPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
+  const [roomRequests, setRoomRequests] = useState<RoomRequest[]>([]);
 
   // CRUD Modal States
   const [isDetailOpen, setIsDetailOpen] = useState(false);
@@ -54,7 +55,7 @@ export default function AdminRoomsPage() {
   const fetchRooms = async () => {
     setLoading(true);
     try {
-      const response = await PostApi.getAllRooms();
+      const response = await RoomApi.getAllRooms();
       let extractedRooms: RoomDetail[] = [];
       
       if (response && response.code === 200) {
@@ -73,10 +74,36 @@ export default function AdminRoomsPage() {
     }
   };
 
+  const fetchUpdateRequests = async () => {
+    setLoading(true);
+    try {
+      const response = await RoomApi.getPendingRequests();
+      if (response && response.code === 200 && Array.isArray(response.data)) {
+        setRoomRequests(response.data);
+      } else {
+        setRoomRequests([]);
+        toast.error("Không thể tải danh sách yêu cầu cập nhật.");
+      }
+    } catch (err: any) {
+      console.error("Error loading room update requests for admin:", err);
+      toast.error("Lỗi khi tải danh sách yêu cầu cập nhật.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     setMounted(true);
-    fetchRooms();
   }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+    if (statusFilter === "UPDATE_REQUESTS") {
+      fetchUpdateRequests();
+    } else {
+      fetchRooms();
+    }
+  }, [statusFilter, mounted]);
 
   if (!mounted) return null;
 
@@ -115,6 +142,7 @@ export default function AdminRoomsPage() {
 
     const matchesStatus =
       statusFilter === "ALL" ||
+      statusFilter === "UPDATE_REQUESTS" ||
       (statusFilter === "VACANT" && room.status === "VACANT") ||
       (statusFilter === "OCCUPIED" && room.status === "OCCUPIED") ||
       (statusFilter === "PENDING" && room.status === "PENDING") ||
@@ -207,7 +235,7 @@ export default function AdminRoomsPage() {
 
     try {
       if (formMode === "CREATE") {
-        const res = await PostApi.createNewRoom(payload);
+        const res = await RoomApi.createNewRoom(payload);
         if (res && res.code === 200) {
           toast.success(`Tạo mới phòng "${formName}" thành công!`);
           setIsFormOpen(false);
@@ -216,7 +244,7 @@ export default function AdminRoomsPage() {
           toast.error(res?.message || "Tạo mới phòng thất bại.");
         }
       } else if (formMode === "EDIT" && selectedRoom?.id) {
-        const res = await PostApi.updateRoom(selectedRoom.id, payload);
+        const res = await RoomApi.updateRoom(selectedRoom.id, payload);
         if (res && res.code === 200) {
           toast.success(`Cập nhật phòng "${formName}" thành công!`);
           setIsFormOpen(false);
@@ -243,7 +271,7 @@ export default function AdminRoomsPage() {
     toast.promise(
       new Promise(async (resolve, reject) => {
         try {
-          const res = await PostApi.updateRoom(room.id!, payload);
+          const res = await RoomApi.updateRoom(room.id!, payload);
           if (res && res.code === 200) {
             fetchRooms();
             resolve(true);
@@ -262,6 +290,29 @@ export default function AdminRoomsPage() {
     );
   };
 
+  const handleApproveRequest = async (requestId: number, approved: boolean) => {
+    toast.promise(
+      new Promise(async (resolve, reject) => {
+        try {
+          const res = await RoomApi.approveRoomRequest(requestId, approved);
+          if (res && res.code === 200) {
+            fetchUpdateRequests();
+            resolve(true);
+          } else {
+            reject(new Error(res?.message || "Thao tác thất bại."));
+          }
+        } catch (err) {
+          reject(err);
+        }
+      }),
+      {
+        loading: approved ? "Đang duyệt yêu cầu..." : "Đang từ chối yêu cầu...",
+        success: approved ? "Đã duyệt yêu cầu thành công!" : "Đã từ chối yêu cầu thành công!",
+        error: (err) => err.message || "Đã xảy ra lỗi khi xử lý yêu cầu."
+      }
+    );
+  };
+
   const handleDeleteRoom = async (room: RoomDetail) => {
     if (!room.id) return;
     
@@ -272,7 +323,7 @@ export default function AdminRoomsPage() {
     toast.promise(
       new Promise(async (resolve, reject) => {
         try {
-          const res = await PostApi.deleteRoom(room.id!);
+          const res = await RoomApi.deleteRoom(room.id!);
           if (res && res.code === 200) {
             fetchRooms();
             resolve(true);
@@ -366,7 +417,8 @@ export default function AdminRoomsPage() {
             { label: "Còn trống", value: "VACANT" },
             { label: "Đang thuê", value: "OCCUPIED" },
             { label: "Chờ duyệt", value: "PENDING" },
-            { label: "Đã duyệt", value: "APPROVED" }
+            { label: "Đã duyệt", value: "APPROVED" },
+            { label: "Yêu cầu cập nhật", value: "UPDATE_REQUESTS" }
           ].map((tab, idx) => (
             <button
               key={idx}
@@ -391,13 +443,132 @@ export default function AdminRoomsPage() {
             Đang tải hồ sơ căn hộ...
           </span>
         </div>
-      ) : filteredRooms.length === 0 ? (
+      ) : filteredRooms.length === 0 && statusFilter !== "UPDATE_REQUESTS" ? (
         <div className="rounded-[2.5rem] border border-slate-200 bg-slate-50 p-16 text-center space-y-4 max-w-md mx-auto">
           <Compass className="h-10 w-10 text-slate-600 animate-pulse mx-auto" />
           <h3 className="text-sm font-bold text-slate-700">Không tìm thấy phòng phù hợp</h3>
           <p className="text-xs text-slate-650 leading-relaxed font-body">
             Vui lòng thay đổi từ khóa tìm kiếm hoặc cập nhật bộ lọc trạng thái phòng kiểm duyệt.
           </p>
+        </div>
+      ) : statusFilter === "UPDATE_REQUESTS" && roomRequests.length === 0 ? (
+        <div className="rounded-[2.5rem] border border-slate-200 bg-slate-50 p-16 text-center space-y-4 max-w-md mx-auto">
+          <Compass className="h-10 w-10 text-slate-600 animate-pulse mx-auto" />
+          <h3 className="text-sm font-bold text-slate-700">Không có yêu cầu cập nhật nào</h3>
+          <p className="text-xs text-slate-650 leading-relaxed font-body">
+            Hiện tại không có yêu cầu cập nhật hay thay đổi phòng nào đang chờ duyệt.
+          </p>
+        </div>
+      ) : statusFilter === "UPDATE_REQUESTS" ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {roomRequests.map((req) => {
+            const originalRoom = rooms.find(r => r.id === req.room_id);
+            const roomName = originalRoom?.name || req.proposed_data?.name || `Phòng #${req.room_id}`;
+            const addressStr = originalRoom ? getRoomFullAddress(originalRoom) : req.proposed_data?.address?.full_text || "Chưa cập nhật";
+            
+            // Determine action type label and styling
+            let actionLabel = "Yêu cầu";
+            let actionStyle = "bg-blue-500/10 border-blue-500/30 text-blue-400";
+            if (req.action_type === "UPDATE") {
+              actionLabel = "Cập nhật";
+              actionStyle = "bg-amber-500/10 border-amber-500/30 text-amber-400";
+            } else if (req.action_type === "DELETE") {
+              actionLabel = "Yêu cầu xóa";
+              actionStyle = "bg-red-500/10 border-red-500/30 text-red-400";
+            } else if (req.action_type === "CREATE") {
+              actionLabel = "Tạo mới";
+              actionStyle = "bg-green-500/10 border-green-500/30 text-green-400";
+            }
+
+            return (
+              <motion.div
+                key={req.id}
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                whileHover={{ y: -4 }}
+                className="rounded-3xl border border-slate-200 bg-card/60 backdrop-blur-md p-6 flex flex-col justify-between shadow-lg relative group cursor-pointer"
+              >
+                <div className="space-y-4">
+                  <div className="flex justify-between items-start gap-4">
+                    <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[8px] font-black uppercase tracking-widest border ${actionStyle}`}>
+                      {actionLabel}
+                    </span>
+                    <span className="text-[10px] font-mono text-slate-650">
+                      ID: #{req.id}
+                    </span>
+                  </div>
+
+                  <div className="space-y-1.5 text-left">
+                    <h3 className="font-bold text-base text-slate-800 group-hover:text-emerald-400 transition-colors leading-tight line-clamp-1">
+                      {roomName}
+                    </h3>
+                    <p className="text-[10px] text-slate-650 font-medium font-body leading-relaxed flex items-start gap-1 line-clamp-2">
+                      <MapPin className="h-3.5 w-3.5 text-red-500 shrink-0 mt-0.5" />
+                      {addressStr}
+                    </p>
+                  </div>
+
+                  <hr className="border-slate-200" />
+
+                  {/* Proposed changes or request metadata */}
+                  <div className="text-left text-[11px] space-y-1 bg-slate-100/55 p-3 rounded-2xl border border-slate-200 font-body">
+                    <span className="text-[9px] font-bold text-slate-650 block uppercase tracking-wider mb-1">Chi tiết thay đổi:</span>
+                    {req.action_type === "UPDATE" && req.proposed_data ? (
+                      <div className="space-y-1">
+                        {req.proposed_data.name && (
+                          <div>Tên mới: <span className="font-semibold text-slate-700">{req.proposed_data.name}</span></div>
+                        )}
+                        {req.proposed_data.price && (
+                          <div>Giá mới: <span className="font-semibold text-[#FBBF24]">{formatVND(req.proposed_data.price)}/tháng</span></div>
+                        )}
+                        {req.proposed_data.area && (
+                          <div>Diện tích: <span className="font-semibold text-slate-750">{req.proposed_data.area} m²</span></div>
+                        )}
+                        {req.proposed_data.deposit && (
+                          <div>Cọc mới: <span className="font-semibold text-slate-750">{formatVND(req.proposed_data.deposit)}</span></div>
+                        )}
+                        {req.proposed_data.amenities && (
+                          <div className="truncate">Tiện ích: <span className="font-semibold text-slate-750">{req.proposed_data.amenities.join(", ")}</span></div>
+                        )}
+                      </div>
+                    ) : req.action_type === "DELETE" ? (
+                      <div className="text-red-400 font-semibold">Yêu cầu xóa phòng này khỏi hệ thống.</div>
+                    ) : (
+                      <div className="text-slate-600 font-semibold">Yêu cầu khôi phục trạng thái phòng.</div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="mt-6 pt-4 border-t border-dashed border-slate-200 flex items-center justify-between">
+                  <div className="space-y-0.5 text-left">
+                    <span className="text-[8px] text-slate-650 block uppercase font-mono">Người yêu cầu</span>
+                    <span className="text-[10px] font-bold text-slate-700 truncate block max-w-[120px]" title={req.created_by}>
+                      {req.created_by}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleApproveRequest(req.id, true); }}
+                      className="h-8 px-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 hover:bg-emerald-500 hover:text-slate-950 hover:border-emerald-500 flex items-center justify-center cursor-pointer transition-all active:scale-90 text-[8px] font-black uppercase tracking-wider gap-1"
+                      title="Duyệt yêu cầu"
+                    >
+                      <CheckCircle className="h-3.5 w-3.5" />
+                      Duyệt
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleApproveRequest(req.id, false); }}
+                      className="h-8 px-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500 hover:text-white hover:border-red-500 flex items-center justify-center cursor-pointer transition-all active:scale-90 text-[8px] font-black uppercase tracking-wider gap-1"
+                      title="Từ chối yêu cầu"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                      Từ chối
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -470,38 +641,35 @@ export default function AdminRoomsPage() {
 
                 {/* Operations */}
                 <div className="flex items-center gap-1.5 shrink-0">
-                  
                   {/* Approve Option (Only show for PENDING rooms) */}
                   {room.status === "PENDING" && (
                     <button
                       onClick={(e) => { e.stopPropagation(); handleApproveRoom(room); }}
-                      className="h-8 px-3 rounded-lg bg-primary/10 border border-primary/20 text-primary hover:bg-emerald-500 hover:text-slate-950 hover:border-emerald-500 flex items-center justify-center cursor-pointer transition-all active:scale-90 text-[8px] font-black uppercase tracking-wider gap-1"
-                      title="Phê duyệt phòng"
+                      className="h-8 px-3 rounded-lg bg-[#34D399]/10 border border-[#34D399]/20 text-[#34D399] hover:bg-[#34D399] hover:text-slate-950 hover:border-[#34D399] flex items-center justify-center cursor-pointer transition-all active:scale-90 text-[8px] font-black uppercase tracking-wider gap-1"
+                      title="Phê duyệt phòng hoạt động"
                     >
                       <CheckCircle className="h-3.5 w-3.5" />
-                      Duyệt
+                      Phê duyệt
                     </button>
                   )}
 
                   <button
                     onClick={(e) => { e.stopPropagation(); handleOpenDetail(room); }}
-                    className="h-8 w-8 rounded-lg bg-slate-100 border border-slate-200 hover:bg-emerald-500/20 hover:text-emerald-400 hover:border-emerald-500/30 text-slate-650 flex items-center justify-center cursor-pointer transition-all active:scale-90"
+                    className="h-8 w-8 rounded-lg bg-slate-100 border border-slate-200 hover:bg-slate-200 hover:text-slate-900 text-slate-650 flex items-center justify-center cursor-pointer transition-all active:scale-90"
                     title="Xem chi tiết"
                   >
                     <Eye className="h-4 w-4" />
                   </button>
-
                   <button
                     onClick={(e) => { e.stopPropagation(); handleOpenEdit(room); }}
-                    className="h-8 w-8 rounded-lg bg-slate-100 border border-slate-200 hover:bg-[#FBBF24]/20 hover:text-[#FBBF24] hover:border-[#FBBF24]/30 text-slate-650 flex items-center justify-center cursor-pointer transition-all active:scale-90"
-                    title="Cập nhật"
+                    className="h-8 w-8 rounded-lg bg-slate-100 border border-slate-200 hover:bg-slate-200 hover:text-slate-900 text-slate-650 flex items-center justify-center cursor-pointer transition-all active:scale-90"
+                    title="Chỉnh sửa thông số"
                   >
                     <Edit2 className="h-4 w-4" />
                   </button>
-
                   <button
                     onClick={(e) => { e.stopPropagation(); handleDeleteRoom(room); }}
-                    className="h-8 w-8 rounded-lg bg-slate-100 border border-slate-200 hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/30 text-slate-650 flex items-center justify-center cursor-pointer transition-all active:scale-90"
+                    className="h-8 w-8 rounded-lg bg-red-500/10 border border-red-500/20 hover:bg-red-500 hover:text-white hover:border-red-500 text-red-400 flex items-center justify-center cursor-pointer transition-all active:scale-90"
                     title="Xóa phòng"
                   >
                     <Trash2 className="h-4 w-4" />

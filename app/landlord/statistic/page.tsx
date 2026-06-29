@@ -36,7 +36,7 @@ import {
 } from "recharts";
 import { toast } from "sonner";
 import { PostApi as PostService } from "@/services/api/post";
-import { PostApi as RoomService } from "@/services/api/room";
+import { RoomApi as RoomService } from "@/services/api/room";
 import { PostCardType } from "@/schema/room/post";
 import { RoomDetail } from "@/schema/room/room";
 

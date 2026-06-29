@@ -72,10 +72,6 @@ export const PostApi = {
     return response.data;
   },
 
-  createpPost: async (createPost: CreatePost) => {
-    return PostApi.createPost(createPost);
-  },
-
   updatePost: async (post_id: number, createPost: CreatePost) => {
     const response = await axiosInstance.put<ApiResponse<PostDetailType>>(
       `${BASE_URL}/${post_id}`,
@@ -93,25 +89,12 @@ export const PostApi = {
     return response.data;
   },
 
-  getVerificationRequests: async (skip: number = 0, limit: number = 10) => {
-    const res = await axiosInstance.get<ApiResponse<{ items: PostCardType[]; total: number; page: number; size: number; total_pages: number }>>(
-      `/admin/posts/verification-requests`,
-      {
-        params: { skip, limit }
-      }
+  deletePostByAdmin: async (post_id: number) => {
+    const response = await axiosInstance.delete<ApiResponse<PostDetailType>>(
+      `/admin/posts/${post_id}`,
     );
-    return res.data;
-  },
 
-  verifyPost: async (postId: number, approved: boolean) => {
-    const res = await axiosInstance.post<ApiResponse<PostDetailType>>(
-      `/admin/posts/${postId}/verify`,
-      null,
-      {
-        params: { approved }
-      }
-    );
-    return res.data;
+    return response.data;
   },
 
   approveDeletePost: async (postId: number, approved: boolean) => {
@@ -121,6 +104,25 @@ export const PostApi = {
       {
         params: { approved }
       }
+    );
+    return res.data;
+  },
+
+  getVerificationRequests: async (skip: number = 0, limit: number = 10) => {
+    const res = await axiosInstance.get<ApiResponse<{ items: PostCardType[]; total: number; page: number; size: number; total_pages: number }>>(
+      `/admin/posts/pending`,
+      {
+        params: { skip, limit }
+      }
+    );
+    return res.data;
+  },
+
+  verifyPost: async (postId: number, approved: boolean) => {
+    const endpoint = approved ? `/admin/posts/${postId}/approve` : `/admin/posts/${postId}/reject`;
+    const res = await axiosInstance.post<ApiResponse<any>>(
+      endpoint,
+      null
     );
     return res.data;
   },

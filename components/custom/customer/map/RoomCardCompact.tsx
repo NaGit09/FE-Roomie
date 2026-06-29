@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { Heart, ShieldCheck, MapPin, Clock } from "lucide-react";
+import { Heart, ShieldCheck, MapPin, Clock, Sparkles } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { SaveApi } from "@/services/api/save";
 import { toast } from "sonner";
@@ -17,6 +17,7 @@ export interface CompactRoom {
   verified: boolean;
   facilities: { icon: any; label: string }[];
   ward?: string;
+  isFeatured?: boolean;
 }
 
 // ── Smart Shared De-duplicated Request Cache ──
@@ -134,12 +135,19 @@ export default function RoomCardCompact({ room }: { room: CompactRoom }) {
             loading="lazy"
           />
           
-          {/* Verified Badge */}
-          {room.verified && (
-            <div className="absolute top-2.5 left-2.5 bg-white/95 backdrop-blur-sm p-1.5 rounded-full shadow-sm">
-              <ShieldCheck className="h-4 w-4 text-primary fill-primary/10" />
-            </div>
-          )}
+          {/* Badges Layer */}
+          <div className="absolute top-2.5 left-2.5 flex flex-col gap-1.5">
+            {room.verified && (
+              <div className="bg-white/95 backdrop-blur-sm p-1.5 rounded-full shadow-sm w-fit">
+                <ShieldCheck className="h-4 w-4 text-primary fill-primary/10" />
+              </div>
+            )}
+            {room.isFeatured && (
+              <div className="bg-[#F59E0B]/95 backdrop-blur-sm p-1.5 rounded-full shadow-sm w-fit">
+                <Sparkles className="h-4 w-4 text-white" />
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Right Details Block */}

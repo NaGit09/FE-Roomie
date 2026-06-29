@@ -34,6 +34,11 @@ export default function AdminSubscriptionsPage() {
   const [formMode, setFormMode] = useState<"CREATE" | "EDIT">("CREATE");
   const [selectedPackage, setSelectedPackage] = useState<Subscription | null>(null);
 
+  // Delete Modal States
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [packageToDelete, setPackageToDelete] = useState<Subscription | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
   // Form Fields
   const [formTitle, setFormTitle] = useState("");
   const [formDesc, setFormDesc] = useState("");
@@ -127,28 +132,27 @@ export default function AdminSubscriptionsPage() {
     }
   };
 
-  const handleDeletePackage = async (pkg: Subscription) => {
-    if (!pkg.id) return;
-    if (!confirm(`Bạn có chắc muốn xóa gói dịch vụ "${pkg.sub_title}"? Tác vụ này không thể phục hồi.`)) {
-      return;
-    }
+  const handleOpenDelete = (pkg: Subscription) => {
+    setPackageToDelete(pkg);
+    setIsDeleteOpen(true);
+  };
 
-    toast.promise(
-      new Promise(async (resolve, reject) => {
-        try {
-          await SubscriptionApi.delete_subscription(pkg.id!);
-          fetchPackages();
-          resolve(true);
-        } catch (err) {
-          reject(err);
-        }
-      }),
-      {
-        loading: `Đang xóa gói "${pkg.sub_title}"...`,
-        success: `Xóa gói dịch vụ "${pkg.sub_title}" thành công!`,
-        error: "Lỗi hệ thống khi xóa gói dịch vụ.",
-      }
-    );
+  const confirmDeletePackage = async () => {
+    if (!packageToDelete || !packageToDelete.id) return;
+    setDeleting(true);
+
+    try {
+      await SubscriptionApi.delete_subscription(packageToDelete.id);
+      toast.success(`Xóa gói dịch vụ "${packageToDelete.sub_title}" thành công!`);
+      setIsDeleteOpen(false);
+      setPackageToDelete(null);
+      fetchPackages();
+    } catch (err: any) {
+      console.error("Failed to delete subscription package:", err);
+      toast.error("Lỗi hệ thống khi xóa gói dịch vụ.");
+    } finally {
+      setDeleting(false);
+    }
   };
 
   return (
@@ -273,7 +277,7 @@ export default function AdminSubscriptionsPage() {
                   </button>
 
                   <button
-                    onClick={() => handleDeletePackage(pkg)}
+                    onClick={() => handleOpenDelete(pkg)}
                     className="h-8 w-8 rounded-lg bg-slate-100 border border-slate-200 hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/30 text-slate-650 flex items-center justify-center cursor-pointer transition-all active:scale-90"
                     title="Xóa gói"
                   >
@@ -413,6 +417,63 @@ export default function AdminSubscriptionsPage() {
                   Lưu cấu hình gói cước
                 </button>
               </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* 4. DELETE CONFIRMATION MODAL */}
+      <AnimatePresence>
+        {isDeleteOpen && packageToDelete && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsDeleteOpen(false)}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm"
+            />
+
+            {/* Modal Content */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="relative w-full max-w-md rounded-3xl border border-slate-200 bg-card p-6 shadow-2xl z-10 text-center space-y-5"
+            >
+              <div className="mx-auto h-12 w-12 rounded-full bg-red-550/10 border border-red-500/20 text-red-450 flex items-center justify-center">
+                <Trash2 className="h-5 w-5 text-red-500" />
+              </div>
+
+              <div className="space-y-2">
+                <h3 className="text-base font-bold text-slate-800 font-heading">Xác nhận xóa gói dịch vụ</h3>
+                <p className="text-xs text-slate-650 font-body leading-relaxed">
+                  Bạn có chắc chắn muốn xóa gói dịch vụ <span className="font-extrabold text-slate-750">“{packageToDelete.sub_title}”</span>? Tác vụ này không thể phục hồi và sẽ ảnh hưởng đến người dùng đang sử dụng gói này.
+                </p>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => setIsDeleteOpen(false)}
+                  disabled={deleting}
+                  className="flex-1 h-10 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-600 text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer disabled:opacity-50"
+                >
+                  Hủy bỏ
+                </button>
+                <button
+                  onClick={confirmDeletePackage}
+                  disabled={deleting}
+                  className="flex-1 h-10 rounded-xl bg-red-500 hover:bg-red-600 text-white text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer shadow-md shadow-red-500/10 flex items-center justify-center gap-1.5 disabled:opacity-50"
+                >
+                  {deleting ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Trash2 className="h-3.5 w-3.5" />
+                  )}
+                  Xác nhận xóa
+                </button>
+              </div>
             </motion.div>
           </div>
         )}

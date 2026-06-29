@@ -483,6 +483,19 @@ export default function AdminReportsPage() {
                         </span>
                       </div>
                     </div>
+                    {(selectedReport.target_type === "POST" || selectedReport.target_type === "ROOM") && (
+                      <div className="pt-2 border-t border-slate-200/50">
+                        <a
+                          href={`/rooms/${selectedReport.target_id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-primary hover:underline"
+                        >
+                          Xem bài đăng bị báo cáo
+                          <ExternalLink className="h-3.5 w-3.5" />
+                        </a>
+                      </div>
+                    )}
                   </div>
 
                   {/* Reporter details */}

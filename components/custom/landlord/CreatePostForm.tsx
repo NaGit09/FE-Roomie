@@ -5,7 +5,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, CheckCircle, Plus } from "lucide-react";
 import { toast } from "sonner";
-import { PostApi as RoomApi } from "@/services/api/room";
+import { RoomApi } from "@/services/api/room";
 import { PostApi } from "@/services/api/post";
 import { UploadApi } from "@/services/api/upload";
 import { RoomDetail } from "@/schema/room/room";
@@ -71,7 +71,7 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
       const rId = (editingPost as any).room_id || (editingPost.room as any)?.id?.toString() || "";
       setSelectedRoomId(rId);
       setImageUrl(editingPost.image_url || "");
-      setUseFeaturedQuota((editingPost as any).use_featured_quota || false);
+      setUseFeaturedQuota(editingPost.is_featured || false);
     } else {
       setTitle("");
       setContent("");
@@ -132,7 +132,7 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
       title,
       content,
       image_url: imageUrl,
-      room_id: selectedRoomId || undefined,
+      room_id: selectedRoomId ? Number(selectedRoomId) : undefined,
       use_featured_quota: useFeaturedQuota,
     };
 

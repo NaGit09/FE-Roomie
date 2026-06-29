@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import formatVND from "@/utils/priceUtils";
 import { toast } from "sonner";
-import { PostApi as RoomApi } from "@/services/api/room";
+import { RoomApi } from "@/services/api/room";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -45,6 +45,7 @@ export default function LandlordRentalsPage() {
   const [mounted, setMounted] = useState(false);
   const [requests, setRequests] = useState<RentalRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState<string>("ALL");
 
   // Approval Modal state
   const [selectedRequest, setSelectedRequest] = useState<RentalRequest | null>(null);
@@ -189,6 +190,28 @@ export default function LandlordRentalsPage() {
         </div>
       </div>
 
+      {/* Status Filter Tabs */}
+      <div className="flex flex-wrap gap-2 pb-2">
+        {[
+          { id: "ALL", label: "Tất cả" },
+          { id: "INTERESTED", label: "Chờ phê duyệt" },
+          { id: "ACTIVE", label: "Đã phê duyệt" },
+          { id: "CANCELLED", label: "Đã từ chối" },
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setStatusFilter(tab.id)}
+            className={`px-5 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
+              statusFilter === tab.id
+                ? "bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/10"
+                : "bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200/50"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
       {/* Requests stack list */}
       <div className="space-y-6">
         {isLoading ? (
@@ -206,8 +229,27 @@ export default function LandlordRentalsPage() {
               </p>
             </div>
           </div>
-        ) : (
-          requests.map((req) => (
+        ) : (() => {
+          const filteredRequests = requests.filter((req) => {
+            if (statusFilter === "ALL") return true;
+            return req.status === statusFilter;
+          });
+
+          if (filteredRequests.length === 0) {
+            return (
+              <div className="rounded-3xl border border-slate-200 bg-slate-100 backdrop-blur-md p-16 text-center text-slate-650 space-y-4">
+                <AlertCircle className="h-10 w-10 text-slate-650 mx-auto" />
+                <div className="space-y-1">
+                  <h3 className="text-md font-bold text-slate-350">Không tìm thấy yêu cầu</h3>
+                  <p className="text-xs text-slate-650">
+                    Không có yêu cầu thuê nào phù hợp với bộ lọc hiện tại.
+                  </p>
+                </div>
+              </div>
+            );
+          }
+
+          return filteredRequests.map((req) => (
             <motion.div
               key={req.rental_id}
               initial={{ opacity: 0, y: 15 }}
@@ -218,10 +260,30 @@ export default function LandlordRentalsPage() {
               {/* Left Details */}
               <div className="space-y-4 flex-1 text-left">
                 <div className="flex flex-wrap items-center gap-3">
-                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 border border-primary/30 px-3 py-0.5 text-[9px] font-black uppercase tracking-widest text-primary shadow-sm">
-                    <Clock className="h-3 w-3" />
-                    Chờ phê duyệt
-                  </span>
+                  {req.status === "INTERESTED" && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 border border-amber-500/30 px-3 py-0.5 text-[9px] font-black uppercase tracking-widest text-amber-500 shadow-sm">
+                      <Clock className="h-3 w-3" />
+                      Chờ phê duyệt
+                    </span>
+                  )}
+                  {req.status === "ACTIVE" && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 px-3 py-0.5 text-[9px] font-black uppercase tracking-widest text-emerald-500 shadow-sm">
+                      <Check className="h-3 w-3" />
+                      Đã phê duyệt
+                    </span>
+                  )}
+                  {req.status === "CANCELLED" && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-red-500/10 border border-red-500/30 px-3 py-0.5 text-[9px] font-black uppercase tracking-widest text-red-500 shadow-sm">
+                      <X className="h-3 w-3" />
+                      Đã từ chối
+                    </span>
+                  )}
+                  {req.status === "COMPLETED" && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-slate-500/10 border border-slate-500/30 px-3 py-0.5 text-[9px] font-black uppercase tracking-widest text-slate-500 shadow-sm">
+                      <X className="h-3 w-3" />
+                      Đã kết thúc
+                    </span>
+                  )}
                   
                   <span className="text-[10px] text-slate-650 font-bold uppercase tracking-wider flex items-center gap-1 font-body">
                     <Calendar className="h-3.5 w-3.5 text-slate-650 shrink-0" />
@@ -230,7 +292,7 @@ export default function LandlordRentalsPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <h3 className="font-extrabold text-md sm:text-lg text-slate-800 leading-snug group-hover:text-[#FBBF24] transition-colors flex items-center gap-2">
+                  <h3 className="font-extrabold text-md sm:text-lg text-slate-800 leading-snug group-hover:text-emerald-500 transition-colors flex items-center gap-2">
                     <Home className="h-5 w-5 text-primary shrink-0" />
                     {req.room_name}
                   </h3>
@@ -249,28 +311,30 @@ export default function LandlordRentalsPage() {
               </div>
 
               {/* Right Action buttons */}
-              <div className="flex items-center gap-3 shrink-0 self-end lg:self-center">
-                <button
-                  type="button"
-                  onClick={() => setDeclineRequestTarget(req)}
-                  className="h-11 px-5 rounded-xl bg-red-500/10 border border-red-500/25 hover:bg-red-500/20 hover:border-red-500/40 text-red-400 text-xs font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5 shadow-sm active:scale-95"
-                >
-                  <X className="h-4 w-4 stroke-[2.5]" />
-                  Từ chối
-                </button>
+              {req.status === "INTERESTED" && (
+                <div className="flex items-center gap-3 shrink-0 self-end lg:self-center">
+                  <button
+                    type="button"
+                    onClick={() => setDeclineRequestTarget(req)}
+                    className="h-11 px-5 rounded-xl bg-red-500/10 border border-red-500/25 hover:bg-red-500/20 hover:border-red-500/40 text-red-400 text-xs font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5 shadow-sm active:scale-95"
+                  >
+                    <X className="h-4 w-4 stroke-[2.5]" />
+                    Từ chối
+                  </button>
 
-                <button
-                  type="button"
-                  onClick={() => openApprovalModal(req)}
-                  className="h-11 px-5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 text-xs font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5 shadow-md shadow-primary/10 active:scale-95"
-                >
-                  <Check className="h-4 w-4 stroke-[3]" />
-                  Phê duyệt
-                </button>
-              </div>
+                  <button
+                    type="button"
+                    onClick={() => openApprovalModal(req)}
+                    className="h-11 px-5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 text-xs font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5 shadow-md shadow-primary/10 active:scale-95"
+                  >
+                    <Check className="h-4 w-4 stroke-[3]" />
+                    Phê duyệt
+                  </button>
+                </div>
+              )}
             </motion.div>
-          ))
-        )}
+          ));
+        })()}
       </div>
 
       {/* Approval Details Modal */}

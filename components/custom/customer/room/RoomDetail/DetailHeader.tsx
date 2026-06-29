@@ -3,7 +3,7 @@
 import React from "react";
 import { useRoomStore } from "@/stores/roomStore";
 import formatRelativeTime from "@/utils/timeUtils";
-import { ShieldCheck, MapPin, Clock, Eye } from "lucide-react";
+import { ShieldCheck, MapPin, Clock, Eye, Sparkles } from "lucide-react";
 
 export default function DetailHeader() {
   const { currentRoomDetail } = useRoomStore();
@@ -48,6 +48,13 @@ export default function DetailHeader() {
             <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 border border-blue-200/50 px-3 py-1 text-xs font-bold text-blue-700 shadow-xs">
               <ShieldCheck className="h-4 w-4 text-blue-600 fill-blue-100" />
               Đã xác minh
+            </span>
+          )}
+
+          {currentRoomDetail?.is_featured && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 border border-amber-200/50 px-3 py-1 text-xs font-bold text-amber-700 shadow-xs">
+              <Sparkles className="h-4 w-4 text-amber-600 fill-amber-100 animate-pulse" />
+              Nổi bật
             </span>
           )}
         </div>

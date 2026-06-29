@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { create } from "zustand";
 import { PostApi } from "@/services/api/post";
-import { PostApi as RoomApi } from "@/services/api/room";
+import { RoomApi } from "@/services/api/room";
 import { GetPostsQueryType, PostCardType, PostDetailType } from "@/schema/room/post";
 
 interface RoomState {

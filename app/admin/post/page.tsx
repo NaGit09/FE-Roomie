@@ -32,7 +32,7 @@ export default function AdminPostsPage() {
   const [posts, setPosts] = useState<PostCardType[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState<"ALL" | "PENDING" | "DELETE_REQUESTS">("ALL");
+  const [activeTab, setActiveTab] = useState<"ALL" | "DELETE_REQUESTS">("ALL");
 
   // Detail Modal States
   const [isDetailOpen, setIsDetailOpen] = useState(false);
@@ -43,22 +43,12 @@ export default function AdminPostsPage() {
   const fetchPosts = async () => {
     setLoading(true);
     try {
-      if (activeTab === "PENDING") {
-        const response = await PostApi.getVerificationRequests(0, 50);
-        if (response && response.code === 200 && response.data && Array.isArray((response.data as any).items)) {
-          setPosts((response.data as any).items);
-        } else {
-          setPosts([]);
-          toast.error("Không thể lấy danh sách tin chờ duyệt.");
-        }
+      const response = await PostApi.getPostPagination({ skip: 0, limit: 100, sort_by: "created_at", order: "desc" });
+      if (response && response.code === 200 && response.data && Array.isArray(response.data.items)) {
+        setPosts(response.data.items);
       } else {
-        const response = await PostApi.getPostPagination({ skip: 0, limit: 100, sort_by: "created_at", order: "desc" });
-        if (response && response.code === 200 && response.data && Array.isArray(response.data.items)) {
-          setPosts(response.data.items);
-        } else {
-          setPosts([]);
-          toast.error("Không thể lấy danh sách tin đăng.");
-        }
+        setPosts([]);
+        toast.error("Không thể lấy danh sách tin đăng.");
       }
     } catch (err: any) {
       console.error("Error loading posts for admin:", err);
@@ -108,20 +98,7 @@ export default function AdminPostsPage() {
     }
   };
 
-  const handleVerify = async (postId: number, approved: boolean) => {
-    setActionLoading(true);
-    try {
-      await PostApi.verifyPost(postId, approved);
-      toast.success(approved ? "Đã phê duyệt tin đăng hoạt động!" : "Đã từ chối kiểm duyệt tin đăng.");
-      fetchPosts();
-      setIsDetailOpen(false);
-    } catch (err: any) {
-      console.error("Error verifying post:", err);
-      toast.error("Không thể thực hiện phê duyệt tin đăng.");
-    } finally {
-      setActionLoading(false);
-    }
-  };
+
 
   const handleDeleteApproval = async (postId: number, approved: boolean) => {
     setActionLoading(true);
@@ -142,7 +119,7 @@ export default function AdminPostsPage() {
     if (!confirm("Bạn có chắc chắn muốn xóa trực tiếp tin đăng này khỏi hệ thống?")) return;
     setActionLoading(true);
     try {
-      await PostApi.deletePost(postId);
+      await PostApi.deletePostByAdmin(postId);
       toast.success("Xóa tin đăng thành công!");
       fetchPosts();
       setIsDetailOpen(false);
@@ -166,8 +143,6 @@ export default function AdminPostsPage() {
 
   // Metrics calculation
   const totalCount = posts.length;
-  const verifiedCount = posts.filter((p) => p.is_verified).length;
-  const pendingCount = posts.filter((p) => !p.is_verified).length;
 
   return (
     <div className="space-y-10 text-slate-800 font-sans w-full">
@@ -188,23 +163,15 @@ export default function AdminPostsPage() {
       </div>
 
       {/* 2. Mini Summary Metrics */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 gap-6">
         {[
           { label: "Tổng tin hiển thị", value: totalCount, color: "text-slate-350" },
-          { label: "Đã xác thực (Verified)", value: verifiedCount, color: "text-emerald-500" },
-          { label: "Tin chờ phê duyệt", value: pendingCount, color: "text-amber-500", pulse: pendingCount > 0 },
           { label: "Cảnh báo vi phạm", value: 0, color: "text-red-500" },
         ].map((m, idx) => (
           <div
             key={idx}
             className="rounded-2xl border border-slate-200 bg-card/60 backdrop-blur-md p-4 text-left space-y-1.5 shadow-md relative"
           >
-            {m.pulse && (
-              <span className="absolute top-4 right-4 flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-405 bg-amber-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
-              </span>
-            )}
             <span className="text-[9px] font-mono tracking-widest font-black uppercase text-slate-650 block">
               {m.label}
             </span>
@@ -233,7 +200,6 @@ export default function AdminPostsPage() {
         <div className="flex flex-wrap items-center gap-1.5 w-full sm:w-auto overflow-x-auto">
           {[
             { label: "Tất cả tin", value: "ALL" },
-            { label: "Đang chờ duyệt", value: "PENDING" },
             { label: "Yêu cầu gỡ bỏ", value: "DELETE_REQUESTS" }
           ].map((tab, idx) => (
             <button
@@ -276,7 +242,6 @@ export default function AdminPostsPage() {
                 <th className="py-4 px-4">Bài đăng</th>
                 <th className="py-4 px-4">Địa chỉ phòng</th>
                 <th className="py-4 px-4">Đơn giá tháng</th>
-                <th className="py-4 px-4">Xác thực</th>
                 <th className="py-4 px-4">Ngày đăng</th>
                 <th className="py-4 px-6 pr-8 text-right">Thao tác</th>
               </tr>
@@ -301,9 +266,17 @@ export default function AdminPostsPage() {
                           No Pic
                         </div>
                       )}
-                      <span className="font-bold text-slate-700 leading-snug line-clamp-2" title={post.title}>
-                        {post.title}
-                      </span>
+                      <div className="flex flex-col gap-1 items-start">
+                        <span className="font-bold text-slate-700 leading-snug line-clamp-2" title={post.title}>
+                          {post.title}
+                        </span>
+                        {post.is_featured && (
+                          <span className="inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[8px] font-black uppercase tracking-widest bg-amber-500/10 border border-amber-500/25 text-amber-500">
+                            <Sparkles className="h-2.5 w-2.5 fill-amber-500/10" />
+                            Nổi bật
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </td>
                   <td className="py-4 px-4 max-w-[200px] truncate text-slate-650" title={getRoomFullAddress(post.room)}>
@@ -312,17 +285,7 @@ export default function AdminPostsPage() {
                   <td className="py-4 px-4 font-bold text-[#FBBF24]">
                     {post.room ? formatVND(post.room.price) : "N/A"}
                   </td>
-                  <td className="py-4 px-4">
-                    <span
-                      className={`inline-flex rounded-full px-2 py-0.5 text-[8px] font-black uppercase tracking-wider border ${
-                        post.is_verified
-                          ? "bg-primary/10 border-primary/20 text-primary"
-                          : "bg-primary/10 border-amber-500/20 text-primary"
-                      }`}
-                    >
-                      {post.is_verified ? "Đã duyệt" : "Chờ duyệt"}
-                    </span>
-                  </td>
+
                   <td className="py-4 px-4 text-slate-650 font-medium font-body">
                     {new Date(post.created_at).toLocaleDateString("vi-VN")}
                   </td>
@@ -382,18 +345,15 @@ export default function AdminPostsPage() {
                   {/* Modal Header */}
                   <div className="space-y-1.5 text-left border-b border-slate-200 pb-4 shrink-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span
-                        className={`inline-flex rounded-full px-2.5 py-0.5 text-[8px] font-black uppercase tracking-widest border ${
-                          selectedPost.is_verified
-                            ? "bg-primary/10 border-primary/30 text-primary"
-                            : "bg-primary/10 border-primary/30 text-primary"
-                        }`}
-                      >
-                        Trạng thái: {selectedPost.is_verified ? "Đã xác thực" : "Chờ duyệt"}
-                      </span>
                       <span className="inline-flex rounded-full px-2.5 py-0.5 text-[8px] font-black uppercase tracking-widest border bg-background border-slate-200 text-slate-650">
                         Lượt xem: {selectedPost.views || 0}
                       </span>
+                      {selectedPost.is_featured && (
+                        <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[8px] font-black uppercase tracking-widest border bg-amber-500/10 border-amber-500/30 text-amber-500">
+                          <Sparkles className="h-3 w-3 fill-amber-500/20" />
+                          Nổi bật
+                        </span>
+                      )}
                     </div>
                     <h3 className="text-xl font-bold text-slate-800 font-heading">
                       {selectedPost.title}
@@ -490,34 +450,6 @@ export default function AdminPostsPage() {
                           </div>
                         ) : (
                           <>
-                            {/* If not verified, show approve button */}
-                            {!selectedPost.is_verified ? (
-                              <div className="grid grid-cols-2 gap-3">
-                                <button
-                                  onClick={() => handleVerify(selectedPost.post_id, true)}
-                                  disabled={actionLoading}
-                                  className="h-11 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold uppercase text-[10px] tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5"
-                                >
-                                  <CheckCircle className="h-4 w-4" /> Phê duyệt tin
-                                </button>
-                                <button
-                                  onClick={() => handleVerify(selectedPost.post_id, false)}
-                                  disabled={actionLoading}
-                                  className="h-11 rounded-xl bg-slate-100 border border-slate-200 hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/30 text-slate-650 font-bold uppercase text-[10px] tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5"
-                                >
-                                  <ThumbsDown className="h-4 w-4" /> Từ chối tin
-                                </button>
-                              </div>
-                            ) : (
-                              <button
-                                onClick={() => handleVerify(selectedPost.post_id, false)}
-                                disabled={actionLoading}
-                                className="h-11 px-5 rounded-xl border border-slate-200 bg-slate-100 hover:bg-amber-500/20 hover:text-primary hover:border-primary/30 text-slate-650 font-bold uppercase text-[10px] tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5 w-full"
-                              >
-                                <ThumbsDown className="h-4 w-4" /> Thu hồi phê duyệt (Bỏ xác thực)
-                              </button>
-                            )}
-
                             {/* Direct Delete button */}
                             <button
                               onClick={() => handleDeletePostDirect(selectedPost.post_id)}
