@@ -78,11 +78,11 @@ function KeycloakCallbackContent() {
 
         // Redirect based on role
         if (role === "ADMIN") {
-          router.push("/admin/");
+          window.location.href = "/admin/";
         } else if (role === "LANDLORD") {
-          router.push("/landlord/");
+          window.location.href = "/landlord/";
         } else {
-          router.push("/");
+          window.location.href = "/";
         }
       } catch (error: unknown) {
         console.error("OAuth token exchange failed:", error);
