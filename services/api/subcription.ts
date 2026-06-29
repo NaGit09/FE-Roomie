@@ -31,6 +31,20 @@ export const SubscriptionApi = {
     );
     return response.data;
   },
+
+  check_featured_post_quota: async () => {
+    const response = await axiosInstance.get<ApiResponse<number>>(
+      `${BASE_URL}/user/featured-post-quota/check`,
+    );
+    return response.data;
+  },
+
+  use_featured_post_quota: async () => {
+    const response = await axiosInstance.post<ApiResponse<number>>(
+      `${BASE_URL}/user/featured-post-quota/use`,
+    );
+    return response.data;
+  },
   
   // For customer , landlord cancel subscription
   cancel_subscription: async (user_subscription_id: number) => {

@@ -199,6 +199,12 @@ export default function LandlordDashboardIndex() {
     }
   };
 
+  const getFeaturedPostQuotaFeature = (plan: Subscription) => {
+    const quota = plan.featured_post_quota ?? 0;
+    if (quota <= 0) return "Không bao gồm bài đăng được gợi ý lên đầu";
+    return `${quota} bài đăng được gợi ý lên đầu khi đăng ký gói`;
+  };
+
   // Mock statistics data
   const stats = [
     {
@@ -494,6 +500,12 @@ export default function LandlordDashboardIndex() {
                           <hr className="border-white/5" />
 
                           <ul className="space-y-1.5 text-[9px] text-slate-455 font-body font-medium">
+                            <li className="flex gap-2 items-start leading-tight">
+                              <div className="h-4 w-4 rounded-full flex items-center justify-center shrink-0 mt-0.5 bg-[#FBBF24]/10 text-[#FBBF24]">
+                                <Check className="h-2 w-2 stroke-[3]" />
+                              </div>
+                              <span>{getFeaturedPostQuotaFeature(plan)}</span>
+                            </li>
                             {getPlanFeatures(plan.sub_type).map((feature, idx) => (
                               <li key={idx} className="flex gap-2 items-start leading-tight">
                                 <div className="h-4 w-4 rounded-full flex items-center justify-center shrink-0 mt-0.5 bg-[#FBBF24]/10 text-[#FBBF24]">

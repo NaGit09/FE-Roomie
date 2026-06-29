@@ -7,7 +7,8 @@ export const SubscriptionSchema = z.object({
     sub_type: z.string(),
     sub_title: z.string(),
     sub_time: z.string(),
-    sub_price: z.number()
+    sub_price: z.number(),
+    featured_post_quota: z.number().default(0)
 });
 
 export type Subscription = z.infer<typeof SubscriptionSchema>;
@@ -19,6 +20,7 @@ export const SubscriptionDetailSchema = z.object({
     deleted_at: z.string().nullable(),
     updated_at: z.string(),
     created_at: z.string(),
+    featured_post_quota_remaining: z.number().nullable().optional(),
     sub_id: z.number(),
     user_id: z.string()
 });

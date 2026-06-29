@@ -197,6 +197,12 @@ export default function LandlordSubscriptionPage() {
     }
   };
 
+  const getFeaturedPostQuotaFeature = (plan: Subscription) => {
+    const quota = plan.featured_post_quota ?? 0;
+    if (quota <= 0) return "Không bao gồm bài đăng được gợi ý lên đầu";
+    return `${quota} bài đăng được gợi ý lên đầu khi đăng ký gói`;
+  };
+
   const getPlanTitle = (detail: SubscriptionDetail & { subscription?: Subscription }) => {
     if (detail.subscription?.sub_title) {
       return detail.subscription.sub_title;
@@ -506,6 +512,12 @@ export default function LandlordSubscriptionPage() {
 
                           {/* Features checklist */}
                           <ul className="space-y-2 text-[10px] text-slate-400 font-body font-medium text-left">
+                            <li className="flex gap-2 items-start leading-tight">
+                              <div className="h-4.5 w-4.5 rounded-full flex items-center justify-center shrink-0 mt-0.5 bg-white/5 border border-white/5 text-slate-400">
+                                <Check className="h-2.5 w-2.5" />
+                              </div>
+                              <span>{getFeaturedPostQuotaFeature(plan)}</span>
+                            </li>
                             {getPlanFeatures(plan.sub_type).map((feature, idx) => (
                               <li key={idx} className="flex gap-2 items-start leading-tight">
                                 <div className="h-4.5 w-4.5 rounded-full flex items-center justify-center shrink-0 mt-0.5 bg-white/5 border border-white/5 text-slate-400">
@@ -668,6 +680,12 @@ export default function LandlordSubscriptionPage() {
 
                         {/* Features checklist */}
                         <ul className="space-y-2 text-[10px] text-slate-400 font-body font-medium text-left">
+                          <li className="flex gap-2 items-start leading-tight">
+                            <div className="h-4.5 w-4.5 rounded-full flex items-center justify-center shrink-0 mt-0.5 bg-white/5 border border-white/5 text-slate-400">
+                              <Check className="h-2.5 w-2.5" />
+                            </div>
+                            <span>{getFeaturedPostQuotaFeature(plan)}</span>
+                          </li>
                           {getPlanFeatures(plan.sub_type).map((feature, idx) => (
                             <li key={idx} className="flex gap-2 items-start leading-tight">
                               <div className="h-4.5 w-4.5 rounded-full flex items-center justify-center shrink-0 mt-0.5 bg-white/5 border border-white/5 text-slate-400">
