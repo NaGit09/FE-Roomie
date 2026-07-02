@@ -231,21 +231,21 @@ export default function LandlordSubscriptionPage() {
     router.push(`/order?subscription_id=${plan.id}`);
   };
 
-  // Cancel subscription handler
+  // Cancel renewal handler — subscription stays active until time_end then auto-stops
   const handleCancelSubscription = async (userSubId: number, planName: string) => {
-    if (!confirm(`Bạn có chắc chắn muốn hủy tự động gia hạn gói cước "${planName}"? Các quyền lợi VIP sẽ bị chấm dứt khi hết hạn.`)) {
+    if (!confirm(`Bạn có chắc chắn muốn hủy gia hạn gói cước "${planName}"?\n\nGói sẽ vẫn hoạt động đến hết chu kỳ hiện tại, sau đó tự động ngừng và không được gia hạn thêm.`)) {
       return;
     }
     try {
-      const res = await SubscriptionApi.cancel_subscription(userSubId);
+      const res = await SubscriptionApi.cancel_renewal_subscription(userSubId);
       if (res && res.code === 200) {
-        toast.success("Đã hủy tự động gia hạn thành công.");
+        toast.success(res.message || "Đã hủy gia hạn thành công. Gói vẫn hoạt động đến hết chu kỳ.");
         fetchSubscriptionStatus();
       } else {
         toast.error(res?.message || "Hủy gia hạn không thành công.");
       }
     } catch (err: any) {
-      console.error("Failed to cancel subscription:", err);
+      console.error("Failed to cancel renewal:", err);
       toast.error(err?.response?.data?.message || "Giao dịch không thành công. Vui lòng thử lại!");
     }
   };
