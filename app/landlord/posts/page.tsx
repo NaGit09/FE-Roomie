@@ -16,14 +16,29 @@ import {
   Trash2,
   MessageSquare,
   X,
-  Star
+  Star,
+  Loader2,
+  Send,
+  CornerDownRight,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import formatVND from "@/utils/priceUtils";
 import { toast } from "sonner";
 import { PostApi } from "@/services/api/post";
 import { FeedbackApi, FeedbackResponse } from "@/services/api/feedback";
 import { PostCardType } from "@/schema/room/post";
 import { CreatePostForm } from "@/components/custom/landlord/CreatePostForm";
+
+const factorLabels: Record<string, string> = {
+  OVERALL: "Tổng quan",
+  LOCATION: "Vị trí",
+  PRICE: "Giá cả",
+  OWNER: "Chủ nhà",
+  CLEANLINESS: "Vệ sinh",
+};
 
 export default function LandlordPostsPage() {
   const router = useRouter();
@@ -40,6 +55,13 @@ export default function LandlordPostsPage() {
   const [selectedPostForFeedback, setSelectedPostForFeedback] = useState<PostCardType | null>(null);
   const [postFeedbacks, setPostFeedbacks] = useState<FeedbackResponse[]>([]);
   const [isLoadingFeedbacks, setIsLoadingFeedbacks] = useState(false);
+  const [replyingTo, setReplyingTo] = useState<number | null>(null);
+  const [replyText, setReplyText] = useState<string>("");
+  const [isSubmittingReply, setIsSubmittingReply] = useState<boolean>(false);
+  const [expandedFeedbacks, setExpandedFeedbacks] = useState<Record<number, boolean>>({});
+  const toggleExpandFeedback = (id: number) => {
+    setExpandedFeedbacks((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
 
   const fetchPosts = async () => {
     try {
@@ -92,6 +114,33 @@ export default function LandlordPostsPage() {
       setPostFeedbacks([]);
     } finally {
       setIsLoadingFeedbacks(false);
+    }
+  };
+
+  const handleSubmitReply = async (feedbackId: number) => {
+    if (!replyText.trim()) return;
+    setIsSubmittingReply(true);
+    try {
+      const res = await FeedbackApi.replyToFeedback(feedbackId, replyText);
+      if (res && res.code === 200) {
+        toast.success("Phản hồi thành công!");
+        setPostFeedbacks((prev) =>
+          prev.map((fb) =>
+            fb.feedback_id === feedbackId
+              ? { ...fb, reply: replyText, replied_at: new Date().toISOString() }
+              : fb,
+          ),
+        );
+        setReplyingTo(null);
+        setReplyText("");
+      } else {
+        toast.error("Phản hồi thất bại. Vui lòng thử lại.");
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err?.response?.data?.message || err?.message || "Lỗi khi gửi phản hồi.");
+    } finally {
+      setIsSubmittingReply(false);
     }
   };
 
@@ -291,18 +340,125 @@ export default function LandlordPostsPage() {
                           <p className="text-xs text-slate-700 leading-relaxed bg-white border border-slate-100 p-3 rounded-xl shadow-sm italic">
                             "{fb.content || "Không có nội dung bình luận."}"
                           </p>
+                          
+                          {/* Attached review images */}
+                          {fb.images && fb.images.length > 0 && (
+                            <div className="flex flex-wrap gap-2.5 pt-2">
+                              {fb.images.map((img, imgIdx) => (
+                                <div
+                                  key={imgIdx}
+                                  className="relative h-12 w-20 overflow-hidden rounded-lg border border-slate-100 shadow-sm shrink-0"
+                                >
+                                  <img
+                                    src={img}
+                                    alt="Review attachments"
+                                    className="h-full w-full object-cover hover:scale-105 transition-transform duration-300"
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Collapsible detailed scores */}
+                          {fb.ratings && fb.ratings.length > 0 && (
+                            <div className="pt-2">
+                              <button
+                                onClick={() => toggleExpandFeedback(fb.feedback_id)}
+                                className="flex items-center gap-1 text-[10px] font-black text-primary uppercase tracking-wider cursor-pointer"
+                              >
+                                {expandedFeedbacks[fb.feedback_id] ? (
+                                  <>
+                                    <ChevronUp className="h-3 w-3" /> Thu gọn tiêu chí
+                                  </>
+                                ) : (
+                                  <>
+                                    <ChevronDown className="h-3 w-3" /> Chi tiết tiêu chí
+                                  </>
+                                )}
+                              </button>
+
+                              {expandedFeedbacks[fb.feedback_id] && (
+                                <div className="grid grid-cols-2 gap-2 mt-2 p-3 bg-white rounded-xl border border-slate-100/85 animate-fade-in">
+                                  {fb.ratings.map((rat) => (
+                                    <div key={rat.id} className="flex items-center justify-between text-[10px]">
+                                      <span className="font-bold text-slate-400 uppercase tracking-wider">
+                                        {factorLabels[rat.rating_type] || rat.rating_type}
+                                      </span>
+                                      <div className="flex items-center gap-0.5 font-black text-slate-700">
+                                        <Star className="h-2.5 w-2.5 fill-amber-400 text-amber-400" />
+                                        <span>{rat.rating_value}/5</span>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
 
                       {/* Display Reply if already replied */}
-                      {fb.reply && (
+                      {fb.reply ? (
                         <div className="ml-14 bg-white border border-slate-100 rounded-xl p-3 flex gap-2.5 items-start">
                           <div className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-bold uppercase shrink-0 mt-0.5">
                             Phản hồi
                           </div>
-                          <p className="text-xs text-slate-600 leading-relaxed">
+                          <p className="text-xs text-slate-600 leading-relaxed font-semibold">
                             {fb.reply}
                           </p>
+                        </div>
+                      ) : (
+                        <div className="ml-14">
+                          {replyingTo === fb.feedback_id ? (
+                            <div className="space-y-3 p-4 rounded-xl bg-white border border-slate-200 mt-2">
+                              <Textarea
+                                value={replyText}
+                                onChange={(e) => setReplyText(e.target.value)}
+                                placeholder="Nhập phản hồi của bạn cho đánh giá này..."
+                                className="rounded-xl bg-white text-xs font-semibold"
+                                rows={2}
+                                disabled={isSubmittingReply}
+                              />
+                              <div className="flex items-center justify-end gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="rounded-full text-[10px] h-7 px-3 font-bold"
+                                  onClick={() => {
+                                    setReplyingTo(null);
+                                    setReplyText("");
+                                  }}
+                                  disabled={isSubmittingReply}
+                                >
+                                  Hủy
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  className="rounded-full text-[10px] h-7 px-3 font-bold gap-1"
+                                  onClick={() => handleSubmitReply(fb.feedback_id)}
+                                  disabled={isSubmittingReply || !replyText.trim()}
+                                >
+                                  {isSubmittingReply ? (
+                                    <Loader2 className="h-3 w-3 animate-spin" />
+                                  ) : (
+                                    <Send className="h-3 w-3" />
+                                  )}
+                                  Gửi phản hồi
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => {
+                                setReplyingTo(fb.feedback_id);
+                                setReplyText("");
+                              }}
+                              className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-primary transition-colors cursor-pointer mt-1.5"
+                            >
+                              <MessageSquare className="h-3.5 w-3.5" />
+                              Phản hồi đánh giá
+                            </button>
+                          )}
                         </div>
                       )}
                     </div>

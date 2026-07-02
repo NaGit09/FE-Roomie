@@ -13,7 +13,8 @@ import {
   AlertCircle,
   Clock,
   ArrowUpRight,
-  DollarSign
+  DollarSign,
+  Coins
 } from "lucide-react";
 import formatVND from "@/utils/priceUtils";
 import { toast } from "sonner";
@@ -40,6 +41,10 @@ interface RentalRequest {
   renter_id: string; // user_id
   created_at: string;
   status: string;
+  start_date?: string;
+  end_date?: string;
+  monthly_rent?: number;
+  deposit?: number;
 }
 
 export default function LandlordRentalsPage() {
@@ -63,6 +68,17 @@ export default function LandlordRentalsPage() {
   const [reportTarget, setReportTarget] = useState<RentalRequest | null>(null);
   const [reportReason, setReportReason] = useState("");
   const [isSubmittingReport, setIsSubmittingReport] = useState(false);
+
+  const activeRequests = requests.filter((r) => r.status === "ACTIVE");
+  const totalActiveContracts = activeRequests.length;
+  const totalMonthlyRent = activeRequests.reduce(
+    (sum, r) => sum + (r.monthly_rent ?? r.room_price ?? 0),
+    0,
+  );
+  const totalDeposits = activeRequests.reduce(
+    (sum, r) => sum + (r.deposit ?? r.room_deposit ?? 0),
+    0,
+  );
 
   const fetchRentalRequests = async () => {
     try {
@@ -96,6 +112,10 @@ export default function LandlordRentalsPage() {
               renter_id: rental.user_id,
               created_at: rental.created_at,
               status: rental.status,
+              start_date: rental.start_date ?? undefined,
+              end_date: rental.end_date ?? undefined,
+              monthly_rent: rental.monthly_rent ?? undefined,
+              deposit: rental.deposit ?? undefined,
             });
           });
         } catch (err) {
@@ -244,6 +264,39 @@ export default function LandlordRentalsPage() {
         ))}
       </div>
 
+      {/* Active Contracts Summary Statistics */}
+      {!isLoading && requests.length > 0 && (statusFilter === "ALL" || statusFilter === "ACTIVE") && (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-2">
+          <div className="bg-card border border-slate-200 rounded-3xl p-5 shadow-lg flex items-center gap-4 text-left">
+            <div className="h-10 w-10 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
+              <ShieldCheck className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-[10px] font-black uppercase text-slate-500 tracking-wider">Hợp đồng đang thuê</p>
+              <h4 className="text-xl font-black text-slate-800 mt-0.5">{totalActiveContracts}</h4>
+            </div>
+          </div>
+          <div className="bg-card border border-slate-200 rounded-3xl p-5 shadow-lg flex items-center gap-4 text-left">
+            <div className="h-10 w-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <DollarSign className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-[10px] font-black uppercase text-slate-500 tracking-wider">Doanh thu thuê / tháng</p>
+              <h4 className="text-xl font-black text-slate-800 mt-0.5">{formatVND(totalMonthlyRent)}</h4>
+            </div>
+          </div>
+          <div className="bg-card border border-slate-200 rounded-3xl p-5 shadow-lg flex items-center gap-4 text-left">
+            <div className="h-10 w-10 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
+              <Coins className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-[10px] font-black uppercase text-slate-500 tracking-wider">Đặt cọc đang giữ</p>
+              <h4 className="text-xl font-black text-slate-800 mt-0.5">{formatVND(totalDeposits)}</h4>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Requests stack list */}
       <div className="space-y-6">
         {isLoading ? (
@@ -336,9 +389,20 @@ export default function LandlordRentalsPage() {
                     </span>
                     
                     <span className="font-bold text-primary sm:border-l sm:border-slate-200 sm:pl-6">
-                      Giá thuê: {formatVND(req.room_price)}/tháng
+                      Giá thuê: {formatVND(req.status === "ACTIVE" && req.monthly_rent ? req.monthly_rent : req.room_price)}/tháng
                     </span>
+                    {req.status === "ACTIVE" && req.deposit !== undefined && (
+                      <span className="font-bold text-amber-500 sm:border-l sm:border-slate-200 sm:pl-6">
+                        Tiền cọc: {formatVND(req.deposit)}
+                      </span>
+                    )}
                   </div>
+                  {req.status === "ACTIVE" && req.start_date && (
+                    <p className="text-[11px] font-bold text-slate-500 font-body flex items-center gap-1.5 mt-2">
+                      <Calendar className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                      Hợp đồng: {new Date(req.start_date).toLocaleDateString('vi-VN')} - {req.end_date ? new Date(req.end_date).toLocaleDateString('vi-VN') : "Không thời hạn"}
+                    </p>
+                  )}
                 </div>
               </div>
 

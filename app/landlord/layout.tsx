@@ -21,7 +21,8 @@ import {
   Lock,
   ChevronRight,
   Sparkles,
-  Menu
+  Menu,
+  MessageSquare
 } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { toast } from "sonner";
@@ -154,14 +155,14 @@ export default function LandlordLayout({
       icon: ShieldCheck,
     },
     {
-      href: "/landlord/statistic",
-      label: "Báo cáo thống kê",
-      icon: TrendingUp,
-    },
-    {
       href: "/landlord/subscription",
       label: "Gói cước đã mua",
       icon: CreditCard,
+    },
+    {
+      href: "/landlord/feedback",
+      label: "Đánh giá của khách",
+      icon: MessageSquare,
     },
   ];
 

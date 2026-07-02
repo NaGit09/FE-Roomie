@@ -17,7 +17,12 @@ import {
   Check,
   Crown,
   Info,
-  Compass
+  Compass,
+  TrendingUp,
+  Building2,
+  Activity,
+  CheckCircle,
+  Eye
 } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import formatVND from "@/utils/priceUtils";
@@ -27,6 +32,17 @@ import { SubscriptionApi } from "@/services/api/subcription";
 import { Subscription } from "@/schema/user/subcription";
 import { toast } from "sonner";
 import { RoomApi } from "@/services/api/room";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+} from "recharts";
 
 export default function LandlordDashboardIndex() {
 
@@ -537,6 +553,155 @@ export default function LandlordDashboardIndex() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* ── Charts & Rankings Section ── */}
+      {!loadingStats && dashboardStats && (
+        <div className="space-y-8 pt-2">
+          {/* Charts Row */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Interested Chart */}
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.45 }}
+              className="bg-card border border-slate-200 rounded-[2rem] p-6 md:p-8 shadow-lg flex flex-col"
+            >
+              <div className="flex items-center gap-2 mb-6">
+                <TrendingUp className="h-5 w-5 text-primary" />
+                <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Xu hướng người quan tâm (6 tháng)</h3>
+              </div>
+              <div className="flex-1 w-full h-[280px] min-h-[280px]">
+                {dashboardStats.interested_chart_data && dashboardStats.interested_chart_data.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={dashboardStats.interested_chart_data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="colorInterested" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                          <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                      <XAxis 
+                        dataKey="month" 
+                        axisLine={false} 
+                        tickLine={false} 
+                        tick={{ fontSize: 11, fill: '#64748b', fontWeight: 600 }} 
+                        dy={10}
+                      />
+                      <YAxis 
+                        axisLine={false} 
+                        tickLine={false} 
+                        tick={{ fontSize: 11, fill: '#64748b' }}
+                      />
+                      <RechartsTooltip 
+                        contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)', fontWeight: 'bold' }}
+                        formatter={((value: number) => [`${value} lượt`, 'Người quan tâm']) as any}
+                        labelStyle={{ color: '#64748b', marginBottom: '4px' }}
+                      />
+                      <Area 
+                        type="monotone" 
+                        dataKey="interested" 
+                        stroke="#3b82f6" 
+                        strokeWidth={3}
+                        fillOpacity={1} 
+                        fill="url(#colorInterested)" 
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-full text-slate-400 text-sm font-medium">
+                    Chưa có dữ liệu người quan tâm
+                  </div>
+                )}
+              </div>
+            </motion.div>
+
+            {/* Views Chart */}
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.5 }}
+              className="bg-card border border-slate-200 rounded-[2rem] p-6 md:p-8 shadow-lg flex flex-col"
+            >
+              <div className="flex items-center gap-2 mb-6">
+                <Eye className="h-5 w-5 text-emerald-500" />
+                <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Lượt xem tin đăng (7 ngày)</h3>
+              </div>
+              <div className="flex-1 w-full h-[280px] min-h-[280px]">
+                {dashboardStats.views_chart_data && dashboardStats.views_chart_data.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={dashboardStats.views_chart_data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                      <XAxis 
+                        dataKey="date" 
+                        axisLine={false} 
+                        tickLine={false} 
+                        tick={{ fontSize: 11, fill: '#64748b', fontWeight: 600 }} 
+                        dy={10}
+                      />
+                      <YAxis 
+                        axisLine={false} 
+                        tickLine={false} 
+                        tick={{ fontSize: 11, fill: '#64748b' }}
+                      />
+                      <RechartsTooltip 
+                        contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)', fontWeight: 'bold' }}
+                        formatter={((value: number) => [`${value} lượt`, 'Lượt xem']) as any}
+                        labelStyle={{ color: '#64748b', marginBottom: '4px' }}
+                        cursor={{ fill: '#f8fafc' }}
+                      />
+                      <Bar 
+                        dataKey="views" 
+                        fill="#10b981" 
+                        radius={[6, 6, 0, 0]}
+                        barSize={24}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-full text-slate-400 text-sm font-medium">
+                    Chưa có dữ liệu lượt xem
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Top Rooms leaderboard */}
+          {dashboardStats.top_interested_rooms && dashboardStats.top_interested_rooms.length > 0 && (
+            <motion.div 
+              initial={{ opacity: 0, y: 15 }} 
+              animate={{ opacity: 1, y: 0 }} 
+              transition={{ duration: 0.4, delay: 0.55 }}
+              className="bg-card border border-slate-200 rounded-[2rem] p-6 md:p-8 shadow-lg"
+            >
+              <div className="flex items-center gap-2 mb-6">
+                <Building2 className="h-5 w-5 text-amber-500" />
+                <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Top phòng được quan tâm nhiều nhất</h3>
+              </div>
+              <div className="space-y-3.5">
+                {dashboardStats.top_interested_rooms.map((room: any, index: number) => (
+                  <div key={room.room_id} className="flex items-center justify-between p-4 bg-slate-50/50 rounded-2xl border border-slate-100/60 gap-4 hover:shadow-md transition-shadow">
+                    <div className="flex items-center gap-4">
+                      <div className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs text-white ${index === 0 ? 'bg-amber-500' : index === 1 ? 'bg-slate-400' : index === 2 ? 'bg-amber-700' : 'bg-primary/40'}`}>
+                        #{index + 1}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-slate-800 text-sm">{room.room_name}</p>
+                        <p className="text-[10px] text-slate-500">ID: {room.room_id}</p>
+                      </div>
+                    </div>
+                    <div className="inline-flex flex-col items-end px-4">
+                      <span className="text-md font-black text-slate-800">{room.interest_count}</span>
+                      <span className="text-[9px] uppercase font-black text-slate-650 tracking-wider">Lượt quan tâm</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </div>
+      )}
 
       {/* Quick Actions Panel */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-2">
