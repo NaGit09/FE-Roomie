@@ -75,12 +75,24 @@ export const RoomApi = {
   },
 
   getLandlordStats: async () => {
-    const res = await axiosInstance.get<ApiResponse<any>>(
+    const res = await axiosInstance.get<ApiResponse<LandlordStats>>(
       `${BASE_URL}/me/stats`
     );
     return res.data;
   }
 };
+
+export interface LandlordStats {
+  total_rooms: number;
+  rented_rooms: number;
+  total_post_views: number;
+  total_interested_renters: number;
+  total_reviews: number;
+  recent_interested_renters: any[];
+  interested_chart_data: { month: string; interested: number }[];
+  views_chart_data: { date: string; views: number }[];
+  top_interested_rooms: { room_id: number; room_name: string; interest_count: number }[];
+}
 
 export interface RoomRequest {
   id: number;
