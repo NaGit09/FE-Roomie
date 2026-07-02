@@ -85,7 +85,7 @@ export default function AdminOrdersPage() {
   });
 
   // Calculate Metrics
-  const completedOrders = orders.filter((o) => o.status === "COMPLETED");
+  const completedOrders = orders.filter((o) => o.status === "PAID");
   const totalRevenue = completedOrders.reduce((sum, o) => sum + o.total_amount, 0);
   const pendingCount = orders.filter((o) => o.status === "PENDING").length;
   const completedCount = completedOrders.length;
@@ -118,7 +118,7 @@ export default function AdminOrdersPage() {
 
   const getStatusBadgeColor = (s: string) => {
     switch (s) {
-      case "COMPLETED":
+      case "PAID":
         return "bg-primary/10 border-primary/20 text-primary";
       case "PENDING":
         return "bg-primary/10 border-amber-500/20 text-primary";
@@ -201,7 +201,7 @@ export default function AdminOrdersPage() {
         <div className="flex flex-wrap items-center gap-1.5 w-full sm:w-auto overflow-x-auto">
           {[
             { label: "Tất cả giao dịch", value: "ALL" },
-            { label: "Thành công", value: "COMPLETED" },
+            { label: "Thành công", value: "PAID" },
             { label: "Đang chờ", value: "PENDING" },
             { label: "Đã hủy", value: "CANCELLED" }
           ].map((tab, idx) => (

@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import { 
   History, 
   Home, 
@@ -10,7 +12,8 @@ import {
   XCircle, 
   Loader2,
   MapPin,
-  Maximize2
+  Maximize2,
+  Eye
 } from "lucide-react";
 import { RentalApi } from "@/services/api/rental";
 import { Rental } from "@/schema/room/rental";
@@ -172,8 +175,17 @@ export default function HistoryRentPage() {
                   {/* Content details next to image */}
                   <div className="flex-1 flex flex-col min-w-0 justify-between text-left space-y-2">
                     <div className="space-y-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        {getStatusBadge(rental.status)}
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
+                          {getStatusBadge(rental.status)}
+                        </div>
+                        <Link
+                          href={`/rooms/${rental.room_id}`}
+                          className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-100 bg-slate-50 hover:bg-slate-100 text-slate-400 hover:text-primary transition-all duration-300 shadow-xs cursor-pointer shrink-0"
+                          title="Xem chi tiết bài đăng"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Link>
                       </div>
                       
                       <h3 className="font-extrabold text-sm sm:text-base text-slate-800 leading-snug truncate mt-1" title={rental.room?.name || `Phòng số #${rental.room_id}`}>
@@ -258,7 +270,7 @@ export default function HistoryRentPage() {
             <AlertDialogDescription className="text-slate-400 text-sm leading-relaxed">
               Bạn có chắc chắn muốn kết thúc hợp đồng thuê cho căn hộ{" "}
               <span className="font-extrabold text-amber-400">
-                "{activeRentalToEnd?.room?.name || `Phòng #${activeRentalToEnd?.room_id}`}"
+                &ldquo;{activeRentalToEnd?.room?.name || `Phòng #${activeRentalToEnd?.room_id}`}&rdquo;
               </span>{" "}
               không? Trạng thái sẽ được chuyển thành **Đã kết thúc (Completed)** và phòng trọ sẽ tự động quay trở về trạng thái trống (Available) để hiển thị tìm kiếm.
             </AlertDialogDescription>

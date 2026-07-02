@@ -1,10 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, AlertTriangle, Upload, Eye, Trash2, CheckCircle2, Loader2 } from "lucide-react";
+import { X, AlertTriangle, Upload, Eye, Trash2, Loader2 } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { ReportApi } from "@/services/api/report";
+import { UploadApi } from "@/services/api/upload";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
@@ -29,6 +31,7 @@ export default function ReportModal({
   const [attachments, setAttachments] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tempUrl, setTempUrl] = useState("");
+  const [uploadingFile, setUploadingFile] = useState(false);
 
   const getReportTypeOptions = () => {
     switch (targetType) {
@@ -84,22 +87,57 @@ export default function ReportModal({
     setAttachments((prev) => prev.filter((_, idx) => idx !== index));
   };
 
-  const handleSimulateUpload = () => {
-    // Simulated upload URLs (high-quality room/living illustrations)
-    const mockUrls = [
-      "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=600&q=80",
-      "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=600&q=80",
-      "https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=600&q=80",
-    ];
-    const randomUrl = mockUrls[Math.floor(Math.random() * mockUrls.length)];
-    setAttachments((prev) => [...prev, randomUrl]);
-    toast.success("Đã tải lên hình ảnh minh chứng thành công (Simulated)!");
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!isAuthenticated || !user) {
+      toast.error("Vui lòng đăng nhập tài khoản để tải lên file minh chứng.");
+      return;
+    }
+
+    setUploadingFile(true);
+    try {
+      // Map context strictly to match the frontend/backend expected enum context
+      const context = (targetType === "ROOM" || targetType === "POST") ? targetType : "POST";
+      const reference_id = user.id; // Must be a valid UUID
+
+      const res = await UploadApi.uploadFile({
+        file,
+        reference_id,
+        context,
+        is_primary: false,
+      });
+
+      if (res && res.code === 200 && res.data?.file_url) {
+        setAttachments((prev) => [...prev, res.data.file_url]);
+        toast.success("Tải lên hình ảnh minh chứng thành công!");
+      } else {
+        toast.error(res?.message || "Tải lên thất bại. Vui lòng thử lại.");
+      }
+    } catch (err: any) {
+      console.error("Error uploading report attachment:", err);
+      toast.error(
+        err?.response?.data?.message ||
+          err?.message ||
+          "Lỗi khi kết nối với máy chủ tải file.",
+      );
+    } finally {
+      setUploadingFile(false);
+      // Reset input value so same file can be uploaded again if needed
+      e.target.value = "";
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isAuthenticated || !user) {
       toast.error("Vui lòng đăng nhập tài khoản trước khi thực hiện báo cáo.");
+      return;
+    }
+
+    if (!reportType.trim()) {
+      toast.error("Vui lòng chọn phân loại vi phạm.");
       return;
     }
 
@@ -202,8 +240,10 @@ export default function ReportModal({
               </button>
             </div>
 
-            {/* Scrollable Form Body */}
-            <form onSubmit={handleSubmit} className="space-y-4 overflow-y-auto flex-1 pr-1 py-1">
+            {/* Form wrapping both scrollable body and footer so native validation works */}
+            <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+              {/* Scrollable Form Body */}
+              <div className="space-y-4 overflow-y-auto flex-1 pr-1 py-1">
               {/* Report Category Select */}
               <div className="space-y-1.5">
                 <label className="text-xs font-black text-slate-700 block">
@@ -253,6 +293,14 @@ export default function ReportModal({
                 {/* Upload simulations & URL Input */}
                 <div className="flex gap-2">
                   <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="hidden"
+                    id="report-file-upload-input"
+                    disabled={uploadingFile || isSubmitting}
+                  />
+                  <input
                     type="text"
                     placeholder="Dán link ảnh đính kèm (http://...)"
                     value={tempUrl}
@@ -270,11 +318,16 @@ export default function ReportModal({
                   <Button
                     type="button"
                     variant="secondary"
-                    onClick={handleSimulateUpload}
+                    onClick={() => document.getElementById("report-file-upload-input")?.click()}
+                    disabled={uploadingFile || isSubmitting}
                     className="h-9 rounded-lg text-xs font-bold shrink-0 bg-slate-50 hover:bg-slate-100 border border-slate-100 flex items-center gap-1 cursor-pointer"
-                    title="Simulate Uploading File"
+                    title="Tải lên file từ máy tính"
                   >
-                    <Upload className="h-3.5 w-3.5" />
+                    {uploadingFile ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Upload className="h-3.5 w-3.5" />
+                    )}
                     Tải lên
                   </Button>
                 </div>
@@ -318,38 +371,38 @@ export default function ReportModal({
                   </div>
                 )}
               </div>
-            </form>
+              </div>
 
-            {/* Footer Buttons */}
-            <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 shrink-0">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onClose}
-                disabled={isSubmitting}
-                className="h-10 rounded-xl font-bold text-xs px-5 border-slate-200 hover:bg-slate-50 cursor-pointer"
-              >
-                Hủy bỏ
-              </Button>
-              <Button
-                type="submit"
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-                className="h-10 rounded-xl font-bold text-xs px-5 bg-red-500 text-white hover:bg-red-600 cursor-pointer flex items-center gap-1.5"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    Đang gửi...
-                  </>
-                ) : (
-                  <>
-                    <AlertTriangle className="h-3.5 w-3.5" />
-                    Gửi báo cáo vi phạm
-                  </>
-                )}
-              </Button>
-            </div>
+              {/* Footer Buttons (inside form so submit triggers validation) */}
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 shrink-0">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onClose}
+                  disabled={isSubmitting}
+                  className="h-10 rounded-xl font-bold text-xs px-5 border-slate-200 hover:bg-slate-50 cursor-pointer"
+                >
+                  Hủy bỏ
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="h-10 rounded-xl font-bold text-xs px-5 bg-red-500 text-white hover:bg-red-600 cursor-pointer flex items-center gap-1.5"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      Đang gửi...
+                    </>
+                  ) : (
+                    <>
+                      <AlertTriangle className="h-3.5 w-3.5" />
+                      Gửi báo cáo vi phạm
+                    </>
+                  )}
+                </Button>
+              </div>
+            </form>
           </motion.div>
         </div>
       )}

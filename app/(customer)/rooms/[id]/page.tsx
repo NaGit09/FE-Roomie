@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -5,6 +6,8 @@ import { useParams, useRouter } from "next/navigation";
 import { useRoomStore } from "@/stores/roomStore";
 import { useAuthStore } from "@/stores/authStore";
 import { ChevronLeft, Heart, Sparkles } from "lucide-react";
+import { SaveApi } from "@/services/api/save";
+import { toast } from "sonner";
 import DetailHeader from "@/components/custom/customer/room/RoomDetail/DetailHeader";
 import DetailNotFound from "@/components/custom/customer/room/RoomDetail/DetailNotFound";
 import DetailLoading from "@/components/custom/customer/room/RoomDetail/DetailLoading";
@@ -20,7 +23,7 @@ export default function RoomDetailPage() {
   const idStr = typeof params?.id === "string" ? params.id : "";
   const postId = parseInt(idStr, 10);
 
-  const { user } = useAuthStore();
+  const { user, isAuthenticated } = useAuthStore();
 
   const {
     currentRoomDetail,
@@ -31,6 +34,7 @@ export default function RoomDetailPage() {
   } = useRoomStore();
   
   const [isSaved, setIsSaved] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     if (!isNaN(postId)) {
@@ -40,6 +44,45 @@ export default function RoomDetailPage() {
       clearCurrentRoomDetail();
     };
   }, [postId, fetchRoomDetail, clearCurrentRoomDetail]);
+
+  useEffect(() => {
+    if (currentRoomDetail) {
+      setIsSaved(currentRoomDetail.is_saved);
+    }
+  }, [currentRoomDetail]);
+
+  const handleToggleSave = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!isAuthenticated) {
+      toast.error("Vui lòng đăng nhập để lưu tin đăng!");
+      return;
+    }
+
+    if (loading || isNaN(postId)) return;
+    setLoading(true);
+
+    try {
+      if (isSaved) {
+        await SaveApi.unSavePost(idStr);
+        setIsSaved(false);
+        toast.success("Đã bỏ lưu tin đăng!");
+      } else {
+        await SaveApi.savePost(idStr);
+        setIsSaved(true);
+        toast.success("Đã lưu tin đăng thành công!");
+      }
+    } catch (err: any) {
+      toast.error(
+        err?.response?.data?.message ||
+          err?.message ||
+          "Thao tác thất bại. Vui lòng thử lại.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (isLoading) {
     return <DetailLoading />;
@@ -65,14 +108,19 @@ export default function RoomDetailPage() {
           </button>
 
           <button
-            onClick={() => setIsSaved(!isSaved)}
-            className={`flex h-10 w-10 items-center justify-center rounded-full border transition-all duration-300 shadow-sm ${
+            onClick={handleToggleSave}
+            disabled={loading}
+            className={`flex h-10 w-10 items-center justify-center rounded-full border transition-all duration-300 shadow-sm cursor-pointer ${
               isSaved
-                ? "bg-primary border-primary text-white"
-                : "bg-white border-slate-200 text-slate-400 hover:text-primary"
-            }`}
+                ? "bg-white border-rose-100 text-rose-500 shadow-rose-500/10"
+                : "bg-white border-slate-200 text-slate-400 hover:text-rose-500 hover:border-slate-350"
+            } ${loading && "opacity-50 pointer-events-none"}`}
           >
-            <Heart className={`h-5 w-5 ${isSaved ? "fill-current" : ""}`} />
+            {loading ? (
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-rose-500 border-t-transparent" />
+            ) : (
+              <Heart className={`h-5 w-5 transition-colors duration-300 ${isSaved ? "fill-rose-500 text-rose-500" : "text-slate-400"}`} />
+            )}
           </button>
         </div>
 
