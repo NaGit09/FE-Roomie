@@ -134,6 +134,11 @@ export default function LandlordLayout({
       icon: LayoutDashboard,
     },
     {
+      href: "/landlord/profile",
+      label: "Hồ sơ chủ nhà",
+      icon: User,
+    },
+    {
       href: "/landlord/rooms",
       label: "Quản lý phòng",
       icon: Home,

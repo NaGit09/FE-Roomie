@@ -13,7 +13,8 @@ export const UserProfileSchema = z.object({
     landlord_profile: z.object({
         phonenumber: z.string().nullable(),
         facebook: z.string().nullable(),
-        gmail: z.email(),
+        zalo: z.string().nullable(),
+        gmail: z.email().nullable().optional(),
         id: z.uuid(),
         user_id: z.uuid(),
         created_at: z.string(),
