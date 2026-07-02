@@ -24,7 +24,7 @@ export default function ProfilePage() {
 
   // Form edit states
   const [isEditing, setIsEditing] = useState(false);
-  const [fullName, setFullName] = useState("");
+  const [fullName, setFullName] = useState(user?.full_name || "");
   const [loading, setLoading] = useState(false);
   const [syncing, setSyncing] = useState(true);
 
@@ -36,15 +36,13 @@ export default function ProfilePage() {
         setFullName(updated.data.full_name || "");
       } catch (err) {
         console.warn("Failed to sync profile from server:", err);
-        if (user) {
-          setFullName(user.full_name || "");
-        }
       } finally {
         setSyncing(false);
       }
     };
     fetchLatestProfile();
-  }, [user,setUser]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (syncing && !user) {
     return (

@@ -120,7 +120,6 @@ export default function AdminOrdersPage() {
 
   const getStatusBadgeColor = (s: string) => {
     switch (s) {
-      case "COMPLETED":
       case "PAID":
         return "bg-primary/10 border-primary/20 text-primary";
       case "PENDING":
@@ -205,7 +204,7 @@ export default function AdminOrdersPage() {
         <div className="flex flex-wrap items-center gap-1.5 w-full sm:w-auto overflow-x-auto">
           {[
             { label: "Tất cả giao dịch", value: "ALL" },
-            { label: "Thành công", value: "COMPLETED" },
+            { label: "Thành công", value: "PAID" },
             { label: "Đang chờ", value: "PENDING" },
             { label: "Đã hủy", value: "CANCELLED" }
           ].map((tab, idx) => (
