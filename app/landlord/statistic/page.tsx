@@ -8,9 +8,9 @@ import {
   Users, 
   Eye, 
   CheckCircle,
-  TrendingUp,
   Activity,
-  Wallet
+  MessageSquare,
+  TrendingUp
 } from "lucide-react";
 import { motion } from "framer-motion";
 import formatVND from "@/utils/priceUtils";
@@ -100,22 +100,22 @@ export default function StatisticPage() {
           <div className="absolute -bottom-6 -right-6 h-32 w-32 bg-blue-50 rounded-full opacity-50 blur-2xl" />
         </motion.div>
 
-        {/* Doanh thu */}
+        {/* Lượt đánh giá */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
           className="bg-primary/5 border border-primary/20 rounded-3xl p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden"
         >
           <div className="flex justify-between items-start mb-4 relative z-10">
             <div>
-              <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-1">Doanh thu tháng này</p>
-              <h3 className="text-3xl font-black text-slate-800">{formatVND(stats?.revenue_this_month || 0)}</h3>
+              <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-1">Lượt đánh giá phòng</p>
+              <h3 className="text-3xl font-black text-slate-800">{stats?.total_reviews || 0}</h3>
             </div>
             <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center">
-              <Wallet className="h-6 w-6 text-primary" />
+              <MessageSquare className="h-6 w-6 text-primary" />
             </div>
           </div>
           <p className="text-xs font-medium text-slate-500 mt-7 relative z-10">
-            Tổng dòng tiền ước tính từ các phòng đang cho thuê
+            Tổng số phản hồi từ khách thuê
           </p>
           <div className="absolute -bottom-6 -right-6 h-32 w-32 bg-primary/10 rounded-full opacity-50 blur-2xl" />
         </motion.div>
@@ -163,7 +163,7 @@ export default function StatisticPage() {
 
       {/* ── Charts Section ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Revenue Chart */}
+        {/* Interested Chart */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -172,14 +172,14 @@ export default function StatisticPage() {
         >
           <div className="flex items-center gap-2 mb-6">
             <TrendingUp className="h-5 w-5 text-primary" />
-            <h3 className="text-lg font-bold text-slate-800">Xu hướng doanh thu (6 tháng)</h3>
+            <h3 className="text-lg font-bold text-slate-800">Xu hướng người quan tâm (6 tháng)</h3>
           </div>
           <div className="flex-1 w-full h-[300px] min-h-[300px]">
-            {stats?.revenue_chart_data && stats.revenue_chart_data.length > 0 ? (
+            {stats?.interested_chart_data && stats.interested_chart_data.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={stats.revenue_chart_data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <AreaChart data={stats.interested_chart_data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <defs>
-                    <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient id="colorInterested" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
                       <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                     </linearGradient>
@@ -196,26 +196,25 @@ export default function StatisticPage() {
                     axisLine={false} 
                     tickLine={false} 
                     tick={{ fontSize: 12, fill: '#64748b' }}
-                    tickFormatter={(value) => `${(value / 1000000).toFixed(1)}M`}
                   />
                   <RechartsTooltip 
                     contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)', fontWeight: 'bold' }}
-                    formatter={((value: number) => [`${formatVND(value)}`, 'Doanh thu']) as any}
+                    formatter={((value: number) => [`${value} lượt`, 'Người quan tâm']) as any}
                     labelStyle={{ color: '#64748b', marginBottom: '4px' }}
                   />
                   <Area 
                     type="monotone" 
-                    dataKey="revenue" 
+                    dataKey="interested" 
                     stroke="#3b82f6" 
                     strokeWidth={3}
                     fillOpacity={1} 
-                    fill="url(#colorRevenue)" 
+                    fill="url(#colorInterested)" 
                   />
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
               <div className="flex items-center justify-center h-full text-slate-400 text-sm font-medium">
-                Chưa có dữ liệu doanh thu
+                Chưa có dữ liệu người quan tâm
               </div>
             )}
           </div>
@@ -271,6 +270,38 @@ export default function StatisticPage() {
           </div>
         </motion.div>
       </div>
+
+      {/* Top Interested Rooms */}
+      {stats?.top_interested_rooms && stats.top_interested_rooms.length > 0 && (
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.65 }}
+          className="bg-card border border-slate-200 rounded-3xl p-6 md:p-8 shadow-sm"
+        >
+          <div className="flex items-center gap-2 mb-6">
+            <Building2 className="h-5 w-5 text-amber-500" />
+            <h3 className="text-lg font-bold text-slate-800">Top phòng được quan tâm nhiều nhất</h3>
+          </div>
+          <div className="space-y-4">
+            {stats.top_interested_rooms.map((room: any, index: number) => (
+              <div key={room.room_id} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100 gap-4 hover:shadow-md transition-shadow">
+                <div className="flex items-center gap-4">
+                  <div className={`h-10 w-10 rounded-full flex items-center justify-center font-bold text-white ${index === 0 ? 'bg-amber-500' : index === 1 ? 'bg-slate-400' : index === 2 ? 'bg-amber-700' : 'bg-primary/40'}`}>
+                    #{index + 1}
+                  </div>
+                  <div>
+                    <p className="font-semibold text-slate-800">{room.room_name}</p>
+                    <p className="text-xs text-slate-500 line-clamp-1">ID: {room.room_id}</p>
+                  </div>
+                </div>
+                <div className="inline-flex flex-col items-end px-4">
+                  <span className="text-lg font-black text-slate-800">{room.interest_count}</span>
+                  <span className="text-[10px] uppercase font-bold text-slate-400">Lượt quan tâm</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      )}
 
       {/* Danh sách quan tâm gần đây */}
       {stats?.recent_interested_renters && stats.recent_interested_renters.length > 0 && (

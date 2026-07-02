@@ -21,6 +21,14 @@ export const UserApi = {
     return response.data;
   },
 
+  updateLandlordProfile: async (data: { phonenumber?: string; facebook?: string; zalo?: string }) => {
+    const response = await axiosInstance.put<ApiResponse<any>>(
+      `${BASE_URL}/me/landlord-profile`,
+      data
+    );
+    return response.data;
+  },
+
   getAllUsers: async (params?: { skip?: number; limit?: number; status?: string; role?: string }) => {
     const response = await axiosInstance.get<ApiResponse<{ items: UserProfile[]; total: number; page: number; size: number; total_pages: number }>>(
       `${BASE_URL}`,
