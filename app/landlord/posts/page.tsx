@@ -264,29 +264,50 @@ export default function LandlordPostsPage() {
               ) : postFeedbacks.length === 0 ? (
                 <div className="text-center py-10 text-slate-500">Chưa có đánh giá nào cho bài viết này.</div>
               ) : (
-                postFeedbacks.map((fb) => (
-                  <div key={fb.id} className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex gap-4">
-                    <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0">
-                      {fb.user_id.substring(0, 1).toUpperCase()}
-                    </div>
-                    <div className="space-y-2 flex-1">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <span className="font-semibold text-sm text-slate-800 block">Người dùng ID: {fb.user_id.substring(0, 8)}</span>
-                          <span className="text-[10px] text-slate-500">{new Date(fb.created_at).toLocaleString('vi-VN')}</span>
+                postFeedbacks.map((fb) => {
+                  const overallRating = fb.ratings?.find(r => r.rating_type === "OVERALL")?.rating_value || 5;
+                  return (
+                    <div key={fb.feedback_id} className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3">
+                      <div className="flex gap-4">
+                        <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0">
+                          {fb.user_id ? fb.user_id.substring(0, 2).toUpperCase() : "ND"}
                         </div>
-                        <div className="flex items-center gap-0.5 text-amber-500">
-                          {Array.from({ length: 5 }).map((_, i) => (
-                            <Star key={i} className={`h-3 w-3 ${i < fb.rating ? 'fill-current' : 'text-slate-300'}`} />
-                          ))}
+                        <div className="space-y-1 flex-1">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <span className="font-semibold text-sm text-slate-800 block">
+                                {fb.user_id ? (fb.user_id.startsWith("ND-") ? fb.user_id : `User ${fb.user_id.substring(0, 8)}...`) : "Người dùng"}
+                              </span>
+                              <span className="text-[10px] text-slate-500">
+                                {fb.created_at ? new Date(fb.created_at).toLocaleString('vi-VN') : ""}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-0.5 text-amber-500">
+                              {Array.from({ length: 5 }).map((_, i) => (
+                                <Star key={i} className={`h-3 w-3 ${i < Math.round(overallRating) ? 'fill-current' : 'text-slate-300'}`} />
+                              ))}
+                            </div>
+                          </div>
+                          <p className="text-xs text-slate-700 leading-relaxed bg-white border border-slate-100 p-3 rounded-xl shadow-sm italic">
+                            "{fb.content || "Không có nội dung bình luận."}"
+                          </p>
                         </div>
                       </div>
-                      <p className="text-xs text-slate-700 leading-relaxed bg-white border border-slate-100 p-3 rounded-xl shadow-sm">
-                        {fb.comment || "Không có nội dung bình luận."}
-                      </p>
+
+                      {/* Display Reply if already replied */}
+                      {fb.reply && (
+                        <div className="ml-14 bg-white border border-slate-100 rounded-xl p-3 flex gap-2.5 items-start">
+                          <div className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-bold uppercase shrink-0 mt-0.5">
+                            Phản hồi
+                          </div>
+                          <p className="text-xs text-slate-600 leading-relaxed">
+                            {fb.reply}
+                          </p>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           </div>

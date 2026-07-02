@@ -2,13 +2,19 @@ import { ApiResponse } from "@/schema/common/api.type";
 import axiosInstance from "../axiosInstance";
 
 export interface FeedbackResponse {
-  id: number;
+  feedback_id: number;
   post_id: number;
   user_id: string;
-  rating: number;
-  comment: string;
+  content: string;
+  images?: string[];
   created_at: string;
-  updated_at: string;
+  reply?: string | null;
+  replied_at?: string | null;
+  ratings?: Array<{
+    id: number;
+    rating_type: string;
+    rating_value: number;
+  }>;
 }
 
 export const FeedbackApi = {
@@ -20,4 +26,14 @@ export const FeedbackApi = {
     const res = await axiosInstance.post<ApiResponse<any>>(`/feedback/${feedback_id}/reply`, { reply });
     return res.data;
   },
+  createFeedback: async (payload: {
+    post_id: number;
+    content: string;
+    image_urls: string[];
+    ratings: Array<{ rating_type: string; rating_value: number }>;
+  }) => {
+    const res = await axiosInstance.post<ApiResponse<any>>(`/feedback`, payload);
+    return res.data;
+  },
 };
+

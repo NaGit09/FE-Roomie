@@ -43,6 +43,7 @@ export default function AdminDashboardPage() {
   const [recentUsers, setRecentUsers] = useState<any[]>([]);
   const [allPaidOrders, setAllPaidOrders] = useState<any[]>([]);
   const [totalRevenue, setTotalRevenue] = useState<number>(0);
+  const [pieChartData, setPieChartData] = useState<any[]>([]);
 
 
   // Mock operational statistics

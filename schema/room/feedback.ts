@@ -4,6 +4,7 @@ import { ratingTypeSchema } from "./rating";
 export const feedbackSchema = z.object({
     feedback: z.string(),
     rating: z.array(ratingTypeSchema),
+    ratings: z.array(ratingTypeSchema).optional(),
     created_at: z.string(),
     images: z.array(z.string()).optional(),
     user_id: z.string(),

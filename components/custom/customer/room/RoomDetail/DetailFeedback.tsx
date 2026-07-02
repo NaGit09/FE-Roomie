@@ -25,8 +25,9 @@ import { FeedbackApi } from "@/services/api/feedback";
 
 export default function DetailFeedback() {
   const { currentRoomDetail, addLocalFeedback, updateLocalFeedbackReply } = useRoomStore();
-  const { user } = useAuthStore();
+  const { user, isAuthenticated } = useAuthStore();
 
+  const [isSubmittingFeedback, setIsSubmittingFeedback] = useState<boolean>(false);
   const feedbacks = currentRoomDetail?.feedbacks || [];
 
   // Collapsible control for review scores
@@ -74,7 +75,7 @@ export default function DetailFeedback() {
   // Get dynamic average rating for each factor across all feedbacks
   const getAverageFactorRating = (factor: string) => {
     const values = feedbacks
-      .flatMap((f) => f.rating || f.rating || [])
+      .flatMap((f) => f.ratings || f.rating || [])
       .filter((r) => r.rating_type === factor)
       .map((r) => r.rating_value);
 
@@ -90,7 +91,7 @@ export default function DetailFeedback() {
           (
             feedbacks
               .map((f) => {
-                const ratingsList = f.rating || f.rating || [];
+                const ratingsList = f.ratings || f.rating || [];
                 const overallRating = ratingsList.find(
                   (r) => r.rating_type === "OVERALL",
                 );
@@ -119,49 +120,81 @@ export default function DetailFeedback() {
   };
 
   // Submit feedback
-  const handleSubmitFeedback = (e: React.FormEvent) => {
+  const handleSubmitFeedback = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isAuthenticated || !user) {
+      toast.error("Vui lòng đăng nhập để gửi đánh giá!");
+      return;
+    }
     if (!content.trim()) return;
 
-    const mockId = Date.now();
-    const newFeedback = {
-      feedback_id: mockId,
-      post_id: currentRoomDetail.post_id,
-      user_id: "ND-cá-nhân-bạn",
-      content: content,
-      feedback: content,
-      created_at: new Date().toISOString(),
-      images: imageUrl.trim() ? [imageUrl.trim()] : [],
-      // Supply both 'rating' and 'ratings' lists for 100% schemas compatibility
-      rating: Object.entries(ratings).map(([type, val], index) => ({
-        id: mockId + index,
-        rating_type: type,
-        rating_value: val,
-      })),
-      ratings: Object.entries(ratings).map(([type, val], index) => ({
-        id: mockId + index,
-        rating_type: type,
-        rating_value: val,
-      })),
-    };
+    setIsSubmittingFeedback(true);
 
-    addLocalFeedback(newFeedback);
+    try {
+      const payload = {
+        post_id: currentRoomDetail.post_id,
+        content: content,
+        image_urls: imageUrl.trim() ? [imageUrl.trim()] : [],
+        ratings: Object.entries(ratings).map(([type, val]) => ({
+          rating_type: type,
+          rating_value: val,
+        })),
+      };
 
-    // Clear inputs and show success message
-    setContent("");
-    setImageUrl("");
-    setRatings({
-      OVERALL: 5,
-      LOCATION: 5,
-      PRICE: 5,
-      OWNER: 5,
-      CLEANLINESS: 5,
-    });
+      const res = await FeedbackApi.createFeedback(payload);
 
-    setSubmitSuccess(true);
-    setTimeout(() => {
-      setSubmitSuccess(false);
-    }, 4000);
+      if (res && (res.code === 200 || res.code === 201)) {
+        toast.success("Gửi đánh giá thành công!");
+
+        const backendFeedback = res.data;
+        const mockId = backendFeedback?.feedback_id || Date.now();
+        const newFeedback = {
+          feedback_id: mockId,
+          post_id: currentRoomDetail.post_id,
+          user_id: user.id || "ND-cá-nhân-bạn",
+          content: content,
+          feedback: content,
+          created_at: backendFeedback?.created_at || new Date().toISOString(),
+          images: imageUrl.trim() ? [imageUrl.trim()] : [],
+          rating: Object.entries(ratings).map(([type, val], index) => ({
+            id: mockId + index,
+            rating_type: type,
+            rating_value: val,
+          })),
+          ratings: Object.entries(ratings).map(([type, val], index) => ({
+            id: mockId + index,
+            rating_type: type,
+            rating_value: val,
+          })),
+        };
+
+        addLocalFeedback(newFeedback);
+
+        // Clear inputs and show success message
+        setContent("");
+        setImageUrl("");
+        setRatings({
+          OVERALL: 5,
+          LOCATION: 5,
+          PRICE: 5,
+          OWNER: 5,
+          CLEANLINESS: 5,
+        });
+
+        setSubmitSuccess(true);
+        setTimeout(() => {
+          setSubmitSuccess(false);
+        }, 4000);
+      } else {
+        toast.error(res?.message || "Gửi đánh giá thất bại. Vui lòng thử lại.");
+      }
+    } catch (err: any) {
+      console.error(err);
+      const errMsg = err?.response?.data?.detail || err?.response?.data?.message || err?.message || "Lỗi khi gửi đánh giá.";
+      toast.error(errMsg);
+    } finally {
+      setIsSubmittingFeedback(false);
+    }
   };
 
   const handleSubmitReply = async (feedbackId: number) => {
@@ -270,80 +303,107 @@ export default function DetailFeedback() {
           </div>
         )}
 
-        <form onSubmit={handleSubmitFeedback} className="space-y-6">
-          {/* Interactive Star rating sliders */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-5 bg-slate-50/50 rounded-2xl border border-slate-100/60">
-            {Object.entries(factorLabels).map(([key, label]) => {
-              const currentScore = ratings[key] || 5;
+        {!isAuthenticated ? (
+          <div className="flex flex-col items-center justify-center text-center p-8 bg-slate-50/50 rounded-[2rem] border border-dashed border-slate-200/80 max-w-md mx-auto space-y-4">
+            <MessageSquare className="h-8 w-8 text-slate-300" />
+            <div>
+              <p className="text-sm font-semibold text-slate-600">
+                Bạn cần đăng nhập để viết đánh giá
+              </p>
+              <p className="text-xs text-slate-400 mt-1">
+                Vui lòng đăng nhập tài khoản của bạn để chia sẻ trải nghiệm thực tế về phòng trọ này.
+              </p>
+            </div>
+            <Button
+              onClick={() => {
+                window.location.href = `/auth/login?redirect=${encodeURIComponent(window.location.pathname)}`;
+              }}
+              className="rounded-full font-bold px-6 py-2 shadow-md shadow-primary/10"
+            >
+              Đăng nhập ngay
+            </Button>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmitFeedback} className="space-y-6">
+            {/* Interactive Star rating sliders */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-5 bg-slate-50/50 rounded-2xl border border-slate-100/60">
+              {Object.entries(factorLabels).map(([key, label]) => {
+                const currentScore = ratings[key] || 5;
 
-              return (
-                <div key={key} className="flex flex-col gap-1.5">
-                  <span className="text-xs font-extrabold uppercase tracking-widest text-slate-400">
-                    {label}
-                  </span>
-                  <div className="flex items-center gap-1 mt-0.5">
-                    {Array.from({ length: 5 }).map((_, idx) => {
-                      const starVal = idx + 1;
-                      const isActive = starVal <= currentScore;
-                      return (
-                        <button
-                          type="button"
-                          key={idx}
-                          onClick={() => handleRatingClick(key, starVal)}
-                          className="text-slate-200 hover:scale-110 active:scale-95 transition-all duration-150"
-                        >
-                          <Star
-                            className={`h-6 w-6 ${isActive ? "text-amber-400 fill-amber-400" : "text-slate-200"}`}
-                          />
-                        </button>
-                      );
-                    })}
-                    <span className="text-xs font-extrabold text-slate-600 ml-2">
-                      {currentScore}/5
+                return (
+                  <div key={key} className="flex flex-col gap-1.5">
+                    <span className="text-xs font-extrabold uppercase tracking-widest text-slate-400">
+                      {label}
                     </span>
+                    <div className="flex items-center gap-1 mt-0.5">
+                      {Array.from({ length: 5 }).map((_, idx) => {
+                        const starVal = idx + 1;
+                        const isActive = starVal <= currentScore;
+                        return (
+                          <button
+                            type="button"
+                            key={idx}
+                            onClick={() => handleRatingClick(key, starVal)}
+                            className="text-slate-200 hover:scale-110 active:scale-95 transition-all duration-150"
+                            disabled={isSubmittingFeedback}
+                          >
+                            <Star
+                              className={`h-6 w-6 ${isActive ? "text-amber-400 fill-amber-400" : "text-slate-200"}`}
+                            />
+                          </button>
+                        );
+                      })}
+                      <span className="text-xs font-extrabold text-slate-600 ml-2">
+                        {currentScore}/5
+                      </span>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
 
-          {/* Review Textarea */}
-          <div className="space-y-2">
-            <span className="text-xs font-extrabold uppercase tracking-widest text-slate-400">
-              Nội dung nhận xét
-            </span>
-            <Textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="Chia sẻ trải nghiệm thực tế của bạn về không gian phòng, an ninh, chủ trọ, giá điện nước..."
-              required
-              rows={4}
-              className="rounded-2xl border-slate-200/80 focus-visible:ring-primary focus-visible:border-primary/20 text-sm font-semibold"
-            />
-          </div>
+            {/* Review Textarea */}
+            <div className="space-y-2">
+              <span className="text-xs font-extrabold uppercase tracking-widest text-slate-400">
+                Nội dung nhận xét
+              </span>
+              <Textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="Chia sẻ trải nghiệm thực tế của bạn về không gian phòng, an ninh, chủ trọ, giá điện nước..."
+                required
+                rows={4}
+                className="rounded-2xl border-slate-200/80 focus-visible:ring-primary focus-visible:border-primary/20 text-sm font-semibold"
+                disabled={isSubmittingFeedback}
+              />
+            </div>
 
-          {/* Optional Attach Photo */}
-          <div className="space-y-2">
-            <span className="text-xs font-extrabold uppercase tracking-widest text-slate-400 flex items-center gap-1.5">
-              <ImageIcon className="h-4 w-4" />
-              Hình ảnh đính kèm (URL Unsplash / Custom link)
-            </span>
-            <Input
-              type="url"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="Ví dụ: https://images.unsplash.com/photo-..."
-              className="rounded-full border-slate-200/80 focus-visible:ring-primary text-xs font-bold"
-            />
-          </div>
+            {/* Optional Attach Photo */}
+            <div className="space-y-2">
+              <span className="text-xs font-extrabold uppercase tracking-widest text-slate-400 flex items-center gap-1.5">
+                <ImageIcon className="h-4 w-4" />
+                Hình ảnh đính kèm (URL Unsplash / Custom link)
+              </span>
+              <Input
+                type="url"
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+                placeholder="Ví dụ: https://images.unsplash.com/photo-..."
+                className="rounded-full border-slate-200/80 focus-visible:ring-primary text-xs font-bold"
+                disabled={isSubmittingFeedback}
+              />
+            </div>
 
-          <Button
-            type="submit"
-            className="rounded-full font-bold shadow-lg shadow-primary/10 px-8 py-5"
-          >
-            Gửi đánh giá
-          </Button>
-        </form>
+            <Button
+              type="submit"
+              className="rounded-full font-bold shadow-lg shadow-primary/10 px-8 py-5 flex items-center gap-2"
+              disabled={isSubmittingFeedback}
+            >
+              {isSubmittingFeedback && <Loader2 className="h-4 w-4 animate-spin" />}
+              {isSubmittingFeedback ? "Đang gửi..." : "Gửi đánh giá"}
+            </Button>
+          </form>
+        )}
       </div>
 
       {/* ── 3. Reviews List ── */}
@@ -358,7 +418,7 @@ export default function DetailFeedback() {
         {feedbacks.length > 0 ? (
           <div className="grid grid-cols-1 gap-6">
             {feedbacks.map((item) => {
-              const ratingsList = item.rating || item.rating || [];
+              const ratingsList = item.ratings || item.rating || [];
               const isExpanded = expandedReviews[item.feedback_id] || false;
 
               // Calculate specific overall rating
