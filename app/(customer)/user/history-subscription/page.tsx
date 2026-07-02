@@ -14,13 +14,18 @@ import {
   Zap,
   Sparkles,
   Check,
-  Gift
+  Gift,
+  AlertTriangle,
+  X,
+  Info,
+  Ban
 } from "lucide-react";
 import { useSubscriptionStore, defaultPlans } from "@/stores/subscriptionStore";
 import { SubscriptionApi } from "@/services/api/subcription";
 import { Subscription, SubscriptionDetail, UpgradeSubscription } from "@/schema/user/subcription";
 import formatVND from "@/utils/priceUtils";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function HistorySubscriptionPage() {
   const router = useRouter();
@@ -39,6 +44,13 @@ export default function HistorySubscriptionPage() {
   const [userSubscriptions, setUserSubscriptions] = useState<SubscriptionDetail[]>([]);
   const [loadingHistory, setLoadingHistory] = useState<boolean>(false);
 
+  // Cancel Renewal Dialog States
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [cancelTargetId, setCancelTargetId] = useState<number | null>(null);
+  const [cancelTargetName, setCancelTargetName] = useState("");
+  const [cancelTargetEndDate, setCancelTargetEndDate] = useState("");
+  const [isCancelling, setIsCancelling] = useState(false);
+
   // Normalize sub_type helper
   const normalizePlanType = (type: string) => {
     const upper = (type || "").toUpperCase();
@@ -48,71 +60,71 @@ export default function HistorySubscriptionPage() {
     return upper;
   };
 
+  const verifySubscription = async () => {
+    setLoadingCheck(true);
+    try {
+      const res = await SubscriptionApi.check_subscription();
+      const active = res && res.code === 200 ? res.data : false;
+      setHasActiveSub(active);
+
+      // 1. Fetch available packages if they don't have an active subscription
+      if (!active) {
+        setLoadingPlans(true);
+        try {
+          const plansRes = await SubscriptionApi.get_all_renter_subscriptions();
+          if (plansRes && plansRes.code === 200 && Array.isArray(plansRes.data)) {
+            setAvailablePlans(plansRes.data);
+          } else {
+            setAvailablePlans(defaultPlans);
+          }
+        } catch (planErr) {
+          console.warn("Failed to fetch available plans from API, using defaults:", planErr);
+          setAvailablePlans(defaultPlans);
+        } finally {
+          setLoadingPlans(false);
+        }
+      }
+      // 2. Fetch upgrade recommendations if they have an active subscription
+      else {
+        setLoadingUpgrade(true);
+        try {
+          const upgradeRes = await SubscriptionApi.upgrade_subscription();
+          if (upgradeRes && upgradeRes.code === 200 && upgradeRes.data) {
+            setUpgradeInfo(upgradeRes.data);
+          }
+        } catch (upgradeErr) {
+          console.error("Failed to check upgrade recommendation:", upgradeErr);
+        } finally {
+          setLoadingUpgrade(false);
+        }
+      }
+
+      // 3. Always fetch user past subscriptions history
+      setLoadingHistory(true);
+      try {
+        const historyRes = await SubscriptionApi.get_user_subscription();
+        if (historyRes && historyRes.code === 200 && Array.isArray(historyRes.data)) {
+          setUserSubscriptions(historyRes.data);
+        }
+      } catch (historyErr) {
+        console.error("Failed to fetch user subscription history:", historyErr);
+      } finally {
+        setLoadingHistory(false);
+      }
+
+    } catch (err) {
+      console.error("Failed to check subscription status:", err);
+      setHasActiveSub(false);
+      setAvailablePlans(defaultPlans);
+    } finally {
+      setLoadingCheck(false);
+    }
+  };
+
   useEffect(() => {
     setMounted(true);
-
-    const verifySubscription = async () => {
-      setLoadingCheck(true);
-      try {
-        const res = await SubscriptionApi.check_subscription();
-        const active = res && res.code === 200 ? res.data : false;
-        setHasActiveSub(active);
-
-        // 1. Fetch available packages if they don't have an active subscription
-        if (!active) {
-          setLoadingPlans(true);
-          try {
-            const plansRes = await SubscriptionApi.get_all_renter_subscriptions();
-            if (plansRes && plansRes.code === 200 && Array.isArray(plansRes.data)) {
-              setAvailablePlans(plansRes.data);
-            } else {
-              setAvailablePlans(defaultPlans);
-            }
-          } catch (planErr) {
-            console.warn("Failed to fetch available plans from API, using defaults:", planErr);
-            setAvailablePlans(defaultPlans);
-          } finally {
-            setLoadingPlans(false);
-          }
-        } 
-        // 2. Fetch upgrade recommendations if they have an active subscription
-        else {
-          setLoadingUpgrade(true);
-          try {
-            const upgradeRes = await SubscriptionApi.upgrade_subscription();
-            if (upgradeRes && upgradeRes.code === 200 && upgradeRes.data) {
-              setUpgradeInfo(upgradeRes.data);
-            }
-          } catch (upgradeErr) {
-            console.error("Failed to check upgrade recommendation:", upgradeErr);
-          } finally {
-            setLoadingUpgrade(false);
-          }
-        }
-
-        // 3. Always fetch user past subscriptions history
-        setLoadingHistory(true);
-        try {
-          const historyRes = await SubscriptionApi.get_user_subscription();
-          if (historyRes && historyRes.code === 200 && Array.isArray(historyRes.data)) {
-            setUserSubscriptions(historyRes.data);
-          }
-        } catch (historyErr) {
-          console.error("Failed to fetch user subscription history:", historyErr);
-        } finally {
-          setLoadingHistory(false);
-        }
-
-      } catch (err) {
-        console.error("Failed to check subscription status:", err);
-        setHasActiveSub(false);
-        setAvailablePlans(defaultPlans);
-      } finally {
-        setLoadingCheck(false);
-      }
-    };
-
     verifySubscription();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (!mounted || loadingCheck) {
@@ -246,6 +258,35 @@ export default function HistorySubscriptionPage() {
 
   const activeDetail = userSubscriptions.find(d => d.is_active);
   const activePlanTitle = activeDetail ? getPlanTitle(activeDetail) : "";
+
+  // Open cancel renewal confirmation dialog
+  const handleCancelRenewal = (userSubId: number, planName: string, timeEnd?: string) => {
+    setCancelTargetId(userSubId);
+    setCancelTargetName(planName);
+    setCancelTargetEndDate(timeEnd ? formatDate(timeEnd) : "");
+    setCancelDialogOpen(true);
+  };
+
+  // Confirm cancel renewal — called when user clicks "Xác nhận" in the dialog
+  const confirmCancelRenewal = async () => {
+    if (!cancelTargetId) return;
+    setIsCancelling(true);
+    try {
+      const res = await SubscriptionApi.cancel_renewal_subscription(cancelTargetId);
+      if (res && res.code === 200) {
+        toast.success(res.message || "Đã hủy gia hạn thành công. Gói vẫn hoạt động đến hết chu kỳ.");
+        setCancelDialogOpen(false);
+        verifySubscription();
+      } else {
+        toast.error(res?.message || "Hủy gia hạn không thành công.");
+      }
+    } catch (err: any) {
+      console.error("Failed to cancel renewal:", err);
+      toast.error(err?.response?.data?.message || "Giao dịch không thành công. Vui lòng thử lại!");
+    } finally {
+      setIsCancelling(false);
+    }
+  };
 
   return (
     <div className="w-full space-y-8 animate-fade-in text-slate-800">
@@ -645,6 +686,7 @@ export default function HistorySubscriptionPage() {
                   <th className="py-4 px-6">Gói Hội Viên</th>
                   <th className="py-4 px-6">Ngày Hết Hạn</th>
                   <th className="py-4 px-6">Trạng Thái</th>
+                  <th className="py-4 px-6">Thao Tác</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50 font-semibold text-slate-700">
@@ -668,14 +710,34 @@ export default function HistorySubscriptionPage() {
                       </td>
                       <td className="py-4 px-6">
                         {detail.is_active ? (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-100/60 px-2.5 py-1 text-[10px] font-extrabold text-emerald-600">
-                            <CheckCircle className="h-3 w-3 shrink-0 animate-pulse" />
-                            Đang hoạt động
-                          </span>
+                          detail.cancel_renewal ? (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200 px-2.5 py-1 text-[10px] font-extrabold text-amber-600">
+                              <Ban className="h-3 w-3 shrink-0" />
+                              Đã hủy gia hạn
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-100/60 px-2.5 py-1 text-[10px] font-extrabold text-emerald-600">
+                              <CheckCircle className="h-3 w-3 shrink-0 animate-pulse" />
+                              Đang hoạt động
+                            </span>
+                          )
                         ) : (
                           <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 border border-slate-200 px-2.5 py-1 text-[10px] font-extrabold text-slate-500">
                             Đã hết hạn
                           </span>
+                        )}
+                      </td>
+                      <td className="py-4 px-6">
+                        {detail.is_active && !detail.cancel_renewal ? (
+                          <button
+                            onClick={() => handleCancelRenewal(detail.id!, getPlanTitle(detail), detail.time_end)}
+                            className="inline-flex items-center gap-1.5 rounded-lg bg-red-50 hover:bg-red-100 border border-red-200 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-red-500 transition-all cursor-pointer active:scale-95"
+                          >
+                            <Ban className="h-3 w-3" />
+                            Hủy gia hạn
+                          </button>
+                        ) : (
+                          <span className="text-[10px] text-slate-300 font-medium">—</span>
                         )}
                       </td>
                     </tr>
@@ -697,6 +759,103 @@ export default function HistorySubscriptionPage() {
           </div>
         </div>
       </div>
+
+      {/* ── CANCEL RENEWAL CONFIRM DIALOG ── */}
+      {cancelDialogOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => !isCancelling && setCancelDialogOpen(false)}
+          />
+
+          {/* Dialog */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 12 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ type: "spring", stiffness: 320, damping: 24 }}
+            className="relative z-10 w-full max-w-md bg-white rounded-[2rem] shadow-2xl border border-slate-100 overflow-hidden"
+          >
+            {/* Header */}
+            <div className="bg-red-50 border-b border-red-100 px-6 pt-6 pb-4 flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-red-100 border border-red-200 shrink-0">
+                  <AlertTriangle className="h-5 w-5 text-red-500" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-slate-800 font-heading leading-tight">
+                    Xác nhận hủy gia hạn tự động
+                  </h3>
+                  <p className="text-[10px] text-slate-500 font-body mt-0.5">
+                    Hành động này không thể hoàn tác
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => !isCancelling && setCancelDialogOpen(false)}
+                disabled={isCancelling}
+                className="p-1.5 rounded-lg hover:bg-red-100 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer disabled:opacity-40"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="px-6 py-5 space-y-4 text-left">
+              <p className="text-sm text-slate-700 font-body leading-relaxed">
+                Bạn đang yêu cầu hủy gia hạn gói cước{" "}
+                <span className="font-black text-slate-800">&ldquo;{cancelTargetName}&rdquo;</span>.
+              </p>
+
+              {/* Info card */}
+              <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 space-y-1.5">
+                <div className="flex items-center gap-2 text-amber-700">
+                  <Info className="h-3.5 w-3.5 shrink-0" />
+                  <span className="text-[10px] font-black uppercase tracking-wider">Lưu ý quan trọng</span>
+                </div>
+                <ul className="space-y-1 text-[11px] text-amber-800 font-body leading-relaxed list-disc list-inside">
+                  <li>
+                    Gói dịch vụ vẫn <strong>hoạt động bình thường</strong> đến hết ngày{" "}
+                    {cancelTargetEndDate && (
+                      <strong className="text-amber-900">{cancelTargetEndDate}</strong>
+                    )}.
+                  </li>
+                  <li>Sau thời điểm đó, gói sẽ <strong>tự động ngừng</strong> và không gia hạn thêm.</li>
+                  <li>Bạn sẽ nhận email xác nhận ngay sau khi thực hiện.</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 pb-6 flex gap-3 justify-end">
+              <button
+                onClick={() => setCancelDialogOpen(false)}
+                disabled={isCancelling}
+                className="h-10 px-5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 text-xs font-black uppercase tracking-wider transition-all cursor-pointer disabled:opacity-40 active:scale-95"
+              >
+                Quay lại
+              </button>
+              <button
+                onClick={confirmCancelRenewal}
+                disabled={isCancelling}
+                className="h-10 px-5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-xs font-black uppercase tracking-wider transition-all cursor-pointer disabled:opacity-60 flex items-center gap-2 active:scale-95 shadow-md shadow-red-500/20"
+              >
+                {isCancelling ? (
+                  <>
+                    <Compass className="h-3.5 w-3.5 animate-spin" />
+                    Đang xử lý...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="h-3.5 w-3.5" />
+                    Xác nhận hủy gia hạn
+                  </>
+                )}
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }
