@@ -18,6 +18,7 @@ import {
 import formatVND from "@/utils/priceUtils";
 import { toast } from "sonner";
 import { RoomApi } from "@/services/api/room";
+import { ReportApi } from "@/services/api/report";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -58,6 +59,11 @@ export default function LandlordRentalsPage() {
   // Decline dialog state
   const [declineRequestTarget, setDeclineRequestTarget] = useState<RentalRequest | null>(null);
 
+  // Report User state
+  const [reportTarget, setReportTarget] = useState<RentalRequest | null>(null);
+  const [reportReason, setReportReason] = useState("");
+  const [isSubmittingReport, setIsSubmittingReport] = useState(false);
+
   const fetchRentalRequests = async () => {
     try {
       setIsLoading(true);
@@ -70,12 +76,16 @@ export default function LandlordRentalsPage() {
         return;
       }
 
-      // 2. Fetch interested renters for each room
+      // 2. Fetch interested and active renters for each room
       const allRequests: RentalRequest[] = [];
       const fetchPromises = rooms.map(async (room) => {
         try {
-          const rentalResponse = await RentalApi.getInterestedUsers(room.id);
-          const rentals = rentalResponse.data || [];
+          const [interestedRes, activeRes] = await Promise.all([
+            RentalApi.getInterestedUsers(room.id, "INTERESTED"),
+            RentalApi.getInterestedUsers(room.id, "ACTIVE"),
+          ]);
+          
+          const rentals = [...(interestedRes.data || []), ...(activeRes.data || [])];
           rentals.forEach((rental) => {
             allRequests.push({
               rental_id: rental.rental_id,
@@ -162,6 +172,28 @@ export default function LandlordRentalsPage() {
       toast.error(err.response?.data?.message || err.message || "Không thể phê duyệt yêu cầu. Vui lòng thử lại!");
     } finally {
       setIsSubmittingApproval(false);
+    }
+  };
+
+  const handleReportUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reportTarget || !reportReason.trim()) return;
+    try {
+      setIsSubmittingReport(true);
+      await ReportApi.createReport({
+        target_type: "USER",
+        target_id: reportTarget.renter_id,
+        reason: reportReason,
+        report_type: "Vi phạm hợp đồng / Ý thức",
+      });
+      toast.success("Đã gửi báo cáo người dùng.");
+      setReportTarget(null);
+      setReportReason("");
+    } catch (error) {
+      console.error(error);
+      toast.error("Không thể gửi báo cáo. Vui lòng thử lại.");
+    } finally {
+      setIsSubmittingReport(false);
     }
   };
 
@@ -332,6 +364,19 @@ export default function LandlordRentalsPage() {
                   </button>
                 </div>
               )}
+
+              {req.status === "ACTIVE" && (
+                <div className="flex items-center gap-3 shrink-0 self-end lg:self-center">
+                  <button
+                    type="button"
+                    onClick={() => setReportTarget(req)}
+                    className="h-11 px-5 rounded-xl bg-red-500/10 border border-red-500/25 hover:bg-red-500/20 hover:border-red-500/40 text-red-500 text-xs font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5 shadow-sm active:scale-95"
+                  >
+                    <AlertCircle className="h-4 w-4 stroke-[2.5]" />
+                    Báo cáo
+                  </button>
+                </div>
+              )}
             </motion.div>
           ));
         })()}
@@ -479,24 +524,89 @@ export default function LandlordRentalsPage() {
               cho căn hộ <span className="font-extrabold text-primary">"{declineRequestTarget?.room_name}"</span> không? Trạng thái yêu cầu sẽ được chuyển thành Từ chối (Cancelled).
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="flex justify-end gap-3 mt-6 border-t border-slate-200 pt-4">
-            <AlertDialogCancel className="border-slate-200 text-slate-600 hover:bg-slate-100 h-10 px-4 rounded-xl cursor-pointer">
+          <AlertDialogFooter className="border-t border-slate-200 p-6 bg-slate-50">
+            <AlertDialogCancel 
+              onClick={() => setDeclineRequestTarget(null)}
+              className="rounded-xl font-bold h-11 px-6 border-slate-200 text-slate-650 hover:bg-slate-200"
+            >
               Hủy
             </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                if (declineRequestTarget) {
-                  handleDeclineRequest(declineRequestTarget.rental_id);
-                  setDeclineRequestTarget(null);
-                }
-              }}
-              className="bg-red-500 hover:bg-red-650 text-white font-bold h-10 px-4 rounded-xl cursor-pointer"
+            <AlertDialogAction 
+              onClick={() => declineRequestTarget && handleDeclineRequest(declineRequestTarget.rental_id)}
+              className="rounded-xl font-bold h-11 px-6 bg-red-500 hover:bg-red-600 text-white border-0"
             >
-              Xác nhận từ chối
+              Từ chối
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Report User Modal */}
+      <AnimatePresence>
+        {reportTarget && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setReportTarget(null)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-lg bg-card rounded-[2rem] shadow-2xl border border-slate-200 overflow-hidden z-10 flex flex-col"
+            >
+              <div className="bg-red-500/10 p-6 border-b border-red-500/20 text-center">
+                <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-3" />
+                <h3 className="font-heading text-2xl font-black text-red-600">
+                  Báo cáo khách thuê
+                </h3>
+                <p className="text-sm font-medium text-red-500/80 mt-1">
+                  Mã người dùng: {reportTarget.renter_id.substring(0, 8)}
+                </p>
+              </div>
+
+              <form onSubmit={handleReportUser} className="p-6 space-y-6">
+                <div className="space-y-2 text-left">
+                  <label className="text-sm font-bold text-slate-700">Lý do báo cáo</label>
+                  <textarea
+                    required
+                    rows={4}
+                    value={reportReason}
+                    onChange={(e) => setReportReason(e.target.value)}
+                    placeholder="Vui lòng cung cấp chi tiết lý do (ví dụ: vi phạm nội quy, không thanh toán tiền phòng...)"
+                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 text-slate-700 resize-none"
+                  />
+                </div>
+
+                <div className="flex gap-3 pt-4 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => setReportTarget(null)}
+                    disabled={isSubmittingReport}
+                    className="flex-1 h-12 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-sm font-bold transition-all"
+                  >
+                    Hủy bỏ
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmittingReport || !reportReason.trim()}
+                    className="flex-1 h-12 rounded-xl bg-red-500 hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold flex items-center justify-center gap-2 shadow-md shadow-red-500/20 transition-all"
+                  >
+                    {isSubmittingReport ? (
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : (
+                      "Gửi báo cáo"
+                    )}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
