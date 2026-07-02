@@ -14,6 +14,17 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import formatVND from "@/utils/priceUtils";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+} from "recharts";
 
 export default function StatisticPage() {
   const [stats, setStats] = useState<any>(null);
@@ -150,10 +161,121 @@ export default function StatisticPage() {
         </motion.div>
       </div>
 
+      {/* ── Charts Section ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Revenue Chart */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="bg-card border border-slate-200 rounded-3xl p-6 md:p-8 shadow-sm flex flex-col"
+        >
+          <div className="flex items-center gap-2 mb-6">
+            <TrendingUp className="h-5 w-5 text-primary" />
+            <h3 className="text-lg font-bold text-slate-800">Xu hướng doanh thu (6 tháng)</h3>
+          </div>
+          <div className="flex-1 w-full h-[300px] min-h-[300px]">
+            {stats?.revenue_chart_data && stats.revenue_chart_data.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={stats.revenue_chart_data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <XAxis 
+                    dataKey="month" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fontSize: 12, fill: '#64748b', fontWeight: 600 }} 
+                    dy={10}
+                  />
+                  <YAxis 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fontSize: 12, fill: '#64748b' }}
+                    tickFormatter={(value) => `${(value / 1000000).toFixed(1)}M`}
+                  />
+                  <RechartsTooltip 
+                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)', fontWeight: 'bold' }}
+                    formatter={((value: number) => [`${formatVND(value)}`, 'Doanh thu']) as any}
+                    labelStyle={{ color: '#64748b', marginBottom: '4px' }}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="revenue" 
+                    stroke="#3b82f6" 
+                    strokeWidth={3}
+                    fillOpacity={1} 
+                    fill="url(#colorRevenue)" 
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-full text-slate-400 text-sm font-medium">
+                Chưa có dữ liệu doanh thu
+              </div>
+            )}
+          </div>
+        </motion.div>
+
+        {/* Views Chart */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+          className="bg-card border border-slate-200 rounded-3xl p-6 md:p-8 shadow-sm flex flex-col"
+        >
+          <div className="flex items-center gap-2 mb-6">
+            <Eye className="h-5 w-5 text-emerald-500" />
+            <h3 className="text-lg font-bold text-slate-800">Lượt xem tin đăng (7 ngày)</h3>
+          </div>
+          <div className="flex-1 w-full h-[300px] min-h-[300px]">
+            {stats?.views_chart_data && stats.views_chart_data.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={stats.views_chart_data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <XAxis 
+                    dataKey="date" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fontSize: 12, fill: '#64748b', fontWeight: 600 }} 
+                    dy={10}
+                  />
+                  <YAxis 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fontSize: 12, fill: '#64748b' }}
+                  />
+                  <RechartsTooltip 
+                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)', fontWeight: 'bold' }}
+                    formatter={((value: number) => [`${value} lượt`, 'Lượt xem']) as any}
+                    labelStyle={{ color: '#64748b', marginBottom: '4px' }}
+                    cursor={{ fill: '#f8fafc' }}
+                  />
+                  <Bar 
+                    dataKey="views" 
+                    fill="#10b981" 
+                    radius={[6, 6, 0, 0]}
+                    barSize={32}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-full text-slate-400 text-sm font-medium">
+                Chưa có dữ liệu lượt xem
+              </div>
+            )}
+          </div>
+        </motion.div>
+      </div>
+
       {/* Danh sách quan tâm gần đây */}
       {stats?.recent_interested_renters && stats.recent_interested_renters.length > 0 && (
         <motion.div 
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}
           className="bg-card border border-slate-200 rounded-3xl p-6 md:p-8 shadow-sm"
         >
           <div className="flex items-center gap-2 mb-6">

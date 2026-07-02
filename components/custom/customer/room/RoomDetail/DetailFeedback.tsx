@@ -12,13 +12,20 @@ import {
   PlusCircle,
   CheckCircle,
   ThumbsUp,
+  CornerDownRight,
+  Loader2,
+  Send
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { useAuthStore } from "@/stores/authStore";
+import { toast } from "sonner";
+import { FeedbackApi } from "@/services/api/feedback";
 
 export default function DetailFeedback() {
-  const { currentRoomDetail, addLocalFeedback } = useRoomStore();
+  const { currentRoomDetail, addLocalFeedback, updateLocalFeedbackReply } = useRoomStore();
+  const { user } = useAuthStore();
 
   const feedbacks = currentRoomDetail?.feedbacks || [];
 
@@ -39,6 +46,11 @@ export default function DetailFeedback() {
   });
 
   const [submitSuccess, setSubmitSuccess] = useState<boolean>(false);
+
+  // Reply states
+  const [replyingTo, setReplyingTo] = useState<number | null>(null);
+  const [replyText, setReplyText] = useState<string>("");
+  const [isSubmittingReply, setIsSubmittingReply] = useState<boolean>(false);
 
   if (!currentRoomDetail) return null;
 
@@ -150,6 +162,27 @@ export default function DetailFeedback() {
     setTimeout(() => {
       setSubmitSuccess(false);
     }, 4000);
+  };
+
+  const handleSubmitReply = async (feedbackId: number) => {
+    if (!replyText.trim()) return;
+    setIsSubmittingReply(true);
+    try {
+      const res = await FeedbackApi.replyToFeedback(feedbackId, replyText);
+      if (res && res.code === 200) {
+        toast.success("Phản hồi thành công!");
+        updateLocalFeedbackReply(feedbackId, replyText, new Date().toISOString());
+        setReplyingTo(null);
+        setReplyText("");
+      } else {
+        toast.error("Phản hồi thất bại. Vui lòng thử lại.");
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err?.response?.data?.message || err?.message || "Lỗi khi gửi phản hồi.");
+    } finally {
+      setIsSubmittingReply(false);
+    }
   };
 
   return (
@@ -426,6 +459,81 @@ export default function DetailFeedback() {
                       </div>
                     )}
                   </div>
+
+                  {/* ── Landlord Reply Section ── */}
+                  {item.reply ? (
+                    <div className="mt-2 rounded-2xl bg-slate-50 border border-slate-100 p-4 relative overflow-hidden">
+                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary/40 rounded-l-2xl"></div>
+                      <div className="flex items-start gap-3">
+                        <CornerDownRight className="h-4 w-4 text-slate-400 mt-0.5 shrink-0" />
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-xs font-extrabold text-slate-800">Phản hồi từ Chủ nhà</span>
+                            {item.replied_at && (
+                              <span className="text-[10px] font-bold text-slate-400 uppercase">
+                                • {formatRelativeTime(item.replied_at)}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm font-medium text-slate-600 whitespace-pre-line leading-relaxed">
+                            {item.reply}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : user?.id === currentRoomDetail.created_by && (
+                    <div className="mt-2">
+                      {replyingTo === item.feedback_id ? (
+                        <div className="space-y-3 p-4 rounded-2xl bg-slate-50 border border-slate-200">
+                          <Textarea
+                            value={replyText}
+                            onChange={(e) => setReplyText(e.target.value)}
+                            placeholder="Nhập phản hồi của bạn cho đánh giá này..."
+                            className="rounded-xl bg-white text-sm"
+                            rows={3}
+                          />
+                          <div className="flex items-center justify-end gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="rounded-full text-xs font-bold"
+                              onClick={() => {
+                                setReplyingTo(null);
+                                setReplyText("");
+                              }}
+                              disabled={isSubmittingReply}
+                            >
+                              Hủy
+                            </Button>
+                            <Button
+                              size="sm"
+                              className="rounded-full text-xs font-bold gap-1.5"
+                              onClick={() => handleSubmitReply(item.feedback_id)}
+                              disabled={isSubmittingReply || !replyText.trim()}
+                            >
+                              {isSubmittingReply ? (
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              ) : (
+                                <Send className="h-3.5 w-3.5" />
+                              )}
+                              Gửi phản hồi
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            setReplyingTo(item.feedback_id);
+                            setReplyText("");
+                          }}
+                          className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-primary transition-colors cursor-pointer"
+                        >
+                          <MessageSquare className="h-3.5 w-3.5" />
+                          Phản hồi đánh giá
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               );
             })}

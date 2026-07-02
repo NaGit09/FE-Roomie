@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents, Circle } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import Link from "next/link";
 import formatVND from "@/utils/priceUtils";
 import { PostCardType } from "@/schema/room/post";
+import { useRoomFilterStore } from "@/stores/roomFilterStore";
 
 // Custom Marker Icon with pulsing effect
 const createCustomIcon = (isFeatured: boolean) => {
@@ -36,6 +37,23 @@ function ChangeView({ center, zoom }: { center: [number, number]; zoom: number }
   return null;
 }
 
+// Component to handle map drag/zoom events and sync with our store
+function MapEventsHandler() {
+  const { setMapCenter, useRadiusSearch } = useRoomFilterStore();
+  
+  useMapEvents({
+    moveend: (e) => {
+      // Only update the center in the store if radius search is active, 
+      // otherwise standard search keeps jumping around
+      if (useRadiusSearch) {
+        const center = e.target.getCenter();
+        setMapCenter(center.lat, center.lng);
+      }
+    },
+  });
+  return null;
+}
+
 interface LeafletMapProps {
   center: [number, number];
   zoom: number;
@@ -43,6 +61,8 @@ interface LeafletMapProps {
 }
 
 export default function LeafletMap({ center, zoom, rooms }: LeafletMapProps) {
+  const { useRadiusSearch, searchRadius } = useRoomFilterStore();
+  
   return (
     <MapContainer
       center={center}
@@ -56,6 +76,16 @@ export default function LeafletMap({ center, zoom, rooms }: LeafletMapProps) {
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
+      <MapEventsHandler />
+      
+      {useRadiusSearch && (
+        <Circle 
+          center={center} 
+          radius={searchRadius} 
+          pathOptions={{ fillColor: '#10b981', color: '#10b981', fillOpacity: 0.1, weight: 1 }} 
+        />
+      )}
+
       {rooms.map((post) => {
         const lat = post.room.address.latitude;
         const lng = post.room.address.longitude;

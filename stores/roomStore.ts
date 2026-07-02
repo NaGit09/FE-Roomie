@@ -18,8 +18,10 @@ interface RoomState {
   fetchLatestRooms: () => Promise<void>;
   fetchRoomDetail: (postId: number) => Promise<void>;
   fetchRoomPagination: (query: GetPostsQueryType & { city?: string; district?: string }) => Promise<void>;
+  fetchMapPagination: (query: any) => Promise<void>;
   clearCurrentRoomDetail: () => void;
   addLocalFeedback: (feedback: any) => void;
+  updateLocalFeedbackReply: (feedbackId: number, reply: string, replied_at: string) => void;
 }
 
 export const useRoomStore = create<RoomState>((set) => ({
@@ -132,6 +134,31 @@ export const useRoomStore = create<RoomState>((set) => ({
     }
   },
 
+  fetchMapPagination: async (query: any) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await PostApi.getMapPosts(query);
+      if (response && response.data) {
+        set({
+          paginatedRooms: response.data.items || [],
+          total: response.data.total || 0,
+          page: response.data.page || 1,
+          size: response.data.size || 10,
+          total_pages: response.data.total_pages || 1,
+          isLoading: false,
+        });
+      } else {
+        set({ error: "Failed to fetch map rooms", isLoading: false });
+      }
+    } catch (err: unknown) {
+      const error = err as Error & { response?: { data?: { message?: string } } };
+      set({
+        error: error?.response?.data?.message || error?.message || "Failed to load map rooms",
+        isLoading: false,
+      });
+    }
+  },
+
   clearCurrentRoomDetail: () => {   
     set({ currentRoomDetail: null });
   },
@@ -143,6 +170,24 @@ export const useRoomStore = create<RoomState>((set) => ({
         currentRoomDetail: {
           ...state.currentRoomDetail,
           feedbacks: [feedback, ...(state.currentRoomDetail.feedbacks || [])],
+        },
+      };
+    });
+  },
+
+  updateLocalFeedbackReply: (feedbackId: number, reply: string, replied_at: string) => {
+    set((state) => {
+      if (!state.currentRoomDetail) return {};
+      const updatedFeedbacks = state.currentRoomDetail.feedbacks?.map((fb) => {
+        if (fb.feedback_id === feedbackId) {
+          return { ...fb, reply, replied_at };
+        }
+        return fb;
+      });
+      return {
+        currentRoomDetail: {
+          ...state.currentRoomDetail,
+          feedbacks: updatedFeedbacks,
         },
       };
     });

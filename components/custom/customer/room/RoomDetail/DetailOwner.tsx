@@ -24,6 +24,7 @@ export default function DetailOwner() {
   const { currentRoomDetail } = useRoomStore();
   const [viewingRequested, setViewingRequested] = useState<boolean>(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState<boolean>(false);
+  const [isReportUserModalOpen, setIsReportUserModalOpen] = useState<boolean>(false);
   const [isSubmittingInterest, setIsSubmittingInterest] = useState<boolean>(false);
 
   if (!currentRoomDetail) return null;
@@ -222,11 +223,26 @@ export default function DetailOwner() {
         Báo cáo tin đăng này
       </button>
 
+      <button
+        onClick={() => setIsReportUserModalOpen(true)}
+        className="w-full h-10 border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-red-600 rounded-full font-bold text-xs uppercase tracking-wider transition-all duration-300 active:scale-95 flex items-center justify-center gap-2 cursor-pointer mt-2"
+      >
+        <AlertOctagon className="h-4 w-4" />
+        Báo cáo chủ nhà
+      </button>
+
       <ReportModal
         isOpen={isReportModalOpen}
         onClose={() => setIsReportModalOpen(false)}
         targetType="ROOM"
         targetId={String(currentRoomDetail.room?.id || currentRoomDetail.post_id || "")}
+      />
+
+      <ReportModal
+        isOpen={isReportUserModalOpen}
+        onClose={() => setIsReportUserModalOpen(false)}
+        targetType="USER"
+        targetId={String(currentRoomDetail.created_by || "")}
       />
 
     </div>

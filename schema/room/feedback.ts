@@ -9,8 +9,9 @@ export const feedbackSchema = z.object({
     user_id: z.string(),
     post_id: z.number(),
     feedback_id: z.number(),
-    content : z.string()
-    
+    content : z.string(),
+    reply: z.string().optional(),
+    replied_at: z.string().optional()
 });
 
 export type Feedback = z.infer<typeof feedbackSchema>;

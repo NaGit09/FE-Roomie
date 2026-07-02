@@ -51,6 +51,19 @@ export const GetPostsQuerySchema = z.object({
 
 export type GetPostsQueryType = z.infer<typeof GetPostsQuerySchema>;
 
+export const GetMapPostsQuerySchema = z.object({
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
+  radius: z.number().optional(),
+  min_price: z.number().optional(),
+  max_price: z.number().optional(),
+  amenities: z.array(z.string()).optional(),
+  skip: z.number().optional().default(0),
+  limit: z.number().optional().default(100),
+});
+
+export type GetMapPostsQueryType = z.infer<typeof GetMapPostsQuerySchema>;
+
 export const CreatePostSchema = z.object({
   room_id: z.number().optional(),
   title: z.string(),

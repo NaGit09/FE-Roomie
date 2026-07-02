@@ -2,6 +2,7 @@ import { ApiResponse } from "@/schema/common/api.type";
 import axiosInstance from "../axiosInstance";
 import {
   CreatePost,
+  GetMapPostsQueryType,
   GetPostsQueryType,
   PostCardType,
   PostDetailType,
@@ -48,6 +49,25 @@ export const PostApi = {
       },
     );
 
+    return res.data;
+  },
+
+  getMapPosts: async (query: GetMapPostsQueryType) => {
+    const res = await axiosInstance.get<ApiResponse<Pagination<PostCardType>>>(
+      `${BASE_URL}/map`,
+      {
+        params: {
+          latitude: query.latitude,
+          longitude: query.longitude,
+          radius: query.radius,
+          min_price: query.min_price,
+          max_price: query.max_price,
+          amenities: query.amenities,
+          skip: query.skip,
+          limit: query.limit,
+        },
+      },
+    );
     return res.data;
   },
 
