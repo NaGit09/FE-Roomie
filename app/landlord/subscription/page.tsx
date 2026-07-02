@@ -14,7 +14,10 @@ import {
   ArrowRight,
   Check,
   HelpCircle,
-  Gift
+  Gift,
+  AlertTriangle,
+  X,
+  Ban
 } from "lucide-react";
 import { SubscriptionApi } from "@/services/api/subcription";
 import { Subscription, SubscriptionDetail, UpgradeSubscription } from "@/schema/user/subcription";
@@ -42,6 +45,13 @@ export default function LandlordSubscriptionPage() {
   const [upgradeInfo, setUpgradeInfo] = useState<UpgradeSubscription | null>(null);
   const [loadingUpgrade, setLoadingUpgrade] = useState(false);
   const [showUpgradeSection, setShowUpgradeSection] = useState(false);
+
+  // Cancel Renewal Confirm Dialog States
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [cancelTargetId, setCancelTargetId] = useState<number | null>(null);
+  const [cancelTargetName, setCancelTargetName] = useState("");
+  const [cancelTargetEndDate, setCancelTargetEndDate] = useState("");
+  const [isCancelling, setIsCancelling] = useState(false);
 
   const fetchSubscriptionStatus = async () => {
     setIsLoading(true);
@@ -231,15 +241,23 @@ export default function LandlordSubscriptionPage() {
     router.push(`/order?subscription_id=${plan.id}`);
   };
 
-  // Cancel renewal handler — subscription stays active until time_end then auto-stops
-  const handleCancelSubscription = async (userSubId: number, planName: string) => {
-    if (!confirm(`Bạn có chắc chắn muốn hủy gia hạn gói cước "${planName}"?\n\nGói sẽ vẫn hoạt động đến hết chu kỳ hiện tại, sau đó tự động ngừng và không được gia hạn thêm.`)) {
-      return;
-    }
+  // Open cancel renewal confirmation dialog
+  const handleCancelSubscription = (userSubId: number, planName: string, timeEnd?: string) => {
+    setCancelTargetId(userSubId);
+    setCancelTargetName(planName);
+    setCancelTargetEndDate(timeEnd ? formatDate(timeEnd) : "");
+    setCancelDialogOpen(true);
+  };
+
+  // Confirm cancel renewal — called when user clicks "Xác nhận" in the dialog
+  const confirmCancelRenewal = async () => {
+    if (!cancelTargetId) return;
+    setIsCancelling(true);
     try {
-      const res = await SubscriptionApi.cancel_renewal_subscription(userSubId);
+      const res = await SubscriptionApi.cancel_renewal_subscription(cancelTargetId);
       if (res && res.code === 200) {
         toast.success(res.message || "Đã hủy gia hạn thành công. Gói vẫn hoạt động đến hết chu kỳ.");
+        setCancelDialogOpen(false);
         fetchSubscriptionStatus();
       } else {
         toast.error(res?.message || "Hủy gia hạn không thành công.");
@@ -247,6 +265,8 @@ export default function LandlordSubscriptionPage() {
     } catch (err: any) {
       console.error("Failed to cancel renewal:", err);
       toast.error(err?.response?.data?.message || "Giao dịch không thành công. Vui lòng thử lại!");
+    } finally {
+      setIsCancelling(false);
     }
   };
 
@@ -361,7 +381,7 @@ export default function LandlordSubscriptionPage() {
                 )}
                 
                 <button
-                  onClick={() => handleCancelSubscription(activeSubDetail.id!, activePlanTitle)}
+                  onClick={() => handleCancelSubscription(activeSubDetail.id!, activePlanTitle, activeSubDetail.time_end)}
                   className="h-12 px-6 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-black uppercase tracking-wider cursor-pointer border border-red-500/10 transition-all text-center flex items-center justify-center active:scale-95"
                 >
                   Hủy gia hạn tự động
@@ -743,9 +763,16 @@ export default function LandlordSubscriptionPage() {
                       <td className="py-4 px-6 text-slate-650 font-medium font-body">{formatDate(inv.time_end)}</td>
                       <td className="py-4 px-6">
                         {inv.is_active ? (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-1 text-[9px] font-black uppercase text-emerald-400">
-                            Thành công
-                          </span>
+                          inv.cancel_renewal ? (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 text-[9px] font-black uppercase text-amber-500">
+                              <Ban className="h-3 w-3 shrink-0" />
+                              Đã hủy gia hạn
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-1 text-[9px] font-black uppercase text-emerald-400">
+                              Đang hoạt động
+                            </span>
+                          )
                         ) : (
                           <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 border border-slate-200 px-2.5 py-1 text-[9px] font-black uppercase text-slate-650">
                             Hết hạn
@@ -771,6 +798,104 @@ export default function LandlordSubscriptionPage() {
           </p>
         </div>
       </div>
+
+      {/* ── CANCEL RENEWAL CONFIRM DIALOG ── */}
+      {cancelDialogOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => !isCancelling && setCancelDialogOpen(false)}
+          />
+
+          {/* Dialog */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 12 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 12 }}
+            transition={{ type: "spring", stiffness: 320, damping: 24 }}
+            className="relative z-10 w-full max-w-md bg-white rounded-[2rem] shadow-2xl border border-slate-200 overflow-hidden"
+          >
+            {/* Header stripe */}
+            <div className="bg-red-50 border-b border-red-100 px-6 pt-6 pb-4 flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-red-100 border border-red-200 shrink-0">
+                  <AlertTriangle className="h-5 w-5 text-red-500" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-slate-800 font-heading leading-tight">
+                    Xác nhận hủy gia hạn tự động
+                  </h3>
+                  <p className="text-[10px] text-slate-500 font-body mt-0.5">
+                    Hành động này không thể hoàn tác
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => !isCancelling && setCancelDialogOpen(false)}
+                disabled={isCancelling}
+                className="p-1.5 rounded-lg hover:bg-red-100 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer disabled:opacity-40"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="px-6 py-5 space-y-4 text-left">
+              <p className="text-sm text-slate-700 font-body leading-relaxed">
+                Bạn đang yêu cầu hủy gia hạn gói cước{" "}
+                <span className="font-black text-slate-800">&ldquo;{cancelTargetName}&rdquo;</span>.
+              </p>
+
+              {/* Info card */}
+              <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 space-y-1.5">
+                <div className="flex items-center gap-2 text-amber-700">
+                  <Info className="h-3.5 w-3.5 shrink-0" />
+                  <span className="text-[10px] font-black uppercase tracking-wider">Lưu ý quan trọng</span>
+                </div>
+                <ul className="space-y-1 text-[11px] text-amber-800 font-body leading-relaxed list-disc list-inside">
+                  <li>
+                    Gói dịch vụ vẫn <strong>hoạt động bình thường</strong> đến hết ngày{" "}
+                    {cancelTargetEndDate && (
+                      <strong className="text-amber-900">{cancelTargetEndDate}</strong>
+                    )}.
+                  </li>
+                  <li>Sau thời điểm đó, gói sẽ <strong>tự động ngừng</strong> và không gia hạn thêm.</li>
+                  <li>Bạn sẽ nhận email xác nhận ngay sau khi thực hiện.</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Footer actions */}
+            <div className="px-6 pb-6 flex gap-3 justify-end">
+              <button
+                onClick={() => setCancelDialogOpen(false)}
+                disabled={isCancelling}
+                className="h-10 px-5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 text-xs font-black uppercase tracking-wider transition-all cursor-pointer disabled:opacity-40 active:scale-95"
+              >
+                Quay lại
+              </button>
+              <button
+                onClick={confirmCancelRenewal}
+                disabled={isCancelling}
+                className="h-10 px-5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-xs font-black uppercase tracking-wider transition-all cursor-pointer disabled:opacity-60 flex items-center gap-2 active:scale-95 shadow-md shadow-red-500/20"
+              >
+                {isCancelling ? (
+                  <>
+                    <Compass className="h-3.5 w-3.5 animate-spin" />
+                    Đang xử lý...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="h-3.5 w-3.5" />
+                    Xác nhận hủy gia hạn
+                  </>
+                )}
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }
