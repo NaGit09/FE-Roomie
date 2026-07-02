@@ -48,7 +48,7 @@ export const OrderApi = {
 
   update_order: async (targetOrderId: string | number, status: string) => {
     const response = await axiosInstance.patch<ApiResponse<Order>>(
-      `${BASE_URL}/${targetOrderId}/payment`,
+      `${BASE_URL}/${targetOrderId}/status`,
       { status },
     );
     return response.data;
