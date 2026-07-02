@@ -15,6 +15,7 @@ export type Subscription = z.infer<typeof SubscriptionSchema>;
 export const SubscriptionDetailSchema = z.object({
     id: z.number().optional(),
     is_active: z.boolean(),
+    cancel_renewal: z.boolean().optional().default(false),
     time_end: z.string(),
     deleted_at: z.string().nullable(),
     updated_at: z.string(),
