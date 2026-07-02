@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useRoomFilterStore } from "@/stores/roomFilterStore";
 import { useRoomStore } from "@/stores/roomStore";
 import { 
@@ -15,7 +15,9 @@ import {
   Waves, 
   BedDouble, 
   RotateCcw,
-  ArrowUpDown
+  ArrowUpDown,
+  Compass,
+  Map
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -41,10 +43,43 @@ export default function MapFilter() {
     provinces,
     districts,
     loadProvinces,
-    handleClearFilters
+    handleClearFilters,
+    useRadiusSearch,
+    setUseRadiusSearch,
+    searchRadius,
+    setSearchRadius,
+    mapCenter,
+    setMapCenter
   } = useRoomFilterStore();
 
-  const { fetchRoomPagination } = useRoomStore();
+  const { fetchRoomPagination, fetchMapPagination } = useRoomStore();
+
+  const [addressSearch, setAddressSearch] = useState("");
+  const [isGeocoding, setIsGeocoding] = useState(false);
+  const [geocodeError, setGeocodeError] = useState("");
+
+  const handleGeocodeAddress = async () => {
+    if (!addressSearch.trim()) return;
+    setIsGeocoding(true);
+    setGeocodeError("");
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addressSearch)}&format=json&limit=1&countrycodes=vn`
+      );
+      const data = await response.json();
+      if (data && data.length > 0) {
+        const { lat, lon } = data[0];
+        setMapCenter(Number(lat), Number(lon));
+      } else {
+        setGeocodeError("Không tìm thấy địa chỉ này");
+      }
+    } catch (error) {
+      console.error("Geocoding failed:", error);
+      setGeocodeError("Lỗi kết nối khi tìm vị trí");
+    } finally {
+      setIsGeocoding(false);
+    }
+  };
 
   // Load provinces on mount
   useEffect(() => {
@@ -56,18 +91,31 @@ export default function MapFilter() {
     const provinceNum = selectedProvinceCode ? Number(selectedProvinceCode) : undefined;
     const districtNum = selectedDistrictCode ? Number(selectedDistrictCode) : undefined;
     
-    fetchRoomPagination({
-      skip: 0,
-      limit: 50, // Retrieve up to 50 rooms to provide a rich dataset for local keyword/amenity filtering
-      province_code: provinceNum,
-      district_code: districtNum,
-      city: selectedProvince || undefined,
-      district: selectedDistrict || undefined,
-      price_from: priceRange[0],
-      price_to: priceRange[1],
-      sort_by: sortBy === "newest" ? "created_at" : "price",
-      order: sortBy === "priceAsc" ? "asc" : "desc"
-    });
+    if (useRadiusSearch) {
+      fetchMapPagination({
+        skip: 0,
+        limit: 50,
+        latitude: mapCenter.lat,
+        longitude: mapCenter.lng,
+        radius: searchRadius,
+        min_price: priceRange[0],
+        max_price: priceRange[1],
+        amenities: selectedFacilities.length > 0 ? selectedFacilities : undefined
+      });
+    } else {
+      fetchRoomPagination({
+        skip: 0,
+        limit: 50, // Retrieve up to 50 rooms to provide a rich dataset for local keyword/amenity filtering
+        province_code: provinceNum,
+        district_code: districtNum,
+        city: selectedProvince || undefined,
+        district: selectedDistrict || undefined,
+        price_from: priceRange[0],
+        price_to: priceRange[1],
+        sort_by: sortBy === "newest" ? "created_at" : "price",
+        order: sortBy === "priceAsc" ? "asc" : "desc"
+      });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     selectedProvinceCode, 
@@ -79,7 +127,12 @@ export default function MapFilter() {
     sortBy, 
     keyword,
     selectedFacilities.join(","),
-    fetchRoomPagination
+    fetchRoomPagination,
+    fetchMapPagination,
+    useRadiusSearch,
+    searchRadius,
+    mapCenter.lat,
+    mapCenter.lng
   ]);
 
   // Available amenities filter options list
@@ -110,8 +163,87 @@ export default function MapFilter() {
         </div>
       </div>
 
-      {/* ── 2. Province Dropdown ── */}
-      <div className="space-y-2">
+      {/* ── Radius Search Toggle ── */}
+      <div className="space-y-3 pb-4 border-b border-slate-100">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-extrabold uppercase tracking-widest text-slate-400 flex items-center gap-1.5">
+            <Compass className="h-4 w-4 text-emerald-500" />
+            Tìm quanh vị trí bản đồ
+          </span>
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input 
+              type="checkbox" 
+              className="sr-only peer" 
+              checked={useRadiusSearch}
+              onChange={(e) => setUseRadiusSearch(e.target.checked)}
+            />
+            <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+          </label>
+        </div>
+        
+        {useRadiusSearch && (
+          <div className="space-y-4 pt-2 animate-in fade-in slide-in-from-top-2">
+            
+            {/* Address input */}
+            <div className="space-y-1.5">
+              <span className="text-[10px] font-bold text-slate-400 uppercase">
+                Nhập địa chỉ trung tâm
+              </span>
+              <div className="relative">
+                <Map className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                <Input
+                  value={addressSearch}
+                  onChange={(e) => setAddressSearch(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleGeocodeAddress();
+                    }
+                  }}
+                  placeholder="Ví dụ: Đại học Bách Khoa..."
+                  className="pl-9 rounded-xl border-slate-200 text-xs font-semibold h-10 pr-16"
+                />
+                <Button 
+                  onClick={handleGeocodeAddress}
+                  disabled={isGeocoding || !addressSearch.trim()}
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-8 px-3 rounded-lg text-[10px] font-bold uppercase"
+                >
+                  {isGeocoding ? "Đang tìm..." : "Tìm"}
+                </Button>
+              </div>
+              {geocodeError && (
+                <p className="text-[10px] text-red-500 font-semibold">{geocodeError}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex justify-between text-xs font-bold text-slate-500">
+                <span>Bán kính tìm kiếm</span>
+                <span className="text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
+                  {searchRadius >= 1000 ? `${(searchRadius / 1000).toFixed(1)} km` : `${searchRadius} m`}
+                </span>
+              </div>
+              <input 
+                type="range" 
+                min="1000" 
+                max="20000" 
+                step="1000"
+                value={searchRadius}
+                onChange={(e) => setSearchRadius(Number(e.target.value))}
+                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+              />
+              <p className="text-[10px] text-slate-400 italic">
+                Kéo bản đồ hoặc nhập địa chỉ để đổi tâm tìm kiếm
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {!useRadiusSearch && (
+        <>
+          {/* ── 2. Province Dropdown ── */}
+          <div className="space-y-2">
         <span className="text-xs font-extrabold uppercase tracking-widest text-slate-400 flex items-center gap-1">
           <MapPin className="h-3.5 w-3.5 text-primary" />
           Tỉnh / Thành phố
@@ -162,6 +294,8 @@ export default function MapFilter() {
           ))}
         </select>
       </div>
+        </>
+      )}
 
       {/* ── 4. Price Limit Ranges ── */}
       <div className="space-y-2">

@@ -21,6 +21,11 @@ interface RoomFilterState {
   page: number;
   limit: number;
 
+  // Radius Search State
+  useRadiusSearch: boolean;
+  searchRadius: number;
+  mapCenter: { lat: number; lng: number };
+
   provinces: LocationItem[];
   districts: LocationItem[];
 
@@ -41,6 +46,10 @@ interface RoomFilterState {
 
   setProvinces: (provinces: LocationItem[]) => void;
   setDistricts: (districts: LocationItem[]) => void;
+
+  setUseRadiusSearch: (useRadius: boolean) => void;
+  setSearchRadius: (radius: number) => void;
+  setMapCenter: (lat: number, lng: number) => void;
 
   setLoadingProvinces: (loadingProvinces: boolean) => void;
   setLoadingDistricts: (loadingDistricts: boolean) => void;
@@ -63,6 +72,11 @@ export const useRoomFilterStore = create<RoomFilterState>((set, get) => ({
   // Initial page bounds
   page: 1,
   limit: 10, // fills a perfect 3x3 layout
+
+  // Radius Search State
+  useRadiusSearch: false,
+  searchRadius: 5000,
+  mapCenter: { lat: 10.762622, lng: 106.660172 }, // Default HCMC
 
   provinces: [],
   districts: [],
@@ -117,6 +131,10 @@ export const useRoomFilterStore = create<RoomFilterState>((set, get) => ({
   setProvinces: (provinces) => set({ provinces }),
   setDistricts: (districts) => set({ districts }),
 
+  setUseRadiusSearch: (useRadiusSearch) => set({ useRadiusSearch, page: 1 }),
+  setSearchRadius: (searchRadius) => set({ searchRadius, page: 1 }),
+  setMapCenter: (lat, lng) => set({ mapCenter: { lat, lng } }),
+
   setLoadingProvinces: (loadingProvinces) => set({ loadingProvinces }),
   setLoadingDistricts: (loadingDistricts) => set({ loadingDistricts }),
 
@@ -138,6 +156,8 @@ export const useRoomFilterStore = create<RoomFilterState>((set, get) => ({
       selectedFacilities: [],
       priceRange: [0, 15000000],
       sortBy: "newest",
+      useRadiusSearch: false,
+      searchRadius: 5000,
       districts: [],
       page: 1,
     }),

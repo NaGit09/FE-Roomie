@@ -16,4 +16,8 @@ export const FeedbackApi = {
     const res = await axiosInstance.get<ApiResponse<FeedbackResponse[]>>(`/feedback/post/${post_id}`);
     return res.data;
   },
+  replyToFeedback: async (feedback_id: number, reply: string) => {
+    const res = await axiosInstance.post<ApiResponse<any>>(`/feedback/${feedback_id}/reply`, { reply });
+    return res.data;
+  },
 };
