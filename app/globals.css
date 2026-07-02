@@ -9,7 +9,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans), sans-serif;
   --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-heading), serif;
+  --font-heading: var(--font-heading), var(--font-display), serif;
   --font-display: var(--font-display), serif;
   --font-body: var(--font-body), sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);

@@ -232,7 +232,7 @@ export const UserMatchingCard = () => {
       </div>
 
       {/* Swipe Card Stack Area */}
-      <div className="w-full max-w-[360px] h-[460px] relative mt-2">
+      <div className="w-full max-w-[420px] h-[390px] relative mt-2">
         {loadingMatches ? (
           <div className="absolute inset-0 rounded-3xl border border-white/40 bg-card/65 backdrop-blur-md flex flex-col items-center justify-center text-center p-6 space-y-4 shadow-xl">
             <Compass className="h-10 w-10 text-primary animate-spin" />
@@ -245,21 +245,28 @@ export const UserMatchingCard = () => {
             {/* Visual Deck Card Layer (Behind current card) */}
             {nextCandidate && (
               <div className="absolute inset-0 w-full h-full rounded-3xl bg-white/60 dark:bg-stone-850/60 backdrop-blur-md border border-white/30 shadow-lg scale-[0.95] translate-y-4 opacity-50 pointer-events-none -z-10 transition-all duration-300 flex flex-col justify-between p-6">
-                <div className="flex items-start justify-between">
-                  <div className={`h-12 w-12 rounded-xl bg-linear-to-tr ${nextCandidate.avatarGradient} text-white font-heading font-black text-md flex items-center justify-center opacity-70`}>
-                    {nextCandidate.name.split(" ").slice(-1)[0][0]}
+                <div className="flex flex-col space-y-4 flex-1">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className={`h-12 w-12 shrink-0 rounded-xl bg-gradient-to-tr ${nextCandidate.avatarGradient} text-white font-heading font-black text-md flex items-center justify-center opacity-70`}>
+                        {nextCandidate.name.split(" ").slice(-1)[0][0]}
+                      </div>
+                      <div className="min-w-0">
+                        <h4 className="font-heading text-xs font-bold text-slate-450 truncate leading-none">
+                          {nextCandidate.name}
+                        </h4>
+                        <span className="inline-flex items-center gap-0.5 text-[8px] text-slate-400 dark:text-slate-500 font-medium mt-1">
+                          <MapPin className="h-2.5 w-2.5 shrink-0" />
+                          {nextCandidate.district}
+                        </span>
+                      </div>
+                    </div>
+                    <span className="inline-flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wider bg-emerald-50/50 text-emerald-600/80 border border-emerald-100/50 px-2 py-0.5 rounded-full shrink-0">
+                      {nextCandidate.matchPercentage}% Hòa hợp
+                    </span>
                   </div>
-                  <span className="inline-flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-600 border border-emerald-100 px-2 py-0.5 rounded-full">
-                    {nextCandidate.matchPercentage}% Hòa hợp
-                  </span>
                 </div>
-                <div className="space-y-1">
-                  <h4 className="font-heading text-md font-bold text-slate-400 leading-none">
-                    {nextCandidate.name}
-                  </h4>
-                </div>
-                <div className="w-full h-1 bg-slate-100/50 rounded-full" />
-                <div className="grid grid-cols-3 gap-2 pt-2 border-t border-dashed border-slate-100/30 opacity-20">
+                <div className="grid grid-cols-3 gap-1.5 border-t border-dashed border-slate-200/60 dark:border-white/10 pt-4 mt-4 opacity-30">
                   <div className="h-2 bg-slate-200 rounded" />
                   <div className="h-2 bg-slate-200 rounded" />
                   <div className="h-2 bg-slate-200 rounded" />
@@ -294,38 +301,69 @@ export const UserMatchingCard = () => {
                   scale: 0.95,
                 }}
                 transition={{ type: "spring", stiffness: 350, damping: 24 }}
-                className="absolute inset-0 w-full h-full bg-white/90 dark:bg-stone-900/90 backdrop-blur-xl border border-white/50 dark:border-white/10 shadow-2xl rounded-3xl flex flex-col justify-between p-6 select-none cursor-grab active:cursor-grabbing z-10 hover:shadow-primary/5 transition-shadow"
+                className="absolute inset-0 w-full h-full bg-white/95 dark:bg-stone-900/95 backdrop-blur-xl border border-white/50 dark:border-white/10 shadow-2xl rounded-3xl flex flex-col justify-between p-6 select-none cursor-grab active:cursor-grabbing z-10 hover:shadow-primary/5 transition-shadow"
               >
-                {/* Top Section */}
-                <div className="flex items-start justify-between">
-                  <div className={`h-14 w-14 rounded-2xl bg-gradient-to-tr ${activeCandidate.avatarGradient} text-white font-heading font-black text-xl flex items-center justify-center shadow-md`}>
-                    {activeCandidate.name.split(" ").slice(-1)[0][0]}
+                {/* Content wrapper to eliminate distributed whitespace */}
+                <div className="flex flex-col space-y-4 flex-1">
+                  {/* Top Section */}
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className={`h-14 w-14 shrink-0 rounded-2xl bg-gradient-to-tr ${activeCandidate.avatarGradient} text-white font-heading font-black text-xl flex items-center justify-center shadow-md`}>
+                        {activeCandidate.name.split(" ").slice(-1)[0][0]}
+                      </div>
+                      <div className="min-w-0">
+                        <h3 className="font-heading text-base font-bold text-slate-800 dark:text-white truncate leading-snug">
+                          {activeCandidate.name}
+                        </h3>
+                        <span className="text-[10px] text-muted-foreground font-medium flex items-center gap-1 mt-0.5">
+                          <MapPin className="h-3 w-3 text-red-500 shrink-0" />
+                          {activeCandidate.district}
+                        </span>
+                      </div>
+                    </div>
+
+                    <CircularMatchIndicator percentage={activeCandidate.matchPercentage} />
                   </div>
 
-                  <CircularMatchIndicator percentage={activeCandidate.matchPercentage} />
-                </div>
+                  {/* Lifestyle Badges */}
+                  <div className="flex flex-wrap gap-1.5">
+                    {activeCandidate.badges.slice(0, 3).map((badge, bIdx) => {
+                      let badgeStyle = "bg-slate-100 dark:bg-stone-800 text-slate-650 dark:text-slate-350 border-slate-200/50 dark:border-white/5";
+                      if (badge === "Chủ nhà") {
+                        badgeStyle = "bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 border-blue-100/55 dark:border-blue-900/20";
+                      } else if (badge === "Khách thuê") {
+                        badgeStyle = "bg-purple-50 dark:bg-purple-950/20 text-purple-600 dark:text-purple-400 border-purple-100/55 dark:border-purple-900/20";
+                      } else if (badge.includes("Không")) {
+                        badgeStyle = "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 border-emerald-100/55 dark:border-emerald-900/20";
+                      } else if (badge.includes("Có")) {
+                        badgeStyle = "bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 border-amber-100/55 dark:border-amber-900/20";
+                      }
+                      return (
+                        <span
+                          key={bIdx}
+                          className={`inline-flex items-center text-[9px] font-bold uppercase tracking-wider border px-2 py-0.5 rounded-lg ${badgeStyle}`}
+                        >
+                          {badge}
+                        </span>
+                      );
+                    })}
+                  </div>
 
-                {/* Lifestyle Badges */}
-                <div className="flex flex-wrap gap-1 mt-2.5">
-                  {activeCandidate.badges.slice(0, 3).map((badge, bIdx) => (
-                    <span
-                      key={bIdx}
-                      className="inline-flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wider bg-slate-100 dark:bg-stone-800 text-slate-600 dark:text-slate-300 border border-slate-200/50 dark:border-white/5 px-2.5 py-0.5 rounded-lg"
-                    >
-                      {badge}
-                    </span>
-                  ))}
-                </div>
-
-                {/* Short Intro Bio */}
-                <div className="flex-1 mt-3.5 flex items-center">
-                  <p className="text-xs text-slate-650 dark:text-slate-350 font-body leading-relaxed line-clamp-3">
-                    {activeCandidate.description}
-                  </p>
+                  {/* Short Intro Bio */}
+                  <div className="flex-1 min-h-0 flex flex-col justify-center">
+                    <div className="w-full bg-slate-50/50 dark:bg-stone-850/50 border border-slate-100 dark:border-white/5 rounded-2xl pt-5 pb-3.5 px-4 min-h-28.75 relative shadow-inner flex items-center">
+                      <span className="absolute -top-2 left-3 bg-white dark:bg-stone-900 px-2 text-[9px] uppercase tracking-wider font-bold text-slate-400 dark:text-slate-500">
+                        Giới thiệu
+                      </span>
+                      <p className="text-xs text-slate-600 dark:text-slate-350 font-body leading-relaxed line-clamp-6 w-full text-left">
+                        {activeCandidate.description}
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Core Stats Grid */}
-                <div className="grid grid-cols-3 gap-1.5 border-t border-dashed border-slate-200/60 dark:border-white/10 pt-4 mt-3">
+                <div className="grid grid-cols-3 gap-1.5 border-t border-dashed border-slate-200/60 dark:border-white/10 pt-4 mt-4">
                   <div className="text-center space-y-0.5">
                     <span className="text-[8px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block font-body">
                       Ngân Sách

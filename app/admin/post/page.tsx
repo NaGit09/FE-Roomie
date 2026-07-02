@@ -32,20 +32,42 @@ export default function AdminPostsPage() {
   const [posts, setPosts] = useState<PostCardType[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState<"ALL" | "DELETE_REQUESTS">("ALL");
+  const [activeTab, setActiveTab] = useState<"ALL" | "PENDING" | "DELETE_REQUESTS">("PENDING");
 
   // Detail Modal States
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<PostDetailType | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+  const [metrics, setMetrics] = useState({ total: 0, pending: 0 });
+
+  const fetchMetrics = async () => {
+    try {
+      const [allRes, pendingRes] = await Promise.all([
+        PostApi.getPostPagination({ skip: 0, limit: 1, sort_by: "created_at", order: "desc" }),
+        PostApi.getVerificationRequests(0, 1)
+      ]);
+      setMetrics({
+        total: allRes?.data?.total || 0,
+        pending: pendingRes?.data?.total || 0,
+      });
+    } catch (err) {
+      console.error("Error fetching metrics:", err);
+    }
+  };
 
   const fetchPosts = async () => {
     setLoading(true);
     try {
-      const response = await PostApi.getPostPagination({ skip: 0, limit: 100, sort_by: "created_at", order: "desc" });
-      if (response && response.code === 200 && response.data && Array.isArray(response.data.items)) {
-        setPosts(response.data.items);
+      let response;
+      if (activeTab === "PENDING") {
+        response = await PostApi.getVerificationRequests(0, 100);
+      } else {
+        response = await PostApi.getPostPagination({ skip: 0, limit: 100, sort_by: "created_at", order: "desc" });
+      }
+
+      if (response && response.code === 200 && response.data) {
+        setPosts(response.data.items || []);
       } else {
         setPosts([]);
         toast.error("Không thể lấy danh sách tin đăng.");
@@ -59,9 +81,26 @@ export default function AdminPostsPage() {
     }
   };
 
+  const handleVerifyPost = async (postId: number, approved: boolean) => {
+    setActionLoading(true);
+    try {
+      await PostApi.verifyPost(postId, approved);
+      toast.success(approved ? "Đã duyệt đăng tin thành công!" : "Đã từ chối đăng tin.");
+      fetchPosts();
+      fetchMetrics();
+      setIsDetailOpen(false);
+    } catch (err: any) {
+      console.error("Error verifying post:", err);
+      toast.error("Không thể phê duyệt tin đăng.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   useEffect(() => {
     setMounted(true);
     fetchPosts();
+    fetchMetrics();
   }, [activeTab]);
 
   if (!mounted) return null;
@@ -163,10 +202,11 @@ export default function AdminPostsPage() {
       </div>
 
       {/* 2. Mini Summary Metrics */}
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-3 gap-6">
         {[
-          { label: "Tổng tin hiển thị", value: totalCount, color: "text-slate-350" },
-          { label: "Cảnh báo vi phạm", value: 0, color: "text-red-500" },
+          { label: "Tổng tin trên hệ thống", value: metrics.total, color: "text-slate-700" },
+          { label: "Tin chờ phê duyệt", value: metrics.pending, color: "text-amber-500" },
+          { label: "Tin hiển thị ở tab này", value: totalCount, color: "text-primary" },
         ].map((m, idx) => (
           <div
             key={idx}
@@ -199,6 +239,7 @@ export default function AdminPostsPage() {
         {/* Tab Selection */}
         <div className="flex flex-wrap items-center gap-1.5 w-full sm:w-auto overflow-x-auto">
           {[
+            { label: "Chờ phê duyệt", value: "PENDING" },
             { label: "Tất cả tin", value: "ALL" },
             { label: "Yêu cầu gỡ bỏ", value: "DELETE_REQUESTS" }
           ].map((tab, idx) => (
@@ -270,12 +311,25 @@ export default function AdminPostsPage() {
                         <span className="font-bold text-slate-700 leading-snug line-clamp-2" title={post.title}>
                           {post.title}
                         </span>
-                        {post.is_featured && (
-                          <span className="inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[8px] font-black uppercase tracking-widest bg-amber-500/10 border border-amber-500/25 text-amber-500">
-                            <Sparkles className="h-2.5 w-2.5 fill-amber-500/10" />
-                            Nổi bật
-                          </span>
-                        )}
+                        <div className="flex flex-wrap gap-1.5">
+                          {post.is_verified ? (
+                            <span className="inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[8px] font-black uppercase tracking-widest bg-emerald-500/10 border border-emerald-500/25 text-emerald-650 font-bold">
+                              <CheckCircle className="h-2.5 w-2.5 text-emerald-500" />
+                              Đã duyệt
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[8px] font-black uppercase tracking-widest bg-amber-500/10 border border-amber-500/25 text-amber-600 font-bold">
+                              <Clock className="h-2.5 w-2.5 text-amber-500" />
+                              Chờ duyệt
+                            </span>
+                          )}
+                          {post.is_featured && (
+                            <span className="inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[8px] font-black uppercase tracking-widest bg-indigo-500/10 border border-indigo-500/25 text-indigo-600 font-bold">
+                              <Sparkles className="h-2.5 w-2.5 fill-indigo-500/10 text-indigo-500" />
+                              Nổi bật
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </td>
@@ -427,7 +481,7 @@ export default function AdminPostsPage() {
 
                       {/* Intervention action buttons */}
                       <div className="pt-4 border-t border-slate-200 space-y-3 shrink-0">
-                        <span className="text-emerald-400 font-black uppercase tracking-wider block text-[9px]">
+                        <span className="text-[#C1440E] font-black uppercase tracking-wider block text-[9px]">
                           Thao tác kiểm duyệt hệ thống
                         </span>
 
@@ -436,16 +490,33 @@ export default function AdminPostsPage() {
                             <button
                               onClick={() => handleDeleteApproval(selectedPost.post_id, true)}
                               disabled={actionLoading}
-                              className="h-11 rounded-xl bg-red-500 hover:bg-red-650 text-white font-bold uppercase text-[10px] tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                              className="h-11 rounded-xl bg-red-650 hover:bg-red-700 text-white font-bold uppercase text-[10px] tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5"
                             >
                               <Check className="h-4 w-4" /> Duyệt gỡ tin
                             </button>
                             <button
                               onClick={() => handleDeleteApproval(selectedPost.post_id, false)}
                               disabled={actionLoading}
-                              className="h-11 rounded-xl bg-slate-100 border border-slate-200 hover:bg-white/10 text-slate-700 font-bold uppercase text-[10px] tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                              className="h-11 rounded-xl bg-slate-100 border border-slate-200 hover:bg-slate-200 text-slate-700 font-bold uppercase text-[10px] tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5"
                             >
                               <X className="h-4 w-4" /> Không gỡ tin
+                            </button>
+                          </div>
+                        ) : !selectedPost.is_verified ? (
+                          <div className="grid grid-cols-2 gap-3">
+                            <button
+                              onClick={() => handleVerifyPost(selectedPost.post_id, true)}
+                              disabled={actionLoading}
+                              className="h-11 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold uppercase text-[10px] tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                            >
+                              <Check className="h-4 w-4" /> Duyệt đăng tin
+                            </button>
+                            <button
+                              onClick={() => handleVerifyPost(selectedPost.post_id, false)}
+                              disabled={actionLoading}
+                              className="h-11 rounded-xl bg-red-600 hover:bg-red-750 text-white font-bold uppercase text-[10px] tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                            >
+                              <X className="h-4 w-4" /> Từ chối đăng tin
                             </button>
                           </div>
                         ) : (
@@ -454,7 +525,7 @@ export default function AdminPostsPage() {
                             <button
                               onClick={() => handleDeletePostDirect(selectedPost.post_id)}
                               disabled={actionLoading}
-                              className="h-11 px-5 rounded-xl border border-red-500/20 bg-red-500/5 hover:bg-red-500 hover:text-white text-red-400 font-bold uppercase text-[10px] tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5 w-full"
+                              className="h-11 px-5 rounded-xl border border-red-500/20 bg-red-500/5 hover:bg-red-500 hover:text-white text-red-500 font-bold uppercase text-[10px] tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5 w-full"
                             >
                               <Trash2 className="h-4 w-4" /> Xóa tin đăng vĩnh viễn
                             </button>

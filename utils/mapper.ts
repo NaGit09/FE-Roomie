@@ -74,6 +74,7 @@ export const mapPostToRoom = (
     address: `${post.room.address.district}, ${post.room.address.city}`,
     verified: post.is_verified,
     isFeatured: post.is_featured,
+    isSaved: post.is_saved,
     facilities: finalFacilities,
     ward,
   };

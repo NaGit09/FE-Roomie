@@ -55,10 +55,23 @@ axiosInstance.interceptors.response.use(
 
     if (!error.response) {
       console.error("CORS hoặc Network Error - Không thể kết nối tới Server");
+      error.message = "Không thể kết nối tới máy chủ. Vui lòng kiểm tra lại kết nối mạng!";
       return Promise.reject(error);
     }
 
     const { status, data } = error.response;
+
+    // Sanitize the error message to avoid showing raw HTTP status codes (e.g. 500, 400) or axios internal codes (e.g. ERR_BAD_REQUEST)
+    const serverMessage = data?.message || data?.error || data?.detail;
+    if (serverMessage) {
+      error.message = serverMessage;
+    } else if (status === 401) {
+      error.message = "Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại!";
+    } else if (status === 403) {
+      error.message = "Bạn không có quyền truy cập vào tài nguyên này!";
+    } else {
+      error.message = "Đã xảy ra lỗi kết nối. Vui lòng thử lại sau!";
+    }
 
     if (
       status === 401 &&
@@ -110,6 +123,9 @@ axiosInstance.interceptors.response.use(
       } catch (refreshError) {
         processQueue(refreshError, null);
         useAuthStore.getState().clearAuth();
+        if (refreshError && typeof refreshError === "object") {
+          (refreshError as any).message = "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!";
+        }
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

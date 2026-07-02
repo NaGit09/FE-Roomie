@@ -38,6 +38,7 @@ export default function SavePostPage() {
             const postCardCompatible: PostCardType = {
               post_id: detail.post_id,
               title: detail.title,
+              is_saved: detail.is_saved,
               is_verified: detail.is_verified,
               created_at: detail.created_at,
               image_url: detail.image_url,

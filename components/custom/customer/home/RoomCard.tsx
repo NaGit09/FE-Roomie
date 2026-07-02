@@ -28,6 +28,7 @@ export interface Room {
   facilities: { icon: LucideIcon; label: string }[];
   verified: boolean;
   isFeatured?: boolean;
+  isSaved?: boolean;
 }
 
 // ── Smart Shared De-duplicated Request Cache ──
@@ -81,6 +82,11 @@ const RoomCard = memo(({ room }: { room: Room }) => {
       return;
     }
 
+    if (room.isSaved !== undefined) {
+      setIsSaved(room.isSaved);
+      return;
+    }
+
     const initSavedState = async () => {
       const savedIds = await fetchSavedIds(true);
       if (savedIds.includes(room.id)) {
@@ -88,7 +94,7 @@ const RoomCard = memo(({ room }: { room: Room }) => {
       }
     };
     initSavedState();
-  }, [room.id, isAuthenticated]);
+  }, [room.id, room.isSaved, isAuthenticated]);
 
   const handleToggleSave = useCallback(
     async (e: React.MouseEvent) => {
@@ -173,17 +179,17 @@ const RoomCard = memo(({ room }: { room: Room }) => {
           onClick={handleToggleSave}
           disabled={loading}
           className={cn(
-            "absolute top-4 right-4 z-10 flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300 backdrop-blur-md cursor-pointer",
+            "absolute top-4 right-4 z-10 flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300 backdrop-blur-md cursor-pointer shadow-md",
             isSaved
-              ? "bg-primary text-white shadow-lg shadow-primary/30"
-              : "bg-black/10 text-white hover:bg-white hover:text-primary",
+              ? "bg-white text-rose-500 shadow-rose-500/10"
+              : "bg-white/80 text-slate-650 hover:bg-white hover:text-rose-500",
             loading && "opacity-50 pointer-events-none",
           )}
         >
           {loading ? (
-            <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+            <div className="h-4 w-4 animate-spin rounded-full border-2 border-rose-500 border-t-transparent" />
           ) : (
-            <Heart className={cn("h-5 w-5", isSaved && "fill-current")} />
+            <Heart className={cn("h-5 w-5 transition-colors duration-300", isSaved ? "fill-rose-500 text-rose-500" : "text-slate-400")} />
           )}
         </button>
       </div>

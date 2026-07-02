@@ -6,12 +6,12 @@ import { AuthHydration } from "@/components/custom/auth/AuthHydration";
 import { Toaster } from "sonner";
 
 const josefinSans = Josefin_Sans({
-  subsets: ["latin"],
+  subsets: ["latin", "vietnamese"],
   variable: "--font-sans",
 });
 
 const inter = Inter({
-  subsets: ["latin"],
+  subsets: ["latin", "vietnamese"],
   variable: "--font-body",
 });
 
@@ -21,7 +21,7 @@ const cinzel = Cinzel({
 });
 
 const playfairDisplay = Playfair_Display({
-  subsets: ["latin"],
+  subsets: ["latin", "vietnamese"],
   variable: "--font-display",
 });
 
