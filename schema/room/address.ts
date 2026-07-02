@@ -16,6 +16,8 @@ export type AddressType = z.infer<typeof addressSchema>;
 export const addressCardSchema = z.object({
     district: z.string(),
     city: z.string(),
+    latitude: z.number().optional(),
+    longitude: z.number().optional(),
 })
 
 export type AddressCardType = z.infer<typeof addressCardSchema>

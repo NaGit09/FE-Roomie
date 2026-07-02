@@ -2,7 +2,7 @@
  
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   FileText, 
   Plus, 
@@ -32,6 +32,8 @@ export default function LandlordPostsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<PostCardType | null>(null);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [postToDelete, setPostToDelete] = useState<number | null>(null);
 
   // Feedbacks State
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
@@ -53,20 +55,18 @@ export default function LandlordPostsPage() {
     }
   };
 
-  const handleDeletePost = async (postId: number) => {
-    if (confirm("Bạn có chắc chắn muốn xóa tin đăng này không?")) {
-      try {
-        const response = await PostApi.deletePost(postId);
-        if (response && (response.code === 200 || response.code === 201)) {
-          toast.success("Xóa tin đăng thành công!");
-          fetchPosts();
-        } else {
-          toast.error(response?.message || "Không thể xóa tin đăng.");
-        }
-      } catch (error: any) {
-        console.error("Error deleting post:", error);
-        toast.error("Không thể xóa tin đăng. Vui lòng thử lại!");
+  const confirmDeletePost = async (postId: number) => {
+    try {
+      const response = await PostApi.deletePost(postId);
+      if (response && (response.code === 200 || response.code === 201)) {
+        toast.success("Xóa tin đăng thành công!");
+        fetchPosts();
+      } else {
+        toast.error(response?.message || "Không thể xóa tin đăng.");
       }
+    } catch (error: any) {
+      console.error("Error deleting post:", error);
+      toast.error("Không thể xóa tin đăng. Vui lòng thử lại!");
     }
   };
 
@@ -214,7 +214,7 @@ export default function LandlordPostsPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleDeletePost(post.post_id)}
+                  onClick={() => { setPostToDelete(post.post_id); setIsDeleteConfirmOpen(true); }}
                   className="h-10 w-10 rounded-xl bg-slate-100 border border-slate-200 hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/30 text-slate-650 transition-all cursor-pointer flex items-center justify-center"
                   title="Xóa"
                 >
@@ -240,7 +240,6 @@ export default function LandlordPostsPage() {
           fetchPosts();
         }}
       />
-
       {/* Feedbacks Modal */}
       {isFeedbackOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">

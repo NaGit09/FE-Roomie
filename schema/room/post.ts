@@ -5,8 +5,10 @@ import { feedbackSchema } from "./feedback";
 export const PostCardSchema = z.object({
   post_id: z.number(),
   title: z.string(),
+  is_saved: z.boolean(),
   is_verified: z.boolean(),
   is_featured: z.boolean().optional(),
+  featured_until: z.string().optional(),
   created_at: z.string(),
   image_url: z.string().nullable(),
   room: roomCardSchema,
@@ -18,6 +20,7 @@ export const PostDetailSchema = z.object({
   post_id: z.number(),
   title: z.string(),
   content: z.string(),
+  is_saved: z.boolean(),
   image_url: z.string().nullable(),
   created_by: z.string(),
   is_verified: z.boolean(),
@@ -53,7 +56,7 @@ export const CreatePostSchema = z.object({
   title: z.string(),
   content: z.string(),
   image_url: z.string(),
-  use_featured_quota : z.boolean().optional().default(false),
+  use_featured_quota: z.boolean().optional().default(false),
 });
 
 export type CreatePost = z.infer<typeof CreatePostSchema>;

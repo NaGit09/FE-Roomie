@@ -18,6 +18,7 @@ export interface CompactRoom {
   facilities: { icon: any; label: string }[];
   ward?: string;
   isFeatured?: boolean;
+  isSaved?: boolean;
 }
 
 // ── Smart Shared De-duplicated Request Cache ──
@@ -71,6 +72,11 @@ export default function RoomCardCompact({ room }: { room: CompactRoom }) {
       return;
     }
 
+    if (room.isSaved !== undefined) {
+      setIsSaved(room.isSaved);
+      return;
+    }
+
     const initSavedState = async () => {
       const savedIds = await fetchSavedIds(true);
       if (savedIds.includes(room.id)) {
@@ -78,7 +84,7 @@ export default function RoomCardCompact({ room }: { room: CompactRoom }) {
       }
     };
     initSavedState();
-  }, [room.id, isAuthenticated]);
+  }, [room.id, room.isSaved, isAuthenticated]);
 
   const handleToggleSave = useCallback(
     async (e: React.MouseEvent) => {
@@ -164,16 +170,16 @@ export default function RoomCardCompact({ room }: { room: CompactRoom }) {
                 type="button"
                 onClick={handleToggleSave}
                 disabled={loading}
-                className={`shrink-0 h-8 w-8 rounded-full flex items-center justify-center border transition-all duration-300 cursor-pointer ${
+                className={`shrink-0 h-8 w-8 rounded-full flex items-center justify-center border transition-all duration-300 cursor-pointer shadow-sm ${
                   isSaved
-                    ? "bg-primary border-primary text-white shadow-md shadow-primary/10"
-                    : "bg-white border-slate-100 text-slate-400 hover:text-primary hover:border-slate-200"
+                    ? "bg-white border-rose-100 text-rose-500 shadow-rose-500/10"
+                    : "bg-white border-slate-100 text-slate-400 hover:text-rose-500 hover:border-slate-200"
                 } ${loading && "opacity-50 pointer-events-none"}`}
               >
                 {loading ? (
-                  <div className="h-3 w-3 animate-spin rounded-full border border-current border-t-transparent" />
+                  <div className="h-3 w-3 animate-spin rounded-full border border-rose-500 border-t-transparent" />
                 ) : (
-                  <Heart className={`h-4 w-4 ${isSaved ? "fill-current" : ""}`} />
+                  <Heart className={`h-4 w-4 transition-colors ${isSaved ? "fill-rose-500 text-rose-500" : "text-slate-400"}`} />
                 )}
               </button>
             </div>

@@ -1,12 +1,27 @@
 "use client";
 
 import React from "react";
+import dynamic from "next/dynamic";
 import { useRoomStore } from "@/stores/roomStore";
 import { useRoomFilterStore } from "@/stores/roomFilterStore";
-import { mapPostToRoom } from "@/utils/mapper";
-import RoomCard from "@/components/custom/customer/home/RoomCard";
-import { MapPin, ExternalLink, Sparkles, Inbox } from "lucide-react";
+import { MapPin, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
+
+// Dynamically import LeafletMap with SSR disabled
+const LeafletMap = dynamic(
+  () => import("./LeafletMap"),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="h-full w-full flex flex-col items-center justify-center gap-3 bg-slate-50 rounded-2xl border border-slate-100">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+        <span className="text-[10px] font-black uppercase tracking-widest text-slate-650">
+          Đang chuẩn bị bản đồ...
+        </span>
+      </div>
+    )
+  }
+);
 
 // Coordinates index for major cities
 const CITY_COORDINATES: Record<number, { lat: number; lng: number }> = {
@@ -56,14 +71,7 @@ export default function MapView() {
       {/* ── 2. Interactive Map Frame (Expanded height) ── */}
       <div className="relative overflow-hidden rounded-3xl border border-slate-100 bg-white p-3 shadow-lg shadow-slate-100/50 space-y-4 shrink-0">
         <div className="relative h-[670px] w-full overflow-hidden rounded-2xl bg-slate-100 border border-slate-100 shadow-inner">
-          <iframe
-            title="Interactive Map Explorer"
-            width="100%"
-            height="100%"
-            src={osmEmbedUrl}
-            className="rounded-2xl saturate-[0.95] contrast-[1.05]"
-            style={{ border: 0 }}
-          />
+          <LeafletMap center={[mapLat, mapLon]} zoom={13} rooms={paginatedRooms} />
         </div>
 
         {/* Info & Deep-link Action Toolbar */}
