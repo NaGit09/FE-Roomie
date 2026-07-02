@@ -32,9 +32,15 @@ export const SubscriptionApi = {
     return response.data;
   },
   
-  // For customer , landlord cancel subscription
+  // For customer , landlord cancel subscription immediately
   cancel_subscription: async (user_subscription_id: number) => {
     const response = await axiosInstance.put(`${BASE_URL}/user/cancel/${user_subscription_id}`);
+    return response.data;
+  },
+
+  // For customer , landlord cancel renewal — subscription stays active until time_end then auto-stops
+  cancel_renewal_subscription: async (user_subscription_id: number) => {
+    const response = await axiosInstance.put(`${BASE_URL}/user/cancel-renewal/${user_subscription_id}`);
     return response.data;
   },
 
