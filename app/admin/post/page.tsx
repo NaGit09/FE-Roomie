@@ -9,17 +9,12 @@ import {
   X,
   Loader2,
   Activity,
-  CheckCircle,
   AlertTriangle,
-  FileText,
   MapPin,
   Compass,
   Trash2,
   AlertOctagon,
-  Clock,
   Sparkles,
-  ExternalLink,
-  ThumbsDown,
   Check
 } from "lucide-react";
 import { toast } from "sonner";
@@ -32,24 +27,20 @@ export default function AdminPostsPage() {
   const [posts, setPosts] = useState<PostCardType[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState<"ALL" | "PENDING" | "DELETE_REQUESTS">("PENDING");
+  const [activeTab, setActiveTab] = useState<"ALL" | "DELETE_REQUESTS">("ALL");
 
   // Detail Modal States
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<PostDetailType | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
-  const [metrics, setMetrics] = useState({ total: 0, pending: 0 });
+  const [metrics, setMetrics] = useState({ total: 0 });
 
   const fetchMetrics = async () => {
     try {
-      const [allRes, pendingRes] = await Promise.all([
-        PostApi.getPostPagination({ skip: 0, limit: 1, sort_by: "created_at", order: "desc" }),
-        PostApi.getVerificationRequests(0, 1)
-      ]);
+      const allRes = await PostApi.getPostPagination({ skip: 0, limit: 1, sort_by: "created_at", order: "desc" });
       setMetrics({
         total: allRes?.data?.total || 0,
-        pending: pendingRes?.data?.total || 0,
       });
     } catch (err) {
       console.error("Error fetching metrics:", err);
@@ -59,12 +50,7 @@ export default function AdminPostsPage() {
   const fetchPosts = async () => {
     setLoading(true);
     try {
-      let response;
-      if (activeTab === "PENDING") {
-        response = await PostApi.getVerificationRequests(0, 100);
-      } else {
-        response = await PostApi.getPostPagination({ skip: 0, limit: 100, sort_by: "created_at", order: "desc" });
-      }
+      const response = await PostApi.getPostPagination({ skip: 0, limit: 100, sort_by: "created_at", order: "desc" });
 
       if (response && response.code === 200 && response.data) {
         setPosts(response.data.items || []);
@@ -78,22 +64,6 @@ export default function AdminPostsPage() {
       toast.error("Có lỗi xảy ra khi tải dữ liệu tin bài.");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleVerifyPost = async (postId: number, approved: boolean) => {
-    setActionLoading(true);
-    try {
-      await PostApi.verifyPost(postId, approved);
-      toast.success(approved ? "Đã duyệt đăng tin thành công!" : "Đã từ chối đăng tin.");
-      fetchPosts();
-      fetchMetrics();
-      setIsDetailOpen(false);
-    } catch (err: any) {
-      console.error("Error verifying post:", err);
-      toast.error("Không thể phê duyệt tin đăng.");
-    } finally {
-      setActionLoading(false);
     }
   };
 
@@ -137,8 +107,6 @@ export default function AdminPostsPage() {
     }
   };
 
-
-
   const handleDeleteApproval = async (postId: number, approved: boolean) => {
     setActionLoading(true);
     try {
@@ -175,7 +143,14 @@ export default function AdminPostsPage() {
     if (!room) return "Chưa cập nhật";
     if (typeof room.address === "string") return room.address;
     if (room.address && typeof room.address === "object") {
-      return room.address.full_text || `${room.address.street}, ${room.address.ward || ""}, ${room.address.district || ""}, ${room.address.city || ""}`.replace(/,\s*,/g, ",").trim();
+      if (room.address.full_text) return room.address.full_text;
+      const parts = [
+        room.address.street,
+        room.address.ward,
+        room.address.district,
+        room.address.city
+      ].filter(Boolean);
+      return parts.length > 0 ? parts.join(", ") : "Chưa cập nhật";
     }
     return "Chưa cập nhật";
   };
@@ -190,22 +165,21 @@ export default function AdminPostsPage() {
         <div className="space-y-1 text-left">
           <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/20 bg-amber-500/5 px-4 py-1 text-[10px] font-black uppercase tracking-widest text-primary">
             <Activity className="h-3.5 w-3.5" />
-            Hệ thống kiểm duyệt tin bài đăng
+            Hệ thống quản lý tin bài đăng
           </div>
           <h2 className="text-3xl font-bold tracking-tight text-slate-800 font-heading">
             QUẢN LÝ TIN ĐĂNG PHÒNG TRỌ
           </h2>
           <p className="text-xs text-slate-650 font-medium font-body max-w-xl">
-            Phê duyệt bài đăng mới từ landlords, rà soát bài đăng có dấu hiệu lừa đảo, hoặc phê duyệt gỡ bỏ tin đăng theo yêu cầu.
+            Quản lý tin đăng phòng trọ của hệ thống, rà soát bài viết hoặc duyệt gỡ tin theo yêu cầu.
           </p>
         </div>
       </div>
 
       {/* 2. Mini Summary Metrics */}
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-2 gap-6">
         {[
           { label: "Tổng tin trên hệ thống", value: metrics.total, color: "text-slate-700" },
-          { label: "Tin chờ phê duyệt", value: metrics.pending, color: "text-amber-500" },
           { label: "Tin hiển thị ở tab này", value: totalCount, color: "text-primary" },
         ].map((m, idx) => (
           <div
@@ -239,7 +213,6 @@ export default function AdminPostsPage() {
         {/* Tab Selection */}
         <div className="flex flex-wrap items-center gap-1.5 w-full sm:w-auto overflow-x-auto">
           {[
-            { label: "Chờ phê duyệt", value: "PENDING" },
             { label: "Tất cả tin", value: "ALL" },
             { label: "Yêu cầu gỡ bỏ", value: "DELETE_REQUESTS" }
           ].map((tab, idx) => (
@@ -312,17 +285,6 @@ export default function AdminPostsPage() {
                           {post.title}
                         </span>
                         <div className="flex flex-wrap gap-1.5">
-                          {post.is_verified ? (
-                            <span className="inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[8px] font-black uppercase tracking-widest bg-emerald-500/10 border border-emerald-500/25 text-emerald-650 font-bold">
-                              <CheckCircle className="h-2.5 w-2.5 text-emerald-500" />
-                              Đã duyệt
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[8px] font-black uppercase tracking-widest bg-amber-500/10 border border-amber-500/25 text-amber-600 font-bold">
-                              <Clock className="h-2.5 w-2.5 text-amber-500" />
-                              Chờ duyệt
-                            </span>
-                          )}
                           {post.is_featured && (
                             <span className="inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[8px] font-black uppercase tracking-widest bg-indigo-500/10 border border-indigo-500/25 text-indigo-600 font-bold">
                               <Sparkles className="h-2.5 w-2.5 fill-indigo-500/10 text-indigo-500" />
@@ -349,7 +311,7 @@ export default function AdminPostsPage() {
                       className="h-8 px-3 rounded-lg bg-slate-100 border border-slate-200 hover:bg-amber-500/20 hover:text-primary hover:border-primary/30 text-slate-650 flex items-center justify-center cursor-pointer transition-all active:scale-90 text-[10px] font-bold uppercase tracking-wider gap-1.5 ml-auto"
                     >
                       <Eye className="h-3.5 w-3.5" />
-                      Xem duyệt
+                      Xem chi tiết
                     </button>
                   </td>
                 </tr>
@@ -481,8 +443,8 @@ export default function AdminPostsPage() {
 
                       {/* Intervention action buttons */}
                       <div className="pt-4 border-t border-slate-200 space-y-3 shrink-0">
-                        <span className="text-[#C1440E] font-black uppercase tracking-wider block text-[9px]">
-                          Thao tác kiểm duyệt hệ thống
+                        <span className="text-emerald-400 font-black uppercase tracking-wider block text-[9px]">
+                          Thao tác quản trị hệ thống
                         </span>
 
                         {activeTab === "DELETE_REQUESTS" ? (
@@ -490,33 +452,16 @@ export default function AdminPostsPage() {
                             <button
                               onClick={() => handleDeleteApproval(selectedPost.post_id, true)}
                               disabled={actionLoading}
-                              className="h-11 rounded-xl bg-red-650 hover:bg-red-700 text-white font-bold uppercase text-[10px] tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                              className="h-11 rounded-xl bg-red-500 hover:bg-red-650 text-white font-bold uppercase text-[10px] tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5"
                             >
                               <Check className="h-4 w-4" /> Duyệt gỡ tin
                             </button>
                             <button
                               onClick={() => handleDeleteApproval(selectedPost.post_id, false)}
                               disabled={actionLoading}
-                              className="h-11 rounded-xl bg-slate-100 border border-slate-200 hover:bg-slate-200 text-slate-700 font-bold uppercase text-[10px] tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                              className="h-11 rounded-xl bg-slate-100 border border-slate-200 hover:bg-white/10 text-slate-700 font-bold uppercase text-[10px] tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5"
                             >
                               <X className="h-4 w-4" /> Không gỡ tin
-                            </button>
-                          </div>
-                        ) : !selectedPost.is_verified ? (
-                          <div className="grid grid-cols-2 gap-3">
-                            <button
-                              onClick={() => handleVerifyPost(selectedPost.post_id, true)}
-                              disabled={actionLoading}
-                              className="h-11 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold uppercase text-[10px] tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5"
-                            >
-                              <Check className="h-4 w-4" /> Duyệt đăng tin
-                            </button>
-                            <button
-                              onClick={() => handleVerifyPost(selectedPost.post_id, false)}
-                              disabled={actionLoading}
-                              className="h-11 rounded-xl bg-red-600 hover:bg-red-750 text-white font-bold uppercase text-[10px] tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5"
-                            >
-                              <X className="h-4 w-4" /> Từ chối đăng tin
                             </button>
                           </div>
                         ) : (
