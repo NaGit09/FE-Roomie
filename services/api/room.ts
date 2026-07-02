@@ -72,6 +72,13 @@ export const RoomApi = {
       null
     );
     return res.data;
+  },
+
+  getLandlordStats: async () => {
+    const res = await axiosInstance.get<ApiResponse<any>>(
+      `${BASE_URL}/me/stats`
+    );
+    return res.data;
   }
 };
 

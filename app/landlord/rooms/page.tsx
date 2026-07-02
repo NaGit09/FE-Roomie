@@ -94,6 +94,16 @@ export default function LandlordRoomsPage() {
   useEffect(() => {
     setMounted(true);
     fetchRooms();
+    
+    // Check if URL has ?action=add to open the modal
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("action") === "add") {
+        setIsAddOpen(true);
+        // Optional: clean up the URL without refreshing
+        window.history.replaceState(null, "", "/landlord/rooms");
+      }
+    }
   }, []);
 
   if (!mounted) return null;

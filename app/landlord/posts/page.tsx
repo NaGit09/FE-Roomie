@@ -13,11 +13,15 @@ import {
   Clock,
   Eye,
   Edit2,
-  Trash2
+  Trash2,
+  MessageSquare,
+  X,
+  Star
 } from "lucide-react";
 import formatVND from "@/utils/priceUtils";
 import { toast } from "sonner";
 import { PostApi } from "@/services/api/post";
+import { FeedbackApi, FeedbackResponse } from "@/services/api/feedback";
 import { PostCardType } from "@/schema/room/post";
 import { CreatePostForm } from "@/components/custom/landlord/CreatePostForm";
 
@@ -30,6 +34,12 @@ export default function LandlordPostsPage() {
   const [editingPost, setEditingPost] = useState<PostCardType | null>(null);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [postToDelete, setPostToDelete] = useState<number | null>(null);
+
+  // Feedbacks State
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
+  const [selectedPostForFeedback, setSelectedPostForFeedback] = useState<PostCardType | null>(null);
+  const [postFeedbacks, setPostFeedbacks] = useState<FeedbackResponse[]>([]);
+  const [isLoadingFeedbacks, setIsLoadingFeedbacks] = useState(false);
 
   const fetchPosts = async () => {
     try {
@@ -64,6 +74,26 @@ export default function LandlordPostsPage() {
     setMounted(true);
     fetchPosts();
   }, []);
+
+  const handleOpenFeedbacks = async (post: PostCardType) => {
+    setSelectedPostForFeedback(post);
+    setIsFeedbackOpen(true);
+    setIsLoadingFeedbacks(true);
+    try {
+      const res = await FeedbackApi.getPostFeedbacks(post.post_id);
+      if (res && res.data) {
+        setPostFeedbacks(res.data);
+      } else {
+        setPostFeedbacks([]);
+      }
+    } catch (error) {
+      console.error("Error fetching feedbacks:", error);
+      toast.error("Không thể tải danh sách đánh giá.");
+      setPostFeedbacks([]);
+    } finally {
+      setIsLoadingFeedbacks(false);
+    }
+  };
 
   if (!mounted) return null;
 
@@ -168,6 +198,14 @@ export default function LandlordPostsPage() {
                 </button>
                 <button
                   type="button"
+                  onClick={() => handleOpenFeedbacks(post)}
+                  className="h-10 w-10 rounded-xl bg-slate-100 border border-slate-200 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200 text-slate-650 transition-all cursor-pointer flex items-center justify-center"
+                  title="Xem đánh giá"
+                >
+                  <MessageSquare className="h-4.5 w-4.5" />
+                </button>
+                <button
+                  type="button"
                   onClick={() => { setEditingPost(post); setIsAddOpen(true); }}
                   className="h-10 w-10 rounded-xl bg-slate-100 border border-slate-200 hover:bg-primary/10 hover:text-primary hover:border-primary/20 text-slate-650 transition-all cursor-pointer flex items-center justify-center"
                   title="Cập nhật"
@@ -202,64 +240,58 @@ export default function LandlordPostsPage() {
           fetchPosts();
         }}
       />
-      {/* Custom Delete Confirmation Modal */}
-      <AnimatePresence>
-        {isDeleteConfirmOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsDeleteConfirmOpen(false)}
-              className="fixed inset-0 bg-black/85 backdrop-blur-sm"
-            />
-
-            {/* Modal Body */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.96, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.96, y: 10 }}
-              className="relative w-full max-w-md rounded-[2rem] border border-slate-200 bg-card p-6 sm:p-8 z-10 text-center space-y-6 shadow-2xl"
-            >
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-red-500/10 border border-red-500/20">
-                <Trash2 className="h-6 w-6 text-red-500" />
+      {/* Feedbacks Modal */}
+      {isFeedbackOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsFeedbackOpen(false)} />
+          <div className="relative w-full max-w-2xl bg-card rounded-[2rem] shadow-2xl border border-slate-200 flex flex-col max-h-[85vh]">
+            <div className="flex items-center justify-between p-6 border-b border-slate-200">
+              <div>
+                <h3 className="font-heading text-xl font-bold text-slate-800">Đánh giá của khách thuê</h3>
+                <p className="text-xs text-slate-500 mt-1">{selectedPostForFeedback?.title}</p>
               </div>
-
-              <div className="space-y-2">
-                <h3 className="text-lg font-black text-slate-800 font-heading">
-                  Xác nhận xóa tin đăng
-                </h3>
-                <p className="text-xs text-slate-650 leading-relaxed font-body font-medium">
-                  Bạn có chắc chắn muốn xóa tin đăng này không? Hành động này không thể hoàn tác và bài đăng của bạn sẽ bị gỡ khỏi hệ thống.
-                </p>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsDeleteConfirmOpen(false)}
-                  className="flex-1 h-11 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-600 text-xs font-bold uppercase tracking-wider cursor-pointer transition-all"
-                >
-                  Hủy bỏ
-                </button>
-                <button
-                  type="button"
-                  onClick={async () => {
-                    if (postToDelete !== null) {
-                      setIsDeleteConfirmOpen(false);
-                      await confirmDeletePost(postToDelete);
-                    }
-                  }}
-                  className="flex-1 h-11 rounded-xl bg-red-500 hover:bg-red-600 text-white text-xs font-black uppercase tracking-wider cursor-pointer transition-all shadow-md shadow-red-500/10"
-                >
-                  Xác nhận xóa
-                </button>
-              </div>
-            </motion.div>
+              <button
+                onClick={() => setIsFeedbackOpen(false)}
+                className="p-2 rounded-full hover:bg-slate-100 transition-colors"
+              >
+                <X className="h-5 w-5 text-slate-500" />
+              </button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-6 space-y-4">
+              {isLoadingFeedbacks ? (
+                <div className="text-center py-10 text-slate-500">Đang tải đánh giá...</div>
+              ) : postFeedbacks.length === 0 ? (
+                <div className="text-center py-10 text-slate-500">Chưa có đánh giá nào cho bài viết này.</div>
+              ) : (
+                postFeedbacks.map((fb) => (
+                  <div key={fb.id} className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex gap-4">
+                    <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0">
+                      {fb.user_id.substring(0, 1).toUpperCase()}
+                    </div>
+                    <div className="space-y-2 flex-1">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <span className="font-semibold text-sm text-slate-800 block">Người dùng ID: {fb.user_id.substring(0, 8)}</span>
+                          <span className="text-[10px] text-slate-500">{new Date(fb.created_at).toLocaleString('vi-VN')}</span>
+                        </div>
+                        <div className="flex items-center gap-0.5 text-amber-500">
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <Star key={i} className={`h-3 w-3 ${i < fb.rating ? 'fill-current' : 'text-slate-300'}`} />
+                          ))}
+                        </div>
+                      </div>
+                      <p className="text-xs text-slate-700 leading-relaxed bg-white border border-slate-100 p-3 rounded-xl shadow-sm">
+                        {fb.comment || "Không có nội dung bình luận."}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
-        )}
-      </AnimatePresence>
+        </div>
+      )}
     </div>
   );
 }

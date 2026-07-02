@@ -26,6 +26,7 @@ import { UserApi } from "@/services/api/user";
 import { SubscriptionApi } from "@/services/api/subcription";
 import { Subscription } from "@/schema/user/subcription";
 import { toast } from "sonner";
+import { RoomApi } from "@/services/api/room";
 
 export default function LandlordDashboardIndex() {
 
@@ -40,6 +41,27 @@ export default function LandlordDashboardIndex() {
   const [availablePlans, setAvailablePlans] = useState<Subscription[]>([]);
   const [loadingPlans, setLoadingPlans] = useState(false);
 
+  // Dashboard Stats States
+  const [dashboardStats, setDashboardStats] = useState<any>(null);
+  const [loadingStats, setLoadingStats] = useState(true);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      const fetchStats = async () => {
+        try {
+          const res = await RoomApi.getLandlordStats();
+          if (res && res.code === 200) {
+            setDashboardStats(res.data);
+          }
+        } catch (error) {
+          console.error("Failed to fetch landlord stats:", error);
+        } finally {
+          setLoadingStats(false);
+        }
+      };
+      fetchStats();
+    }
+  }, [isAuthenticated]);
   useEffect(() => {
     // Define an async function inside the effect
     const fetchUser = async () => {
@@ -199,23 +221,13 @@ export default function LandlordDashboardIndex() {
     }
   };
 
-  // Mock statistics data
-  const stats = [
-    {
-      label: "Doanh thu tháng này",
-      value: 28500000,
-      format: "vnd",
-      change: "+12.5% so với tháng trước",
-      icon: Coins,
-      color: "text-amber-500",
-      bg: "bg-primary/10 border-amber-500/20",
-      link: "/landlord/statistic"
-    },
+  // Dynamic statistics data
+  const stats = dashboardStats ? [
     {
       label: "Tỷ lệ lấp đầy phòng",
-      value: "80%",
-      sub: "12 / 15 phòng đã cho thuê",
-      change: "Còn trống 3 phòng",
+      value: `${dashboardStats.total_rooms > 0 ? Math.round((dashboardStats.rented_rooms / dashboardStats.total_rooms) * 100) : 0}%`,
+      sub: `${dashboardStats.rented_rooms} / ${dashboardStats.total_rooms} phòng đã cho thuê`,
+      change: `Còn trống ${dashboardStats.total_rooms - dashboardStats.rented_rooms} phòng`,
       icon: Home,
       color: "text-emerald-500",
       bg: "bg-emerald-500/10 border-emerald-500/20",
@@ -223,8 +235,8 @@ export default function LandlordDashboardIndex() {
     },
     {
       label: "Lượt xem tin đăng",
-      value: "4,528 Lượt",
-      change: "+18% lượng truy cập mới",
+      value: `${dashboardStats.total_post_views} Lượt`,
+      change: "Tổng lượt xem các bài đăng",
       icon: FileText,
       color: "text-sky-500",
       bg: "bg-sky-500/10 border-sky-500/20",
@@ -232,16 +244,16 @@ export default function LandlordDashboardIndex() {
     },
     {
       label: "Yêu cầu ghép đôi mới",
-      value: "8 Renter",
+      value: `${dashboardStats.total_interested_renters || dashboardStats.recent_interested_renters?.length || 0} Renter`,
       sub: "Đang chờ bạn phản hồi",
-      change: "4 yêu cầu mới hôm nay",
+      change: "Click để xem chi tiết",
       icon: Users,
       color: "text-violet-500",
       bg: "bg-violet-500/10 border-violet-500/20",
       pulse: true,
-      link: "/landlord/dashboard"
+      link: "/landlord/rentals"
     }
-  ];
+  ] : [];
 
   return (
     <div className="space-y-10 animate-fade-in text-foreground">
@@ -271,8 +283,12 @@ export default function LandlordDashboardIndex() {
       </div>
 
       {/* Grid Stats Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, idx) => {
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {loadingStats ? (
+          <div className="col-span-1 sm:col-span-2 lg:col-span-3 text-center py-10 text-slate-500 text-sm">
+            Đang tải dữ liệu thống kê...
+          </div>
+        ) : stats.map((stat, idx) => {
           const Icon = stat.icon;
           return (
             <Link key={idx} href={stat.link} className="block">
@@ -303,7 +319,7 @@ export default function LandlordDashboardIndex() {
 
                   <div className="space-y-1">
                     <h3 className="text-2xl font-black text-slate-800">
-                      {stat.format === "vnd" ? formatVND(stat.value as number) : stat.value}
+                      {(stat as any).format === "vnd" ? formatVND((stat as any).value as number) : stat.value}
                     </h3>
                     {stat.sub && (
                       <p className="text-[10px] font-bold text-slate-650 font-body">
@@ -528,25 +544,25 @@ export default function LandlordDashboardIndex() {
         <div className="rounded-[2rem] border border-slate-200 bg-slate-50 backdrop-blur-md p-8 space-y-6">
           <h3 className="font-heading text-md font-bold text-slate-700">Kết nối khách thuê mới nhất</h3>
           <div className="divide-y divide-white/5 space-y-4">
-            {[
-              { name: "Lê Nguyễn Anh Hùng", match: 94, budget: 4500000, time: "2 giờ trước" },
-              { name: "Phạm Minh Hoàng", match: 88, budget: 5000000, time: "Hôm qua" },
-              { name: "Nguyễn Thu Thảo", match: 91, budget: 4000000, time: "2 ngày trước" },
-            ].map((renter, idx) => (
+            {loadingStats ? (
+               <div className="text-center py-5 text-slate-500 text-xs">Đang tải...</div>
+            ) : (!dashboardStats?.recent_interested_renters || dashboardStats.recent_interested_renters.length === 0) ? (
+               <div className="text-center py-5 text-slate-500 text-xs">Chưa có yêu cầu kết nối nào</div>
+            ) : dashboardStats.recent_interested_renters.map((renter: any, idx: number) => (
               <div key={idx} className="flex justify-between items-center pt-4 first:pt-0">
                 <div className="flex items-center gap-3">
                   <div className="h-9 w-9 rounded-xl bg-linear-to-tr from-[#8B5CF6]/30 to-[#8B5CF6]/5 border border-primary/20 text-primary text-xs font-black flex items-center justify-center">
-                    {renter.name.split(" ").slice(-1)[0][0]}
+                    {(renter.user_id || "U").substring(0, 1).toUpperCase()}
                   </div>
                   <div className="space-y-0.5">
-                    <span className="text-xs font-bold text-slate-700 block">{renter.name}</span>
+                    <span className="text-xs font-bold text-slate-700 block">Khách ID: {renter.user_id.substring(0, 8)}...</span>
                     <span className="text-[10px] text-slate-650 font-medium font-body block">
-                      Ngân sách: {formatVND(renter.budget)}/tháng • {renter.time}
+                      Phòng: {renter.room_name} • {new Date(renter.created_at).toLocaleDateString("vi-VN")}
                     </span>
                   </div>
                 </div>
                 <span className="inline-flex items-center gap-0.5 text-[9px] font-black uppercase bg-primary/10 border border-primary/30 text-primary px-2.5 py-0.5 rounded-full">
-                  {renter.match}% Khớp
+                  {renter.match_percentage || 0}% Khớp
                 </span>
               </div>
             ))}
@@ -563,12 +579,16 @@ export default function LandlordDashboardIndex() {
           </div>
           
           <div className="grid grid-cols-2 gap-4">
-            <button className="h-12 rounded-xl bg-slate-100 border border-slate-200 hover:bg-white/10 text-slate-700 text-[10px] font-black uppercase tracking-wider cursor-pointer transition-all flex items-center justify-center gap-1.5">
-              Đăng phòng mới
-            </button>
-            <button className="h-12 rounded-xl bg-slate-100 border border-slate-200 hover:bg-white/10 text-slate-700 text-[10px] font-black uppercase tracking-wider cursor-pointer transition-all flex items-center justify-center gap-1.5">
-              Đẩy tin nổi bật
-            </button>
+            <Link href="/landlord/rooms?action=add" className="block w-full">
+              <button className="w-full h-12 rounded-xl bg-slate-100 border border-slate-200 hover:bg-slate-200 text-slate-700 text-[10px] font-black uppercase tracking-wider cursor-pointer transition-all flex items-center justify-center gap-1.5">
+                Đăng phòng mới
+              </button>
+            </Link>
+            <Link href="/landlord/posts" className="block w-full">
+              <button className="w-full h-12 rounded-xl bg-slate-100 border border-slate-200 hover:bg-slate-200 text-slate-700 text-[10px] font-black uppercase tracking-wider cursor-pointer transition-all flex items-center justify-center gap-1.5">
+                Đẩy tin nổi bật
+              </button>
+            </Link>
           </div>
         </div>
       </div>

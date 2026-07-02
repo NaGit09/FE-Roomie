@@ -39,9 +39,10 @@ export const RentalApi = {
   /**
    * Get interested users for a room
    */
-  getInterestedUsers: async (room_id: number): Promise<ApiResponse<Rental[]>> => {
+  getInterestedUsers: async (room_id: number, status?: string): Promise<ApiResponse<Rental[]>> => {
     const response = await axiosInstance.get<ApiResponse<Rental[]>>(
-      `${BASE_URL}/room/${room_id}/interested`
+      `${BASE_URL}/room/${room_id}/interested`,
+      { params: status ? { status } : undefined }
     );
     return response.data;
   },
