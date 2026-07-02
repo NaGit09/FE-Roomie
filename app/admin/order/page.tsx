@@ -79,15 +79,13 @@ export default function AdminOrdersPage() {
       idStr.includes(query);
 
     const matchesStatus =
-      statusFilter === "ALL" || 
-      o.status === statusFilter || 
-      (statusFilter === "COMPLETED" && (o.status === "PAID" || o.status === "COMPLETED"));
+      statusFilter === "ALL" || o.status === statusFilter;
 
     return matchesSearch && matchesStatus;
   });
 
   // Calculate Metrics
-  const completedOrders = orders.filter((o) => o.status === "COMPLETED" || o.status === "PAID");
+  const completedOrders = orders.filter((o) => o.status === "COMPLETED");
   const totalRevenue = completedOrders.reduce((sum, o) => sum + o.total_amount, 0);
   const pendingCount = orders.filter((o) => o.status === "PENDING").length;
   const completedCount = completedOrders.length;
@@ -121,7 +119,6 @@ export default function AdminOrdersPage() {
   const getStatusBadgeColor = (s: string) => {
     switch (s) {
       case "COMPLETED":
-      case "PAID":
         return "bg-primary/10 border-primary/20 text-primary";
       case "PENDING":
         return "bg-primary/10 border-amber-500/20 text-primary";
@@ -135,11 +132,10 @@ export default function AdminOrdersPage() {
   const getItemName = (itemType: string, itemId: number) => {
     if (itemType === "SUBSCRIPTION") {
       switch (itemId) {
-        case 1: return "Gói chủ nhà cơ bản 1 tháng";
-        case 2: return "Gói chủ nhà Premium 1 tháng";
-        case 3: return "Gói chủ nhà VIP 3 tháng";
-        case 4: return "Gói người thuê cơ bản 1 tháng";
-        case 5: return "Gói người thuê VIP 3 tháng";
+        case 1: return "Gói Renter Basic";
+        case 2: return "Gói Renter VIP";
+        case 3: return "Gói Landlord Premium";
+        case 4: return "Gói Landlord VIP";
         default: return `Gói dịch vụ #${itemId}`;
       }
     }

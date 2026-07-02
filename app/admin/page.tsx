@@ -33,17 +33,9 @@ import {
   Cell,
   Legend
 } from "recharts";
-import axiosInstance from "@/services/axiosInstance";
-
 
 export default function AdminDashboardPage() {
   const router = useRouter();
-
-  // State for newly written endpoints
-  const [recentUsers, setRecentUsers] = useState<any[]>([]);
-  const [allPaidOrders, setAllPaidOrders] = useState<any[]>([]);
-  const [totalRevenue, setTotalRevenue] = useState<number>(0);
-
 
   // Mock operational statistics
   const stats = [
@@ -76,7 +68,7 @@ export default function AdminDashboardPage() {
     },
     {
       label: "Tổng doanh thu",
-      value: totalRevenue,
+      value: 135800000,
       sub: "Doanh số Premium & VIP",
       change: "+22.5% tăng trưởng doanh số",
       icon: Coins,
@@ -86,11 +78,20 @@ export default function AdminDashboardPage() {
     },
   ];
 
-  // Recent reports state (empty default)
-  const [recentReports, setRecentReports] = useState<any[]>([]);
+  // Mock recent reports
+  const recentReports = [
+    { id: "REP-9821", reporter: "Đỗ Anh Hào", target: "Phòng trọ Q10 giá tốt", reason: "Tin đăng ảo, không liên lạc được", time: "10 phút trước", status: "PENDING" },
+    { id: "REP-9819", reporter: "Lê Nguyễn Anh", target: "Căn hộ dịch vụ cao cấp Bình Thạnh", reason: "Thông tin sai lệch diện tích thực tế", time: "2 giờ trước", status: "PENDING" },
+    { id: "REP-9812", reporter: "Nguyễn Văn Hùng", target: "Chủ nhà Lâm Thị Nga", reason: "Ngôn từ thô tục, quấy rối qua chat", time: "1 ngày trước", status: "RESOLVED" },
+  ];
 
-
-
+  // Mock recent user signups
+  const recentUsers = [
+    { name: "Phạm Hoàng Sơn", email: "son.pham@gmail.com", role: "RENTER", time: "5 phút trước" },
+    { name: "Trương Mỹ Dung", email: "dung.truong@landlord.vn", role: "LANDLORD", time: "18 phút trước" },
+    { name: "Vũ Hữu Phước", email: "phuoc.vu99@gmail.com", role: "RENTER", time: "1 giờ trước" },
+    { name: "Lê Minh Khoa", email: "khoa.le@gmail.com", role: "RENTER", time: "3 giờ trước" },
+  ];
 
   // State for chart interactivity
   const [mounted, setMounted] = useState(false);
@@ -99,149 +100,10 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     setMounted(true);
-
-    // Fetch newest users from backend
-    axiosInstance.get("/users/admin/dashboard/newest-users?limit=5")
-      .then(res => {
-        if (res.data?.code === 200 && res.data?.data) {
-          const list = res.data.data.map((user: any) => {
-            const now = new Date();
-            const past = new Date(user.created_at);
-            const diffMins = Math.floor((now.getTime() - past.getTime()) / 60000);
-            let timeStr = "Vừa xong";
-            if (diffMins >= 1 && diffMins < 60) {
-              timeStr = `${diffMins} phút trước`;
-            } else if (diffMins >= 60 && diffMins < 1440) {
-              timeStr = `${Math.floor(diffMins / 60)} giờ trước`;
-            } else if (diffMins >= 1440) {
-              timeStr = `${Math.floor(diffMins / 1440)} ngày trước`;
-            }
-            return {
-              name: user.full_name || user.email.split("@")[0],
-              email: user.email,
-              role: user.role,
-              time: timeStr
-            };
-          });
-          setRecentUsers(list);
-        }
-      })
-      .catch(err => console.error("Lỗi khi tải thành viên mới:", err));
-
-    // Fetch recent reports from backend
-    axiosInstance.get("/admin/reports?page=1&size=5")
-      .then(res => {
-        if (res.data?.code === 200 && res.data?.data?.items) {
-          const list = res.data.data.items.map((rep: any) => {
-            const now = new Date();
-            const past = new Date(rep.created_at);
-            const diffMins = Math.floor((now.getTime() - past.getTime()) / 60000);
-            let timeStr = "Vừa xong";
-            if (diffMins >= 1 && diffMins < 60) {
-              timeStr = `${diffMins} phút trước`;
-            } else if (diffMins >= 60 && diffMins < 1440) {
-              timeStr = `${Math.floor(diffMins / 60)} giờ trước`;
-            } else if (diffMins >= 1440) {
-              timeStr = `${Math.floor(diffMins / 1440)} ngày trước`;
-            }
-            return {
-              id: rep.report_code || `REP-${rep.id}`,
-              reporter: rep.reporter_name || "Thành viên ẩn danh",
-              target: `${rep.target_type === "ROOM" ? "Phòng trọ" : "Bài đăng"} #${rep.target_id.substring(0, 8)}`,
-              reason: rep.reason,
-              time: timeStr,
-              status: rep.status
-            };
-          });
-          setRecentReports(list);
-        }
-      })
-      .catch(err => console.error("Lỗi khi tải báo cáo:", err));
-
-    // Fetch revenue stats from newly written backend endpoint
-    axiosInstance.get("/users/admin/dashboard/revenue")
-      .then(res => {
-        if (res.data?.code === 200 && res.data?.data) {
-          setTotalRevenue(Number(res.data.data.total_revenue) || 0);
-          if (res.data.data.by_package) {
-            const colors = ["#EC4899", "#8B5CF6", "#3B82F6", "#60A5FA", "#F59E0B", "#10B981", "#EF4444"];
-            const list = res.data.data.by_package.map((item: any, idx: number) => ({
-              name: item.package_title,
-              value: Number(item.total_amount),
-              color: colors[idx % colors.length]
-            }));
-            setPieChartData(list);
-          }
-        }
-      })
-      .catch(err => console.error("Lỗi khi tải doanh thu:", err));
-
-    // Fetch order history to compute charts dynamically
-    axiosInstance.get("/users/orders/all")
-      .then(res => {
-        if (res.data?.code === 200 && Array.isArray(res.data?.data)) {
-          const paidOrders = res.data.data.filter((o: any) => o.status === "PAID" || o.status === "COMPLETED");
-          setAllPaidOrders(paidOrders);
-          
-          const daysOfWeek = ["Chủ Nhật", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
-          const weekly = daysOfWeek.map(day => ({ name: day, revenue: 0 }));
-          
-          const monthly = [
-            { name: "Tuần 1", revenue: 0 },
-            { name: "Tuần 2", revenue: 0 },
-            { name: "Tuần 3", revenue: 0 },
-            { name: "Tuần 4", revenue: 0 },
-          ];
-
-          const yearly = Array.from({ length: 12 }, (_, i) => ({ name: `Tháng ${i + 1}`, revenue: 0 }));
-
-          const now = new Date();
-          
-          paidOrders.forEach((order: any) => {
-            const orderDate = new Date(order.paid_at || order.created_at);
-            const amount = Number(order.total_amount) || 0;
-            const diffDays = Math.floor((now.getTime() - orderDate.getTime()) / (1000 * 60 * 60 * 24));
-            
-            if (diffDays < 7) {
-              const dayIndex = orderDate.getDay();
-              const targetDayName = daysOfWeek[dayIndex];
-              const wItem = weekly.find(w => w.name === targetDayName);
-              if (wItem) wItem.revenue += amount;
-            }
-
-            if (diffDays < 30) {
-              if (orderDate.getMonth() === now.getMonth()) {
-                const dayOfMonth = orderDate.getDate();
-                const wIdx = Math.min(Math.floor((dayOfMonth - 1) / 7), 3);
-                monthly[wIdx].revenue += amount;
-              } else {
-                const wIdx = 3 - Math.min(Math.floor(diffDays / 7), 3);
-                if (wIdx >= 0 && wIdx < 4) {
-                  monthly[wIdx].revenue += amount;
-                }
-              }
-            }
-
-            if (orderDate.getFullYear() === now.getFullYear()) {
-              const monthIndex = orderDate.getMonth();
-              yearly[monthIndex].revenue += amount;
-            }
-          });
-
-          const totalPaid = paidOrders.reduce((sum: number, o: any) => sum + (Number(o.total_amount) || 0), 0);
-          if (totalPaid > 0) {
-            setWeeklyRevenueData(weekly);
-            setMonthlyRevenueData(monthly);
-            setYearlyRevenueData(yearly);
-          }
-        }
-      })
-      .catch(err => console.error("Lỗi khi tải lịch sử doanh thu:", err));
   }, []);
 
-
   // Mock revenue datasets for different periods
-  const [weeklyRevenueData, setWeeklyRevenueData] = useState([
+  const weeklyRevenueData = [
     { name: "Thứ 2", revenue: 12000000 },
     { name: "Thứ 3", revenue: 15000000 },
     { name: "Thứ 4", revenue: 18000000 },
@@ -249,16 +111,16 @@ export default function AdminDashboardPage() {
     { name: "Thứ 6", revenue: 22000000 },
     { name: "Thứ 7", revenue: 28000000 },
     { name: "Chủ Nhật", revenue: 26800000 },
-  ]);
+  ];
 
-  const [monthlyRevenueData, setMonthlyRevenueData] = useState([
+  const monthlyRevenueData = [
     { name: "Tuần 1", revenue: 32000000 },
     { name: "Tuần 2", revenue: 45000000 },
     { name: "Tuần 3", revenue: 38000000 },
     { name: "Tuần 4", revenue: 52000000 },
-  ]);
+  ];
 
-  const [yearlyRevenueData, setYearlyRevenueData] = useState([
+  const yearlyRevenueData = [
     { name: "Tháng 1", revenue: 85000000 },
     { name: "Tháng 2", revenue: 92000000 },
     { name: "Tháng 3", revenue: 110000000 },
@@ -271,7 +133,32 @@ export default function AdminDashboardPage() {
     { name: "Tháng 10", revenue: 165000000 },
     { name: "Tháng 11", revenue: 180000000 },
     { name: "Tháng 12", revenue: 210000000 },
-  ]);
+  ];
+
+  // Mock product category revenue datasets
+  const categoryDataM6 = [
+    { name: "Gói Landlord VIP", value: 74690000, color: "#EC4899" },
+    { name: "Gói Landlord Premium", value: 33950000, color: "#8B5CF6" },
+    { name: "Gói Renter VIP", value: 16296000, color: "#3B82F6" },
+    { name: "Gói Renter Basic", value: 6790000, color: "#60A5FA" },
+    { name: "Đẩy tin / Highlight", value: 4074000, color: "#F59E0B" },
+  ];
+
+  const categoryDataM5 = [
+    { name: "Gói Landlord VIP", value: 60500000, color: "#EC4899" },
+    { name: "Gói Landlord Premium", value: 30250000, color: "#8B5CF6" },
+    { name: "Gói Renter VIP", value: 18150000, color: "#3B82F6" },
+    { name: "Gói Renter Basic", value: 7260000, color: "#60A5FA" },
+    { name: "Đẩy tin / Highlight", value: 4840000, color: "#F59E0B" },
+  ];
+
+  const categoryDataM4 = [
+    { name: "Gói Landlord VIP", value: 54000050, color: "#EC4899" },
+    { name: "Gói Landlord Premium", value: 27551040, color: "#8B5CF6" },
+    { name: "Gói Renter VIP", value: 16530620, color: "#3B82F6" },
+    { name: "Gói Renter Basic", value: 7714290, color: "#60A5FA" },
+    { name: "Đẩy tin / Highlight", value: 4408170, color: "#F59E0B" },
+  ];
 
   const getBarChartData = () => {
     switch (revenuePeriod) {
@@ -286,55 +173,15 @@ export default function AdminDashboardPage() {
   };
 
   const getPieChartData = () => {
-    const now = new Date();
-    const targetMonthIndex = Number(pieMonth) - 1; // 5 for June, 4 for May, 3 for April
-    
-    // Filter orders for the target month and year
-    const targetOrders = allPaidOrders.filter(order => {
-      const orderDate = new Date(order.paid_at || order.created_at);
-      return orderDate.getMonth() === targetMonthIndex && orderDate.getFullYear() === now.getFullYear();
-    });
-
-    if (targetOrders.length === 0) {
-      return [];
+    switch (pieMonth) {
+      case "5":
+        return categoryDataM5;
+      case "4":
+        return categoryDataM4;
+      case "6":
+      default:
+        return categoryDataM6;
     }
-
-    // Group by package (item_id and item_type)
-    const packageGroup: { [key: string]: { name: string; value: number } } = {};
-    const colors = ["#EC4899", "#8B5CF6", "#3B82F6", "#60A5FA", "#F59E0B", "#10B981", "#EF4444"];
-    
-    targetOrders.forEach(order => {
-      const itemId = order.item_id;
-      const itemType = order.item_type;
-      const amount = Number(order.total_amount) || 0;
-      
-      let title = "";
-      if (itemType === "SUBSCRIPTION") {
-        switch (itemId) {
-          case 1: title = "Gói chủ nhà cơ bản 1 tháng"; break;
-          case 2: title = "Gói chủ nhà Premium 1 tháng"; break;
-          case 3: title = "Gói chủ nhà VIP 3 tháng"; break;
-          case 4: title = "Gói người thuê cơ bản 1 tháng"; break;
-          case 5: title = "Gói người thuê VIP 3 tháng"; break;
-          default: title = `Gói dịch vụ #${itemId}`;
-        }
-      } else if (itemType === "BOOST" || itemType === "boost") {
-        title = "Tin nổi bật (Boost)";
-      } else {
-        title = `${itemType} #${itemId}`;
-      }
-
-      if (packageGroup[title]) {
-        packageGroup[title].value += amount;
-      } else {
-        packageGroup[title] = { name: title, value: amount };
-      }
-    });
-
-    return Object.values(packageGroup).map((item, idx) => ({
-      ...item,
-      color: colors[idx % colors.length]
-    }));
   };
 
   const RADIAN = Math.PI / 180;
